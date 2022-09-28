@@ -1,38 +1,37 @@
-cabal-version:      >=2.0
+cabal-version:      2.0
 name:               haskell-game
 version:            0.1.0.0
-author:             ChromaChroma
+author:             Jona Leeflang
 maintainer:         jona.beer@gmail.com
+bug-reports:        https://github.com/ChromaChroma/haskell-game/issues
 category:           Game
 build-type:         Simple
+license:            GPL-3
+license-file:       LICENSE
+copyright:          (c) 2022 Jona Leeflang && Sem Bode
+
 -- A short (one-line) description of the package.
 -- synopsis:
 
 -- A longer description of the package.
 -- description:
 
--- A URL where users can report bugs.
--- bug-reports:
-
--- The license under which the package is released.
--- license:
-
--- A copyright notice.
--- copyright:
--- category:
-
 extra-source-files:
     README.md
 
 executable haskell-game
     build-depends:    base ^>=4.14.3.0
+                    , gloss ^>= 1.13.2.1
     default-language: Haskell2010
     main-is:          Main.hs
-    hs-source-dirs:   app
-    other-modules:
-    other-extensions:
+    hs-source-dirs:   app/src
+
     -- Modules included in this executable, other than Main.
-    -- other-modules:
+    other-modules:  
+        Model.TestModel
+        View.TestView
+        Controller.TestController
+        Config.TestConfig
 
     -- LANGUAGE extensions used by modules in this package.
-    -- other-extensions:
+    other-extensions:
