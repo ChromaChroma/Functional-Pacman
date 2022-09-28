@@ -17,9 +17,6 @@ windowSize = (1000, 1000)
 windowOffsetPosition :: (Int, Int)
 windowOffsetPosition = (0, 0)
 
--- backgroundColor :: Color
--- backgroundColor = black
-
 fps :: Int
 fps = 60
 
