@@ -1,9 +1,17 @@
-module Model.Game(Game, Status, Time, simpleNewGame) where
+module Model.Game(
+  GameState, 
+  Status, 
+  Time, 
+  simpleNewGame
+  ) where
   
 import Model.Player(Player, Enemy)
 import Model.Level(Level)
 
-
+-- | Time a game has been running
+data Time = Time {
+    time :: Int
+}
 -- | Acitivity status of the game
 data Status = Waiting | Active | Paused | Won | Lost deriving (Eq, Show)
 
@@ -24,9 +32,4 @@ simpleNewGame level player = GameState {
     level = player
     time = 0
     lives = mkLives 3
-}
-
--- | Time a game has been running
-data Time = Time {
-    time :: Int
-}
+  }
