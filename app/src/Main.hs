@@ -6,8 +6,6 @@ import View.TestView
 
 main :: IO ()
 main = do
-  -- putStrLn "Hello, Haskell!"
-  
   showText model
     where
       model = MkTestModel "name"
