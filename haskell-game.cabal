@@ -29,8 +29,14 @@ executable haskell-game
     -- Modules included in this executable, other than Main.
     other-modules:  
         Model.TestModel
+        Model.Game
+        Model.Characters
+        Model.Level
+        Model.Score
         View.TestView
         Controller.TestController
+        Controller.Engine
+        Controller.LevelController
         Config.TestConfig
 
     -- LANGUAGE extensions used by modules in this package.
