@@ -32,5 +32,5 @@ simpleNewGame level player = GameState {
     status = Waiting,
     player = player,
     level = level,
-    elapsedTime = 0,
+    elapsedTime = 0
   }
