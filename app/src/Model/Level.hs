@@ -1,30 +1,34 @@
 module Model.Level(
-  LevelNumber, safeMkLevelNumber,
+  LevelNumber, mkLevelNumber,
   Tile(),
   DoorState(),
   LevelLayout(),
   Position(),
   PelletType(),
   Pellet(),
-  Level, safeMkLevel,
+  Level, mkLevel,
   LevelSize, levelSize
-) where 
+) where
+
+import Model.Characters(Ghost)
 
 -- | Number/id of the level
-data LevelNumber = Int
+type LevelNumber = Int
+
 -- | Safe constructor for level number
-safeMkLevelNumber :: Int -> Maybe LevelNumber
-safeMkLevelNumber | >= 0 Just n
-                  | Nothing
+mkLevelNumber :: Int -> Maybe LevelNumber
+mkLevelNumber num
+ | num >= 0 = Just num
+ | otherwise = Nothing
+
+-- | State of the ghost door
+data DoorState = Open | Closed deriving (Eq, Show)
 
 -- | Different types of tiles a level can have
 -- | Wall is a tile player nor ghost can move through
 -- | Floor is a tile player and ghost can move through 
 -- | Door is a tile ghost can move through, but player can't, given that the doors are open
-data Tile = Wall | Floor | GhostDoor Doorstate deriving (Eq, Show)
-
--- | State of the ghost door
-data DoorState = Open | Closed deriving (Eq, Show)
+data Tile = Wall | Floor | GhostDoor DoorState deriving (Eq, Show)
 
 -- | Level layout as a 2D Tile matrix
 -- | The layout defines the floors, walls and doors of the level
@@ -42,16 +46,16 @@ data PelletType = Normal | Power deriving (Eq, Show)
 
 -- | Pellet in the level
 data Pellet = Pellet {
-    position  :: Position
-    type      :: PelletType
+    position    :: Position,
+    pelletType  :: PelletType
 }
 
 -- | Level data
 data Level = Level {
-    LevelNumber :: LevelNumber
-    name        :: string
-    pellets     :: [Pellet]
-    enemies     :: [Enemy]
+    levelNumber :: LevelNumber,
+    name        :: String,
+    pellets     :: [Pellet],
+    enemies     :: [Ghost],
     layout      :: LevelLayout
 }
 
@@ -60,16 +64,19 @@ type LevelSize = (Int, Int)
 
 -- | Returns the size of the level (based on the level layout)
 levelSize :: Level -> LevelSize
-levelSize level = (length (layout level), length (layout level !! 0))
+levelSize level = (x, y)
+  where 
+    x = length . layout $ level
+    y = length . head . layout $ level
 
 -- | Safe constructor for level
-safeMkLevel :: LevelNumber -> String -> LevelLayout -> [Pellet] -> [Enemy] -> Maybe Level
-safeMkLevel n name layout pellets enemies 
-  | validLayout layout = Just Level { 
-    LevelNumber = n, 
-    name = name, 
-    pellets = pellets, 
-    enemies = enemies, 
+mkLevel :: LevelNumber -> String -> LevelLayout -> [Pellet] -> [Ghost] -> Maybe Level
+mkLevel n name layout pellets enemies
+  | validLayout layout = Just Level {
+    levelNumber = n,
+    name = name,
+    pellets = pellets,
+    enemies = enemies,
     layout = layout
     }
   | otherwise = Nothing
