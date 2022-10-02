@@ -1,5 +1,5 @@
 module Model.Characters(
-    Name, Direction, Speed,
+    Name, Direction(..), Speed,
     Movable(..),
     Ghost(..), GhostState, blinky, pinky, inky, clyde,
     Player(..), PlayerState, defaultPlayer,
@@ -70,7 +70,8 @@ data Player = Player {
     playerState :: PlayerState,
     pPosition :: Position,
     pSpeed :: Speed,
-    pLives :: Lives
+    pLives :: Lives,
+    pDirection :: Direction
   } deriving (Eq)
 
 -- | The player's Movable implementation
@@ -80,7 +81,7 @@ instance Movable Player where
   setPosition player pos = player {pPosition = pos}
 
 defaultPlayer :: Player
-defaultPlayer = Player Normal (1, 2) 0.1 (Lives 3 Alive)
+defaultPlayer = Player Normal (1, 4) 0.1 (Lives 3 Alive) Stop
 
 -- | States a ghost can be in
 -- | Chasing is the state in which ghosts chase the player

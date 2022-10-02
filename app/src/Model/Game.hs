@@ -29,7 +29,7 @@ data GameState = GameState {
 -- | Contstructor for a new game
 newGame :: Level -> Player -> GameState
 newGame level player = GameState {
-    status = Waiting,
+    status = Active,
     player = player,
     level = defaultLevel,
     elapsedTime = 0

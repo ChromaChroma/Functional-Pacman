@@ -5,6 +5,8 @@ import Model.Game hiding (player)
 import Model.Items
 import Model.Level
 
+import Data.List(transpose)
+
 -- | Implementations of show for all data objects that shold be represented in the string that will be printed in the terminal
 instance Show PointItem where
   show Dot {} = "·"
@@ -35,7 +37,7 @@ printLevel :: Level -> IO ()
 printLevel level = do
   putStrLn ("Level: " ++ show (levelNumber level))
   putStrLn ("Active Ghosts: " ++ showGhosts (enemies level) )
-  mapM_ (putStrLn . concatMap (\x -> " " ++ x ++ " ")) (toStringMatrix level)
+  mapM_ (putStrLn . concatMap (\x -> " " ++ x ++ " ")) (transpose (toStringMatrix level))
 
 showGhosts :: [Ghost] -> String
 showGhosts [] = ""
@@ -46,7 +48,7 @@ toStringMatrix :: Level -> [[String]]
 toStringMatrix level = projectPlayer (player level)
   $ projectGhosts (enemies level) 
   $ projectItems (items level) 
-  $ layoutToStringArray (layout level)
+  $ (transpose (layoutToStringArray (layout level)))
 
 layoutToStringArray :: [[Tile]] -> [[String]]
 layoutToStringArray = map (map show)

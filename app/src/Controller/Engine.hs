@@ -1,39 +1,45 @@
 module Controller.Engine where
 
-import Model.Characters
+import Model.Characters as C
 import Model.Game hiding (player)
 import Model.Level
+import Data.List (genericSplitAt)
 
 
-startNewGame :: IO GameState
+startNewGame :: GameState
 startNewGame = undefined
 
-step :: Int -> GameState -> IO GameState
+step :: Int -> GameState -> GameState
 step ms gs  | status gs == Active && elapsedTime gs + ms > tickDurationInMs = do
                 -- Game flow ran each tick
                 -- Check/Update Player state
                 -- Move player
                 -- Check/Move Ghosts (AI)
                 -- Check game over
-                return $ resetElapsedTime
+                resetElapsedTime
                   . checkGameOver
                   . updateGhosts
                   . updateGhosts
                   . updatePlayer $ gs
-            | otherwise = return gs { elapsedTime = elapsedTime gs + ms }
+            | otherwise = gs { elapsedTime = elapsedTime gs + ms }
 
 
 -- | Update player position and state (Normal/Strong)
 updatePlayer :: GameState -> GameState
-updatePlayer gs = undefined
+updatePlayer gs = gs {level = makeMove (level gs) (getDir (level gs))}
+  where 
+    makeMove lvl dir = lvl { player = move (player lvl) dir}
+    getDir lvl = C.pDirection (player lvl )
+    -- player = C.player $ level genericSplitAt
+-- pl = movePlayer C.Right 
 
 -- | Update ghosts position and state (Chase / Scatter / Frightened)
 updateGhosts :: GameState -> GameState
-updateGhosts gs = undefined
+updateGhosts gs = gs --todo
 
 -- | Check if game is over and update it if necessary
 checkGameOver :: GameState -> GameState
-checkGameOver gs = undefined
+checkGameOver gs = gs --todo
 
 -- | Reset elapsed time to 0 for next tick cycle
 resetElapsedTime :: GameState -> GameState
@@ -44,10 +50,12 @@ resetElapsedTime gs = gs { elapsedTime = 0 }
 -- |
 -- | Change player's direction / stop
 movePlayer :: Direction -> GameState -> GameState
-movePlayer dir gs = gs {level = makeMove (level gs) dir}
+movePlayer dir gs = gs {level = (level gs) {player = pp (player (level gs))} }
   where 
-    makeMove :: Level -> Direction -> Level
-    makeMove lvl dir = lvl { player = move (player lvl) dir}
+    pp player = player { pDirection = dir}
+
+    -- makeMove :: Level -> Direction -> Level
+    -- makeMove lvl dir = lvl { player = move (player lvl) dir}
 
     -- level = level gs
     -- pl = player level
