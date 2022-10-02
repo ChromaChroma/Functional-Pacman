@@ -9,73 +9,79 @@ startNewGame = undefined
 
 step :: Float -> GameState -> IO GameState
 step ms gs  | status game == Active && elapsedTime gs + ms > tickDurationInMs = do
-                -- TODO: update game state, Run AI, run movement, etc. 
+                -- Game flow ran each tick
 
                 -- Check/Update Player state
                 -- Move player
                 -- Check/Move Ghosts (AI)
                 -- Check game over
-                return $ resetElapsedTime 
-                . checkGameOver 
-                . updateGhosts 
-                . updateGhosts 
-                . updatePlayer 
-                . updateCharacterStates
+                return resetElapsedTime
+                . checkGameOver
+                . updateGhosts
+                . updateGhosts
+                . updatePlayer
             | otherwise = return gs { elapsedTime = elapsedTime gs + ms }
 
--- | Update Player and ghost states if needed 
--- | Player (Normal/Strong)
--- | Ghost: (Chase / Scatter / Frightened)
-updateCharacterStates :: GameState -> GameState
-updateCharacterStates gs = undefined
 
+-- | Update player position and state (Normal/Strong)
 updatePlayer :: GameState -> GameState
 updatePlayer gs = undefined
 
+-- | Update ghosts position and state (Chase / Scatter / Frightened)
 updateGhosts :: GameState -> GameState
 updateGhosts gs = undefined
 
+-- | Check if game is over and update it if necessary
 checkGameOver :: GameState -> GameState
 checkGameOver gs = undefined
 
+-- | Reset elapsed time to 0 for next tick cycle
 resetElapsedTime :: GameState -> GameState
 resetElapsedTime gs = gs { elapsedTime = 0 }
-
+-- |
 -- | Game Input functions
+-- |
 
 -- | Change player's direction / stop
 movePlayer :: Direction -> GameState -> GameState
 movePlayer dir GameState {player = player} = move dir player
 
+--  Pause the game
 pause :: GameState -> GameState
 pause gs  | status gs == Active = gs { status = Paused }
           | otherwise = gs
 
+-- | Resume the game
 resume :: GameState -> GameState
 resume gs | status gs == Paused = gs { status = Active }
           | otherwise = gs
+
+-- | End the game (forfeiting the current game)
+quit :: GameState -> GameState
+quit gs = gs { status = Lost }
+
 
 -- Not actions fot the game itself
 -- save :: a -> a
 -- load :: a -> a
 
--- Class with all Actions that can be taken onto the game state
-class GameState a => GameEngine a where
-    -- | Move the player in the given direction
-    movePlayer  :: Direction -> a -> a
-    -- | Pause the game
-    pause       :: a -> a
-    -- | Resume the game
-    resume      :: a -> a
+-- -- Class with all Actions that can be taken onto the game state
+-- class GameState a => GameEngine a where
+--     -- | Move the player in the given direction
+--     movePlayer  :: Direction -> a -> a
+--     -- | Pause the game
+--     pause       :: a -> a
+--     -- | Resume the game
+--     resume      :: a -> a
 
-instance GameEngine GameState where
-    movePlayer direction gs = gs { player = move direction (player gs) }
+-- instance GameEngine GameState where
+--     movePlayer direction gs = gs { player = move direction (player gs) }
 
-    pause gs | status gs == Active = gs { status = Paused }
-             | otherwise = gs
+--     pause gs | status gs == Active = gs { status = Paused }
+--              | otherwise = gs
 
-    resume gs | status gs == Paused = gs { status = Active }
-              | otherwise = gs
+--     resume gs | status gs == Paused = gs { status = Active }
+--               | otherwise = gs
 
 -- | The Engine that is the interface for the internal game state, logic etc.
 -- | The engine is responsible for the game loop, and the game state.

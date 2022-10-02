@@ -1,23 +1,76 @@
-# haskell-game
+# Haskell-game
 Game coded in Haskell made for a project of the Utrecht University. 
 [Github Projects](https://docs.github.com/en/issues/planning-and-tracking-with-projects) is used during the development of this project to keep an overview on the progression and backlog of the project.
+
+## Team
+[Jona Leeflang](https://github.com/ChromaChroma)  
+[Sem Bode]()  
 
 ## Setup
 To get the application running with the Gloss library on windows, the freeglut.dll is added to the project root to be able to execute `cabal run`
 for us (me, Jona), a small fix was needed with GLUT. 
-Here [stack overflow page](https://stackoverflow.com/questions/8956387/cant-get-freeglut-to-work-with-haskell-on-windows) explaining a 'hack' to use it globally on windows.
+Here [here](https://stackoverflow.com/questions/8956387/cant-get-freeglut-to-work-with-haskell-on-windows) explaining a 'hack' to use it globally on windows.
+
+## Setup / How to run the game
+- Make sure you have the freeglut.dll in the root of the project. Or use a global Windows 'hack' seen [here](https://stackoverflow.com/questions/8956387/cant-get-freeglut-to-work-with-haskell-on-windows) when using windows
+- Run `cabal build`
+- Run `cabal run`  
+
+And you are Ready to Play!
 
 ## Game
-Game and brief explanation
+The game made in this repository is a game of PacMan created in Haskell using the Gloss library for the Graphical User Interface. PacMan is a game where the player controlles the PacMan, akind of yellow cheesewheel, with the goal to score as many points as possible. During the game PacMan gets attacked by 4 ghosts. By default the player starts with 3 lives. 
 
-### How to run the game
-Steps to build, run and play the game
 
-### Game Specific Features
-What does the game entail
+## Features
+Interactions the user can make in the application: 
+- Start a game
+- Pause the game
+  - Quit the game (and save current score?)
+- Resume the Game
+- Move (Up, Down, Left, Right)
+- See highscores
 
-### User Interactability
-What interactions can the user make in the game
+Internal Features:
+- Save and load highscores from a file
+- Different AI's for the ghosts
 
-### Options and other features
+## Optional Features (To be implemented features)
+...
+
+Optional features maybe added later in this project:
+- Level/maze maker.
+- Custom settings ( lives, timers, durations, span rates, types of AI for each ghost).
+- Better graphics.
+- Separate Start screen, high score screen, game screen, pause screen.
+
+
+
+## Points
+Scattered around the level are Dots, Power Pellets and Different special "Fruit". When Pac Man eats all Dots the level is complete and the player continues to the next level. When Pac Man eats a Power Pallet, the ghosts become temporarily Frightend and can be eaten by the Pac Man. Fruit are Bonus Items that spawn later in the game and give extra points to the player when eaten. Fruits change over time to better fruit items.
+| Thing                                 | Points |
+|---------------------------------------|--------|
+| Small Pellet / Dot                    | 10     |
+| Power Pellet:                         | 50     |
+|   &emsp;1 Ghost eaten                 | 200    |
+|   &emsp;2 Ghosts eaten in succession  | 400    |
+|   &emsp;3 Ghosts eaten in succession  | 800    |
+|   &emsp;4 Ghosts eaten in succession  | 1600   |
+| Fruit:                                |        |
+|   &emsp;Cherry                        | 100    |
+|   &emsp;Strawberry                    | 300    |
+|   &emsp;Orange                        | 500    |
+|   &emsp;Apple                         | 700    |
+|   &emsp;Melon                         | 1000   |
+|   &emsp;Galaxian Flagship             | 2000   |
+|   &emsp;Bell                          | 3000   |
+|   &emsp;Key                           | 5000   |
+
+## Ghosts
+The game
+### AI
+...
+
+## Resources
+https://pacman.fandom.com/wiki/Pac-Man_(game)  
 ...
