@@ -1,7 +1,7 @@
-module Model.Item(
-  PointItem(), 
-  FruitType, defaultFruits
-  Positioned, Position
+module Model.Items(
+  PointItem(..),
+  FruitType, defaultFruits,
+  Positioned(..), Position(..)
 ) where
 
 -- | Position of something in the level 
@@ -17,25 +17,34 @@ type Points = Int
 -- | PowerPellet is a special item that gives the player the ability to eat ghosts
 -- | Fruit is a special item that gives the player a large amount of points
 data PointItem = 
-    Dot {points :: Points} 
-  | PowerPellet {points :: Points} 
-  | Fruit {
-    itemType :: FruitType,
-    points :: Points
+    Dot {
+      position :: Position,
+      points :: Points
     } 
-  deriving (Eq, Show)
+  | PowerPellet {
+      position :: Position,
+      points :: Points
+      } 
+  | Fruit {
+      position :: Position,
+      itemType :: FruitType,
+      points :: Points
+    } 
+  deriving (Eq)
+  
+
 
 -- | Types of fruit
-data FruitType = Cherry | Strawberry | Orange | Apple | Melon | Galaxian | Bell | Key deriving (HasPoint,Eq, Show)
+data FruitType = Cherry | Strawberry | Orange | Apple | Melon | Galaxian | Bell | Key deriving (Eq, Show)
 
-defaultFruits :: [Fruit]
+defaultFruits :: [PointItem]
 defaultFruits = [
-  Fruit Cherry 100,
-  Fruit Strawberry 300,
-  Fruit Orange 500,
-  Fruit Apple 700,
-  Fruit Melon 1000,
-  Fruit Galaxian 2000,
-  Fruit Bell 3000,
-  Fruit Key 5000
+  Fruit (0,0) Cherry 100,
+  Fruit (0,0) Strawberry 300,
+  Fruit (0,0) Orange 500,
+  Fruit (0,0) Apple 700,
+  Fruit (0,0) Melon 1000,
+  Fruit (0,0) Galaxian 2000,
+  Fruit (0,0) Bell 3000,
+  Fruit (0,0) Key 5000
   ]

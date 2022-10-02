@@ -1,15 +1,15 @@
 module Model.Game(
-  GameState, simpleNewGame,
-  Status, 
+  GameState(..), newGame,
+  Status(..), 
   Time, 
   tickDurationInMs
   ) where
   
 import Model.Characters(Player, Ghost)
-import Model.Level(Level)
+import Model.Level(Level, defaultLevel)
 
 -- | Game tick duration in milliseconds
-tickDurationInMs :: Float
+tickDurationInMs :: Int
 tickDurationInMs = 100
 
 -- | Time a game has been running
@@ -27,10 +27,10 @@ data GameState = GameState {
 }
 
 -- | Contstructor for a new game
-simpleNewGame :: Level -> Player -> GameState
-simpleNewGame level player = GameState {
+newGame :: Level -> Player -> GameState
+newGame level player = GameState {
     status = Waiting,
     player = player,
-    level = level,
+    level = defaultLevel,
     elapsedTime = 0
   }

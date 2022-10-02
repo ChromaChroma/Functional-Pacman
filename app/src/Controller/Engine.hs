@@ -1,25 +1,25 @@
-module Engine(Engine) where
+module Controller.Engine where
 
 import Model.Characters
-import Model.Game
+import Model.Game hiding (player)
+import Model.Level
 
 
 startNewGame :: IO GameState
 startNewGame = undefined
 
-step :: Float -> GameState -> IO GameState
-step ms gs  | status game == Active && elapsedTime gs + ms > tickDurationInMs = do
+step :: Int -> GameState -> IO GameState
+step ms gs  | status gs == Active && elapsedTime gs + ms > tickDurationInMs = do
                 -- Game flow ran each tick
-
                 -- Check/Update Player state
                 -- Move player
                 -- Check/Move Ghosts (AI)
                 -- Check game over
-                return resetElapsedTime
-                . checkGameOver
-                . updateGhosts
-                . updateGhosts
-                . updatePlayer
+                return $ resetElapsedTime
+                  . checkGameOver
+                  . updateGhosts
+                  . updateGhosts
+                  . updatePlayer $ gs
             | otherwise = return gs { elapsedTime = elapsedTime gs + ms }
 
 
@@ -38,13 +38,20 @@ checkGameOver gs = undefined
 -- | Reset elapsed time to 0 for next tick cycle
 resetElapsedTime :: GameState -> GameState
 resetElapsedTime gs = gs { elapsedTime = 0 }
+
 -- |
 -- | Game Input functions
 -- |
-
 -- | Change player's direction / stop
 movePlayer :: Direction -> GameState -> GameState
-movePlayer dir GameState {player = player} = move dir player
+movePlayer dir gs = gs {level = makeMove (level gs) dir}
+  where 
+    makeMove :: Level -> Direction -> Level
+    makeMove lvl dir = lvl { player = move (player lvl) dir}
+
+    -- level = level gs
+    -- pl = player level
+    -- newLevel lvl = lvl {player = }
 
 --  Pause the game
 pause :: GameState -> GameState

@@ -33,7 +33,9 @@ executable haskell-game
         Model.Characters
         Model.Level
         Model.Score
+        Model.Items
         View.TestView
+        View.Terminal
         Controller.TestController
         Controller.Engine
         Controller.LevelController

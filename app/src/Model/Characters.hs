@@ -1,9 +1,9 @@
 module Model.Characters(
     Name, Direction, Speed,
-    Movable,
-    Ghost, GhostState,
-    Player, PlayerState, defaultPlayer,
-    Lives, LifeState, mkLives, rmLife,
+    Movable(..),
+    Ghost(..), GhostState, blinky, pinky, inky, clyde,
+    Player(..), PlayerState, defaultPlayer,
+    Lives(..), LifeState, mkLives, rmLife,
 ) where
 
 import Prelude hiding (Left, Right)
@@ -21,7 +21,7 @@ type Speed = Float
 -- -- | A movable's position in Floats
 -- type Position = (Float, Float) -- Floats might be prefered
 
-class Positioned a => Movable a where 
+class Movable a where 
     getSpeed :: a -> Speed
     getPosition :: a -> Position
     setPosition :: a -> Position -> a
@@ -68,18 +68,19 @@ data PlayerState = Normal | Strong deriving (Eq, Show)
 
 data Player = Player { 
     playerState :: PlayerState,
+    pPosition :: Position,
     pSpeed :: Speed,
     pLives :: Lives
-  }
+  } deriving (Eq)
 
 -- | The player's Movable implementation
-instance Movable Positioned Player where
+instance Movable Player where
   getSpeed = pSpeed
   getPosition = pPosition
   setPosition player pos = player {pPosition = pos}
 
 defaultPlayer :: Player
-defaultPlayer = Player Normal 0.1 (Lives 3 Alive)
+defaultPlayer = Player Normal (1, 2) 0.1 (Lives 3 Alive)
 
 -- | States a ghost can be in
 -- | Chasing is the state in which ghosts chase the player
@@ -91,24 +92,26 @@ data GhostState = Chasing | Frightend | Scatter deriving (Eq, Show) -- of Vulner
 data Ghost = Ghost
   { gName :: Name,
     mode :: GhostState,
+    gPosition :: Position,
     gSpeed :: Speed,
     gAlive :: LifeState
-  }
+  } deriving (Eq)
 
 -- | The ghost's Movable implementation
-instance Movable Positioned Ghost where
+instance Movable Ghost where
   getSpeed = gSpeed
   getPosition = gPosition
   setPosition ghost pos = ghost {gPosition = pos}
 
 blinky :: Ghost
-blinky = Ghost "Blinky" Scatter 0.1 Alive
+blinky = Ghost "Blinky" Scatter (5,5) 0.1 Alive
 
 pinky :: Ghost
-pinky = Ghost "Pinky" Scatter 0.1 Alive
+pinky = Ghost "Pinky" Scatter (5,6) 0.1 Alive
 
 inky :: Ghost
-inky = Ghost "Inky" Scatter 0.1 Alive
+inky = Ghost "Inky" Scatter (6,5) 0.1 Alive
 
 clyde :: Ghost
-clyde = Ghost "Clyde" Scatter 0.1 Alive
+clyde = Ghost "Clyde" Scatter (6,6) 0.1 Alive
+
