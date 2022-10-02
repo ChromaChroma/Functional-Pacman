@@ -11,6 +11,7 @@ module Model.Level(
 ) where
 
 import Model.Characters(Ghost)
+import Model.Items(PointItem, Items, defaultFruits)
 
 -- | Number/id of the level
 type LevelNumber = Int
@@ -21,8 +22,6 @@ mkLevelNumber num
  | num >= 0 = Just num
  | otherwise = Nothing
 
--- | State of the ghost door
-data DoorState = Open | Closed deriving (Eq, Show)
 
 -- | Different types of tiles a level can have
 -- | Wall is a tile player nor ghost can move through
@@ -30,32 +29,19 @@ data DoorState = Open | Closed deriving (Eq, Show)
 -- | Door is a tile ghost can move through, but player can't, given that the doors are open
 data Tile = Wall | Floor | GhostDoor DoorState deriving (Eq, Show)
 
+-- | State of the ghost door
+data DoorState = Open | Closed deriving (Eq, Show)
+
 -- | Level layout as a 2D Tile matrix
 -- | The layout defines the floors, walls and doors of the level
 type LevelLayout = [[Tile]]
 
--- | Position in the level
-type Position = (Int, Int)
-
--- | Type of pallet
--- | Normal pellet is a pellet that gives points
--- | Power pellet is a pellet that makes ghosts vulnerable
-data PelletType = Normal | Power deriving (Eq, Show)
--- Optional extention of power pellet types
--- data PalletType = Cherry | Strawberry | Orange | Apple | Melon | Galaxian | Bell | Key deriving (Eq, Show)
-
--- | Pellet in the level
-data Pellet = Pellet {
-    position    :: Position,
-    pelletType  :: PelletType
-}
-
 -- | Level data
 data Level = Level {
     levelNumber :: LevelNumber,
-    name        :: String,
-    pellets     :: [Pellet],
-    enemies     :: [Ghost],
+    pellets     :: [Positioned PointItem],
+    enemies     :: [Position Ghost],
+    items       :: [Position Items],
     layout      :: LevelLayout
 }
 
@@ -74,9 +60,9 @@ mkLevel :: LevelNumber -> String -> LevelLayout -> [Pellet] -> [Ghost] -> Maybe 
 mkLevel n name layout pellets enemies
   | validLayout layout = Just Level {
     levelNumber = n,
-    name = name,
     pellets = pellets,
     enemies = enemies,
+    items = defaultFruits,
     layout = layout
     }
   | otherwise = Nothing
