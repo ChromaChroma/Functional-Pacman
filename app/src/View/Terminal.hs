@@ -29,9 +29,10 @@ instance Show Ghost where
 -- | Functions to build a string representation of the level including the layout, player, enemies and items
 printGame :: GameState -> IO ()
 -- (GameState status player level elapsedTime)
-printGame GameState {player = player, level = level, elapsedTime = eT, ghosts = ghosts} = do
+printGame GameState {status = status, player = player, level = level, elapsedTime = eT, ghosts = ghosts} = do
+  putStrLn $ "Status: " ++ show status
   putStrLn $ "Elapsed time: " ++ show eT
-  putStrLn $ "Lives left: " ++ show (amount (pLives player))
+  putStrLn $ "Lives left: " ++ show (unlives (pLives player))
   putStrLn $ "Active Ghosts: " ++ showGhosts ghosts
   putStrLn ("Level: " ++ show (levelNumber level))
 

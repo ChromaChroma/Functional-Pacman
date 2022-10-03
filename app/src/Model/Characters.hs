@@ -3,8 +3,8 @@ module Model.Characters(
     Movable(..),
     Ghost(..), GhostState, blinky, pinky, inky, clyde,
     Player(..), PlayerState, defaultPlayer,
-    Lives(..), LifeState, mkLives, rmLife,
-) where
+    Lives(..), LifeState, mkLives, rmLife, isAlive
+) where 
 
 import Model.Items (Position, Positioned)
 import Model.Movement(Movable(..), Speed, Direction(..))
@@ -13,29 +13,28 @@ import Model.Movement(Movable(..), Speed, Direction(..))
 -- |  Lives
 -- |
 
--- | State of living of a Player or Ghost
-data LifeState = Alive | Dead deriving (Eq, Show)
-
 -- | Number of lives the player has left
-data Lives = Lives { 
-    amount :: Int,
-    alive :: LifeState
+newtype Lives = Lives { 
+    unlives :: Int
   }
   deriving (Eq, Show)
 
 -- | Safe Lives constructor
 mkLives :: Int -> Maybe Lives
 mkLives lives
-  | lives > 0 = Just (Lives lives Alive)
+  | lives > 0 = Just (Lives lives)
   | otherwise = Nothing
 
 -- | Remove a life from the Player's lives
 rmLife :: Lives -> Lives
 rmLife lives
-  | life > 0 = lives {amount = life - 1}
-  | otherwise = lives {amount = life - 1, alive = Dead}
+  | life > 0 = lives {unlives = life - 1}
+  | otherwise = lives {unlives = life - 1}
   where
-    life = amount lives
+    life = unlives lives
+
+isAlive :: Lives -> Bool
+isAlive = (> 0) . unlives
 
 -- |
 -- |  Player
@@ -61,11 +60,14 @@ instance Movable Player where
   setPosition player pos = player {pPosition = pos}
 
 defaultPlayer :: Player
-defaultPlayer = Player Normal (1, 3) 0.1 (Lives 3 Alive) Stop
+defaultPlayer = Player Normal (1, 3) 0.1 (Lives 3) Stop
 
 -- |
 -- |  Ghosts
 -- |
+
+-- | State of living of a Ghost
+data LifeState = Alive | Dead deriving (Eq, Show)
 
 -- | Name of a Ghost
 type Name = String

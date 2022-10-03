@@ -9,6 +9,8 @@ import Model.Movement
 startNewGame :: GameState
 startNewGame = undefined
 
+-- | Later in step flow, Add movement buffer, If current direction == stop, then set buffer to current direction
+
 -- | Game step should do all of the following:
 -- | Check Game Over
 -- | Check for Next level
@@ -21,7 +23,7 @@ startNewGame = undefined
 -- | Update Player Movement and check collisions
 -- | Update Enemies movement and check collisions
 -- | Check for player collision with ghosts
--- | -- | Strong: kill ghost, make ai let ghost go to ghost spawn
+-- | -- | Strong: kill ghost, ghost speed x 5, ghost goes to spawn, ghosts ressurect (in 5 seconds?)
 -- | -- | Normal: kill player, do life check
 -- | Check and possibly spawn fruit
 -- | Update score
@@ -76,7 +78,11 @@ updateGhosts gs = gs --todo
 
 -- | Check if game is over and update it if necessary
 checkGameOver :: GameState -> GameState
-checkGameOver gs = gs --todo
+checkGameOver gs 
+  | isAlive' = gs 
+  | otherwise = gs {status = Lost} --todo more
+  where
+    isAlive' = isAlive . C.pLives . player $ gs
 
 -- | Reset elapsed time to 0 for next tick cycle
 resetElapsedTime :: GameState -> GameState
