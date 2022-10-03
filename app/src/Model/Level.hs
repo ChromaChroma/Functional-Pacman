@@ -37,9 +37,6 @@ type LevelLayout = [[Tile]]
 data Level = Level {
     levelNumber :: LevelNumber,
     items       :: [PointItem],
-    -- enemies     :: [Ghost],
-    -- player      :: Player, 
-    -- items       :: [Position PointItem],
     layout      :: LevelLayout
 }
 
@@ -52,6 +49,12 @@ levelSize level = (x, y)
   where
     x = length . layout $ level
     y = length . head . layout $ level
+
+validateLevel :: Level -> Bool
+validateLevel level = length lvlLayout == x && all ((== y) . length) lvlLayout
+  where
+    lvlLayout = layout level
+    (x, y) = levelSize level
 
 -- | Safe constructor for level
 mkLevel :: LevelNumber -> LevelLayout -> [PointItem] -> [Ghost] -> Player -> Maybe Level

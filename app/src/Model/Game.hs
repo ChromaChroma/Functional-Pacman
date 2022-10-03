@@ -1,5 +1,5 @@
 module Model.Game(
-  GameState(..), newGame,
+  GameState(..), defaultGame,
   Status(..), 
   Time, 
   tickDurationInMs
@@ -7,10 +7,6 @@ module Model.Game(
   
 import Model.Characters(Ghost, blinky, pinky, inky, clyde, Player, defaultPlayer, Direction(..))
 import Model.Level(Level, defaultLevel)
-
--- | Game tick duration in milliseconds
-tickDurationInMs :: Int
-tickDurationInMs = 100
 
 -- | Time a game has been running
 type Time = Int 
@@ -25,11 +21,8 @@ data GameState = GameState {
     level       :: Level,
     elapsedTime :: Time,
     direction   :: Direction,
-
     ghosts      :: [Ghost]
     -- score       :: Score
-    
-    
 }
 
 defaultGame :: GameState
@@ -43,14 +36,6 @@ defaultGame = GameState {
     -- score       = 0
 }
 
--- | Contstructor for a new game
-newGame :: Level -> Player -> GameState
-newGame level player = GameState {
-    status = Active,
-    player = player,
-    level = defaultLevel,
-    elapsedTime = 0,
-    direction   = Stop,
-    ghosts = []
-  }
-  
+-- | Game tick duration in milliseconds
+tickDurationInMs :: Int
+tickDurationInMs = 100

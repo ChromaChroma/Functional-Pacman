@@ -4,10 +4,7 @@ module Model.Items(
   Positioned(..), Position(..)
 ) where
 
--- | Position of something in the level 
-type Position = (Float, Float)
-
-data Positioned a = Positioned a Position
+import Model.Movement(Position, Positioned(..))
 
 -- | Score points
 type Points = Int
@@ -31,8 +28,6 @@ data PointItem =
       points :: Points
     } 
   deriving (Eq)
-  
-
 
 -- | Types of fruit
 data FruitType = Cherry | Strawberry | Orange | Apple | Melon | Galaxian | Bell | Key deriving (Eq, Show)

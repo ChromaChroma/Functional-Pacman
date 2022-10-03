@@ -19,7 +19,6 @@ showCoords gs = do
 
 gameLoop :: GameState -> IO GameState
 gameLoop gs = do
-  putStrLn "1"
   printGame gs
   showCoords gs
 
@@ -38,7 +37,7 @@ gameLoop gs = do
 
 main :: IO ()
 main = do
-  let game = newGame defaultLevel C.defaultPlayer
-  let gg = movePlayer C.Right game
-  gameLoop gg
-  putStrLn "Complete!"
+  -- let game = newGame defaultLevel C.defaultPlayer
+  let game = movePlayer C.Right defaultGame
+  gameLoop game
+  putStrLn "Game Complete!"

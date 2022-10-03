@@ -6,36 +6,12 @@ module Model.Characters(
     Lives(..), LifeState, mkLives, rmLife,
 ) where
 
-import Prelude hiding (Left, Right)
 import Model.Items (Position, Positioned)
+import Model.Movement(Movable(..), Speed, Direction(..))
 
--- | Directions a movement can be in, including Stop for an idle in movement
-data Direction = Up | Down | Left | Right | Stop deriving (Eq, Show)
-
--- | Name of a Player or Ghost
-type Name = String
-
--- | A movable's Speed in Ints unit
-type Speed = Float
-
--- -- | A movable's position in Floats
--- type Position = (Float, Float) -- Floats might be prefered
-
-class Movable a where 
-    getSpeed :: a -> Speed
-    getPosition :: a -> Position
-    setPosition :: a -> Position -> a
-    move :: a -> Direction -> a
-    move movable direction = setPosition movable (x', y')
-        where
-            (x, y) = getPosition movable
-            s = getSpeed movable
-            (x', y') = case direction of
-                Up -> (x, y + s)
-                Down -> (x, y - s)
-                Left -> (x - s, y)
-                Right -> (x + s, y)
-                Stop -> (x, y)
+-- |
+-- |  Lives
+-- |
 
 -- | State of living of a Player or Ghost
 data LifeState = Alive | Dead deriving (Eq, Show)
@@ -61,6 +37,10 @@ rmLife lives
   where
     life = amount lives
 
+-- |
+-- |  Player
+-- |
+
 -- | A Player's state
 -- | Normal is the players default state
 -- | Strong is the state the player is in when he eats a power pellet and when he can attack the ghosts
@@ -83,6 +63,13 @@ instance Movable Player where
 defaultPlayer :: Player
 defaultPlayer = Player Normal (1, 4) 0.1 (Lives 3 Alive) Stop
 
+-- |
+-- |  Ghosts
+-- |
+
+-- | Name of a Ghost
+type Name = String
+
 -- | States a ghost can be in
 -- | Chasing is the state in which ghosts chase the player
 -- | Frightend is the state in which ghosts run away from the player
@@ -103,6 +90,8 @@ instance Movable Ghost where
   getSpeed = gSpeed
   getPosition = gPosition
   setPosition ghost pos = ghost {gPosition = pos}
+
+-- | Default ghost constructors for each original ghost
 
 blinky :: Ghost
 blinky = Ghost "Blinky" Scatter (5,5) 0.1 Alive
