@@ -38,6 +38,5 @@ gameLoop gs = do
 main :: IO ()
 main = do
   -- let game = newGame defaultLevel C.defaultPlayer
-  let game = movePlayer C.Right defaultGame
-  gameLoop game
+  gameLoop defaultGame
   putStrLn "Game Complete!"
