@@ -17,8 +17,8 @@ import Model.Movement(Movable(..), Speed, Direction(..))
 data LifeState = Alive | Dead deriving (Eq, Show)
 
 -- | Number of lives the player has left
-data Lives = Lives
-  { amount :: Int,
+data Lives = Lives { 
+    amount :: Int,
     alive :: LifeState
   }
   deriving (Eq, Show)
@@ -74,11 +74,11 @@ type Name = String
 -- | Chasing is the state in which ghosts chase the player
 -- | Frightend is the state in which ghosts run away from the player
 -- | Scatter is the state in which ghosts move to a specific location
-data GhostState = Chasing | Frightend | Scatter deriving (Eq, Show) -- of Vulnerable
+data GhostState = Chasing | Frightend | Scatter deriving (Eq, Show)
 
 -- | The ghost's current state
-data Ghost = Ghost
-  { gName :: Name,
+data Ghost = Ghost{ 
+    gName :: Name,
     mode :: GhostState,
     gPosition :: Position,
     gSpeed :: Speed,

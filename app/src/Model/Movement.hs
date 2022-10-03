@@ -12,7 +12,6 @@ type Position = (Float, Float)
 -- | Wrapper type of 'Position' for 'Movable' a
 data Positioned a = Positioned a Position
 
-
 -- | Directions a movement can be in, including Stop for an idle in movement
 data Direction = Up | Down | Left | Right | Stop deriving (Eq, Show)
 
