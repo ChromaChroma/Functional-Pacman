@@ -1,8 +1,8 @@
 module Controller.Engine where
 
 import Model.Characters as C
-import Model.Game hiding (player)
-import Model.Level
+import Model.Game
+import Model.Level hiding (player)
 import Data.List (genericSplitAt)
 
 
@@ -26,10 +26,15 @@ step ms gs  | status gs == Active && elapsedTime gs + ms > tickDurationInMs = do
 
 -- | Update player position and state (Normal/Strong)
 updatePlayer :: GameState -> GameState
-updatePlayer gs = gs {level = makeMove (level gs) (getDir (level gs))}
-  where 
-    makeMove lvl dir = lvl { player = move (player lvl) dir}
-    getDir lvl = C.pDirection (player lvl )
+updatePlayer gs = gs { player = player' }
+  where
+    player' = C.move (player gs) (direction gs)
+
+-- updatePlayer gs = gs {level = makeMove (level gs) (getDir (level gs))}
+--   where 
+--     makeMove lvl dir = lvl { player = move (player lvl) dir}
+--     getDir lvl = C.pDirection (player lvl )
+
     -- player = C.player $ level genericSplitAt
 -- pl = movePlayer C.Right 
 
@@ -50,9 +55,10 @@ resetElapsedTime gs = gs { elapsedTime = 0 }
 -- |
 -- | Change player's direction / stop
 movePlayer :: Direction -> GameState -> GameState
-movePlayer dir gs = gs {level = (level gs) {player = pp (player (level gs))} }
-  where 
-    pp player = player { pDirection = dir}
+movePlayer dir gs = gs { direction = dir }
+-- movePlayer dir gs = gs {level = (level gs) {player = pp (player (level gs))} }
+--   where 
+--     pp player = player { pDirection = dir}
 
     -- makeMove :: Level -> Direction -> Level
     -- makeMove lvl dir = lvl { player = move (player lvl) dir}

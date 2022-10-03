@@ -6,17 +6,16 @@ import View.TestView
 
 import Model.Characters as C
 import Model.Items (Position)
-import Model.Level
-import Model.Game hiding (player)
+import Model.Level hiding (player)
+import Model.Game
 import Controller.Engine
 import View.Terminal
-import Model.Game (GameState)
 
 import Control.Concurrent
 
 showCoords :: GameState -> IO ()
 showCoords gs = do
-  print $ C.pPosition (player (level gs))
+  print $ C.pPosition (player gs)
 
 gameLoop :: GameState -> IO GameState
 gameLoop gs = do

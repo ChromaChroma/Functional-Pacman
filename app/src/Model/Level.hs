@@ -37,8 +37,8 @@ type LevelLayout = [[Tile]]
 data Level = Level {
     levelNumber :: LevelNumber,
     items       :: [PointItem],
-    enemies     :: [Ghost],
-    player      :: Player, 
+    -- enemies     :: [Ghost],
+    -- player      :: Player, 
     -- items       :: [Position PointItem],
     layout      :: LevelLayout
 }
@@ -59,8 +59,8 @@ mkLevel n layout items enemies player
   | validLayout layout = Just Level {
     levelNumber = n,
     items = items,
-    enemies = enemies,
-    player = player,
+    -- enemies = enemies,
+    -- player = player,
     -- items = defaultFruits,
     layout = layout
     }
@@ -75,8 +75,8 @@ defaultLevel :: Level
 defaultLevel = Level {
     levelNumber = 0,
     items = [Dot (1,1) 10],
-    enemies = [blinky, pinky, inky, clyde],
-    player = defaultPlayer,
+    -- enemies = [blinky, pinky, inky, clyde],
+    -- player = defaultPlayer,
     -- items = defaultFruits,
     layout = defaultLayout
     }
