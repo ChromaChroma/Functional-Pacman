@@ -33,8 +33,8 @@ class Movable a where
             (x, y) = getPosition movable
             s = getSpeed movable
             (x', y') = case direction of
-                Up -> (x, y + s)
-                Down -> (x, y - s)
+                Up -> (x, y - s)
+                Down -> (x, y + s)
                 Left -> (x - s, y)
                 Right -> (x + s, y)
                 Stop -> (x, y)

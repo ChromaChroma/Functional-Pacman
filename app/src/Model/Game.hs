@@ -21,6 +21,7 @@ data GameState = GameState {
     level       :: Level,
     elapsedTime :: Time,
     direction   :: Direction,
+    bufDirection:: Direction,
     ghosts      :: [Ghost]
     -- score       :: Score
 }
@@ -32,6 +33,7 @@ defaultGame = GameState {
     level       = defaultLevel,
     elapsedTime = 0,
     direction   = Stop,
+    bufDirection= Up,
     ghosts      = [blinky, pinky, inky, clyde]
     -- score       = 0
 }

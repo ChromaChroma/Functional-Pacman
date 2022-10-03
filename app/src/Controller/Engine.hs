@@ -4,6 +4,7 @@ import Model.Characters as C
 import Model.Game
 import Model.Level
 import Model.Movement
+import Prelude hiding (Left, Right)
 
 
 startNewGame :: GameState
@@ -38,21 +39,25 @@ step ms gs  | status gs == Active && elapsedTime gs + ms > tickDurationInMs = do
                 resetElapsedTime
                   . checkGameOver
                   . updateGhosts
-                  . updateGhosts
-                  . updatePlayer $ gs
+                  . updatePlayerMovement $ gs
             | otherwise = gs { elapsedTime = elapsedTime gs + ms }
 
 
-
--- | Update player position and state (Normal/Strong)
-updatePlayer :: GameState -> GameState
-updatePlayer gs = gs { player = player' }
+updatePlayerMovement :: GameState -> GameState
+updatePlayerMovement gs
+  | isValidBufferMove = gs {player = bufMovedPlayer, direction = bufDirection gs, bufDirection = Stop}
+  | isValidNormalMove = gs {player = movedPlayer}
+  | otherwise = gs { direction = Stop }
   where
-    player'
-      | validPlayerMove movedPlayer gs = movedPlayer
-      | otherwise = player gs { direction = Stop }
-    movedPlayer = C.move (player gs) (direction gs)
+    isValidBufferMove = bufDirection gs /= Stop && validateMove (bufDirection gs) gs -- {player = moveFull (player gs) (bufDirection gs)}
+    isValidNormalMove = direction gs /= Stop    && validateMove (direction gs   ) gs -- {player = moveFull (player gs) (direction gs)}
+  
+    validateMove :: Direction -> GameState -> Bool
+    validateMove dir gs = validPlayerMove (moveFull (player gs) dir) gs
 
+    movePlayer dir  = C.move (player gs) dir
+    movedPlayer     = movePlayer (direction gs)
+    bufMovedPlayer  = movePlayer (bufDirection gs)
 
 validPlayerMove :: Player -> GameState -> Bool
 validPlayerMove = isValidMove isValid
@@ -61,16 +66,28 @@ validPlayerMove = isValidMove isValid
     isValid (GhostDoor _) = False
     isValid _ = True
 
-validGhostMove :: Ghost -> GameState -> Bool
-validGhostMove = isValidMove isValid
-  where
-    isValid Wall = False
-    isValid (GhostDoor Open) = False
-    isValid (GhostDoor Closed) = True
-    isValid _ = True
+-- validGhostMove :: Ghost -> GameState -> Bool
+-- validGhostMove = isValidMove isValid
+--   where
+--     isValid Wall = False
+--     isValid (GhostDoor Open) = False
+--     isValid (GhostDoor Closed) = True
+--     isValid _ = True
+moveFull :: Movable a => a -> Direction -> a
+moveFull m dir = setPosition m (moveFullUnit m dir)
+  where 
+    moveFullUnit m dir = case dir of
+      Up    -> (x,y-1)
+      Down  -> (x,y+1)
+      Left  -> (x-1,y)
+      Right -> (x+1,y)
+      _     -> (x,y)
+      where (x, y) = getPosition m
 
 isValidMove :: Movable m => (Tile -> Bool) -> m -> GameState -> Bool
 isValidMove f m gs = f $ tileAt (level gs) (intPosition $ getPosition m)
+
+
 
 -- | Update ghosts position and state (Chase / Scatter / Frightened)
 updateGhosts :: GameState -> GameState
@@ -78,8 +95,8 @@ updateGhosts gs = gs --todo
 
 -- | Check if game is over and update it if necessary
 checkGameOver :: GameState -> GameState
-checkGameOver gs 
-  | isAlive' = gs 
+checkGameOver gs
+  | isAlive' = gs
   | otherwise = gs {status = Lost} --todo more
   where
     isAlive' = isAlive . C.pLives . player $ gs

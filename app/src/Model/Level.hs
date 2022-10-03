@@ -68,7 +68,7 @@ mkLevel n layout items enemies player
   | otherwise = Nothing
 
 tileAt :: Level -> (Int, Int) -> Tile
-tileAt level (x, y) = layout level !! x !! y
+tileAt level (x, y) = layout level !! y!! x
 
 -- | Default PacMan Maze level
 defaultLevel :: Level
