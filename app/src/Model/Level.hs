@@ -1,10 +1,10 @@
 module Model.Level(
   LevelNumber, mkLevelNumber,
-  Tile(..),
+  Tile(..), tileAt,
   DoorState(..),
   LevelLayout(..),
   Level(..), mkLevel, defaultLevel,
-  LevelSize, levelSize
+  LevelSize
 ) where
 
 import Model.Characters(Ghost, blinky, pinky, inky, clyde, Player, defaultPlayer)
@@ -18,7 +18,6 @@ mkLevelNumber :: Int -> Maybe LevelNumber
 mkLevelNumber num
  | num >= 0 = Just num
  | otherwise = Nothing
-
 
 -- | Different types of tiles a level can have
 -- | Wall is a tile player nor ghost can move through
@@ -44,17 +43,16 @@ data Level = Level {
 type LevelSize = (Int, Int)
 
 -- | Returns the size of the level (based on the level layout)
-levelSize :: Level -> LevelSize
-levelSize level = (x, y)
+layoutSize :: LevelLayout -> LevelSize
+layoutSize layout = (x, y)
   where
-    x = length . layout $ level
-    y = length . head . layout $ level
+    x = length layout
+    y = length . head $ layout
 
-validateLevel :: Level -> Bool
-validateLevel level = length lvlLayout == x && all ((== y) . length) lvlLayout
+validLayout :: LevelLayout -> Bool
+validLayout layout = length layout == x && all ((== y) . length) layout
   where
-    lvlLayout = layout level
-    (x, y) = levelSize level
+    (x, y) = layoutSize layout
 
 -- | Safe constructor for level
 mkLevel :: LevelNumber -> LevelLayout -> [PointItem] -> [Ghost] -> Player -> Maybe Level
@@ -69,9 +67,8 @@ mkLevel n layout items enemies player
     }
   | otherwise = Nothing
 
--- | Checks if the layout is valid
-validLayout :: LevelLayout -> Bool
-validLayout layout = undefined
+tileAt :: Level -> (Int, Int) -> Tile
+tileAt level (x, y) = layout level !! x !! y
 
 -- | Default PacMan Maze level
 defaultLevel :: Level

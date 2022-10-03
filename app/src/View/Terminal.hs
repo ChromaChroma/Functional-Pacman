@@ -3,7 +3,8 @@ module View.Terminal(printGame) where
 import Model.Characters
 import Model.Game
 import Model.Items
-import Model.Level hiding (player)
+import Model.Level
+import Model.Movement
 
 import Data.List(transpose)
 
@@ -69,9 +70,6 @@ projectGhosts ghosts layoutArray = foldl (\layout ghost -> updateMatrix layout (
 
 projectPlayer :: Player -> [[String]]  -> [[String]]
 projectPlayer player layout = updateMatrix layout (show player) (intPosition(pPosition player))
-
-intPosition :: Position -> (Int, Int)
-intPosition (x, y) = (round x, round y)
 
 updateMatrix :: [[a]] -> a -> (Int, Int) -> [[a]]
 updateMatrix m x (r,c) =

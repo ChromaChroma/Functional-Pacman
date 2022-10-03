@@ -1,13 +1,16 @@
 module Model.Movement(
   Movable(..),
   Direction(..), Speed,
-  Positioned(..), Position
+  Positioned(..), Position, intPosition
 ) where
   
 import Prelude hiding (Left, Right,Up, Down)
 
 -- | Position of something
 type Position = (Float, Float)
+
+intPosition :: Position -> (Int, Int)
+intPosition (x, y) = (round x, round y)
 
 -- | Wrapper type of 'Position' for 'Movable' a
 data Positioned a = Positioned a Position

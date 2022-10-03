@@ -2,8 +2,8 @@ module Controller.Engine where
 
 import Model.Characters as C
 import Model.Game
-import Model.Level hiding (player)
-import Data.List (genericSplitAt)
+import Model.Level
+import Model.Movement
 
 
 startNewGame :: GameState
@@ -41,11 +41,34 @@ step ms gs  | status gs == Active && elapsedTime gs + ms > tickDurationInMs = do
             | otherwise = gs { elapsedTime = elapsedTime gs + ms }
 
 
+
 -- | Update player position and state (Normal/Strong)
 updatePlayer :: GameState -> GameState
 updatePlayer gs = gs { player = player' }
   where
-    player' = C.move (player gs) (direction gs)
+    player'
+      | validPlayerMove movedPlayer gs = movedPlayer
+      | otherwise = player gs { direction = Stop }
+    movedPlayer = C.move (player gs) (direction gs)
+
+
+validPlayerMove :: Player -> GameState -> Bool
+validPlayerMove = isValidMove isValid
+  where
+    isValid Wall = False
+    isValid (GhostDoor _) = False
+    isValid _ = True
+
+validGhostMove :: Ghost -> GameState -> Bool
+validGhostMove = isValidMove isValid
+  where
+    isValid Wall = False
+    isValid (GhostDoor Open) = False
+    isValid (GhostDoor Closed) = True
+    isValid _ = True
+
+isValidMove :: Movable m => (Tile -> Bool) -> m -> GameState -> Bool
+isValidMove f m gs = f $ tileAt (level gs) (intPosition $ getPosition m)
 
 -- | Update ghosts position and state (Chase / Scatter / Frightened)
 updateGhosts :: GameState -> GameState

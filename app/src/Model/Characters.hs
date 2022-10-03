@@ -61,7 +61,7 @@ instance Movable Player where
   setPosition player pos = player {pPosition = pos}
 
 defaultPlayer :: Player
-defaultPlayer = Player Normal (1, 4) 0.1 (Lives 3 Alive) Stop
+defaultPlayer = Player Normal (1, 3) 0.1 (Lives 3 Alive) Stop
 
 -- |
 -- |  Ghosts
