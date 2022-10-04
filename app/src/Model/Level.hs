@@ -2,7 +2,7 @@ module Model.Level(
   LevelNumber, mkLevelNumber,
   Tile(..), tileAt,
   DoorState(..),
-  LevelLayout(..),
+  LevelLayout(..), layoutSize,
   Level(..), mkLevel, defaultLevel,
   LevelSize
 ) where
@@ -86,7 +86,7 @@ defaultLayout :: LevelLayout
 defaultLayout = [
   [Wall, Wall,  Wall,   Wall,   Wall, Wall, Wall, Wall, Wall, Wall],
   [Wall, Floor, Floor,  Floor,  Floor, Floor, Floor, Floor, Floor, Wall],
-  [Wall, Floor, Wall,   Floor,  Wall, Wall, Floor, Wall, Floor, Wall],
+  [Wall, Floor, Wall,   Wall,  Wall, Wall, Floor, Wall, Floor, Wall],
   [Wall, Floor, Floor,  Floor,  Floor, Floor, Floor, Floor, Floor, Wall],
   [Wall, Floor, Wall,   Floor,  Wall, Wall, Wall, Wall, Floor, Wall],
   [Wall, Floor, Floor,  Floor,  Wall, Floor, Floor, Wall, Floor, Wall],
