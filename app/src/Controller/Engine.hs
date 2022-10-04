@@ -31,17 +31,12 @@ startNewGame = undefined
 -- | Update timer
 step :: Int -> GameState -> GameState
 step ms gs  | status gs == Active && elapsedTime gs + ms > tickDurationInMs = do
-                -- Game flow ran each tick
-                -- Check/Update Player state
-                -- Move player
-                -- Check/Move Ghosts (AI)
-                -- Check game over
                 resetElapsedTime
                   . checkGameOver
                   . updateGhosts
                   . updatePlayerMovement $ gs
-            | otherwise = gs { elapsedTime = elapsedTime gs + ms }
-
+            | status gs == Active = gs { elapsedTime = elapsedTime gs + ms }
+            | otherwise = gs
 
 updatePlayerMovement :: GameState -> GameState
 updatePlayerMovement gs
@@ -49,15 +44,14 @@ updatePlayerMovement gs
   | isValidNormalMove = gs {player = movedPlayer}
   | otherwise = gs { direction = Stop }
   where
-    isValidBufferMove = bufDirection gs /= Stop && validateMove (bufDirection gs) gs -- {player = moveFull (player gs) (bufDirection gs)}
-    isValidNormalMove = direction gs /= Stop    && validateMove (direction gs   ) gs -- {player = moveFull (player gs) (direction gs)}
-  
-    validateMove :: Direction -> GameState -> Bool
+    isValidBufferMove = bufDirection gs /= Stop && validateMove (bufDirection gs) gs
+    isValidNormalMove = direction gs /= Stop    && validateMove (direction gs   ) gs
+
     validateMove dir gs = validPlayerMove (moveFull (player gs) dir) gs
 
-    movePlayer dir  = C.move (player gs) dir
     movedPlayer     = movePlayer (direction gs)
     bufMovedPlayer  = movePlayer (bufDirection gs)
+    movePlayer dir  = C.move (player gs) dir
 
 validPlayerMove :: Player -> GameState -> Bool
 validPlayerMove = isValidMove isValid
@@ -87,8 +81,6 @@ moveFull m dir = setPosition m (moveFullUnit m dir)
 isValidMove :: Movable m => (Tile -> Bool) -> m -> GameState -> Bool
 isValidMove f m gs = f $ tileAt (level gs) (intPosition $ getPosition m)
 
-
-
 -- | Update ghosts position and state (Chase / Scatter / Frightened)
 updateGhosts :: GameState -> GameState
 updateGhosts gs = gs --todo
@@ -111,7 +103,7 @@ resetElapsedTime gs = gs { elapsedTime = 0 }
 
 -- | Change player's direction / stop
 movePlayer :: Direction -> GameState -> GameState
-movePlayer dir gs = gs { direction = dir }
+movePlayer dir gs = gs { bufDirection = dir }
 
 --  Pause the game
 pause :: GameState -> GameState
