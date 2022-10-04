@@ -20,6 +20,8 @@ And you are Ready to Play!
 
 ## Game
 The game made in this repository is a game of PacMan created in Haskell using the Gloss library for the Graphical User Interface. PacMan is a game where the player controlles the PacMan, akind of yellow cheesewheel, with the goal to score as many points as possible. During the game PacMan gets attacked by 4 ghosts. By default the player starts with 3 lives. 
+Game is based on the old pacman game.  
+![](https://static.wikia.nocookie.net/pacman/images/a/a0/Puck_Man_%28Arcade%29_%28MAME_0.235%29.png/revision/latest?cb=20210910125345)
 
 
 ## Features
