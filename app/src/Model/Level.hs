@@ -46,8 +46,8 @@ type LevelSize = (Int, Int)
 layoutSize :: LevelLayout -> LevelSize
 layoutSize layout = (x, y)
   where
-    x = length layout
-    y = length . head $ layout
+    y = length layout
+    x = length . head $ layout
 
 validLayout :: LevelLayout -> Bool
 validLayout layout = length layout == x && all ((== y) . length) layout
@@ -67,8 +67,16 @@ mkLevel n layout items enemies player
     }
   | otherwise = Nothing
 
-tileAt :: Level -> (Int, Int) -> Tile
-tileAt level (x, y) = layout level !! y!! x
+tileAt :: Level -> (Int, Int) -> Maybe Tile
+tileAt level (x, y) 
+ | x < lvlWidth || y < lvlHeight = Just $ lvlLayout !! y!! x
+ | otherwise = Nothing
+ where 
+  lvlLayout = layout level
+  lvlHeight = length lvlLayout
+  lvlWidth = length . head $ lvlLayout
+
+-- tileAt level (x, y) = layout level !! y!! x
 
 -- | Default PacMan Maze level
 defaultLevel :: Level
