@@ -49,9 +49,18 @@ updatePlayerMovement gs
 
     validateMove dir gs = validPlayerMove (moveFull (player gs) dir) gs
 
-    movedPlayer     = movePlayer (direction gs)
-    bufMovedPlayer  = movePlayer (bufDirection gs)
+    movedPlayer     = roundToAxis $ movePlayer (direction gs)
+    bufMovedPlayer  = roundToAxis $ movePlayer (bufDirection gs)
     movePlayer dir  = C.move (player gs) dir
+
+    -- | Wachy fix for player movement by locking perpendicular axis of current directino
+    roundToAxis :: Player -> Player
+    roundToAxis p@Player{pPosition = (x, y)} = case direction gs of
+      Up -> p {pPosition = (fromIntegral $ round x, y)}
+      Down -> p {pPosition = (fromIntegral $ round x, y)}
+      Left -> p {pPosition = (x, fromIntegral $ round y)}
+      Right -> p {pPosition = (x, fromIntegral $ round y)}
+      _ -> p {pPosition = (fromIntegral $ round x, fromIntegral $ round y)}
 
 validPlayerMove :: Player -> GameState -> Bool
 validPlayerMove = isValidMove isValid

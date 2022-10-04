@@ -33,12 +33,12 @@ defaultGame = GameState {
     player      = defaultPlayer,
     level       = defaultLevel,
     elapsedTime = 0,
-    direction   = Right,
-    bufDirection= Up,
+    direction   = Stop,
+    bufDirection= Stop,
     ghosts      = [blinky, pinky, inky, clyde]
     -- score       = 0
 }
 
 -- | Game tick duration in milliseconds
 tickDurationInMs :: Int
-tickDurationInMs = 100
+tickDurationInMs = 30

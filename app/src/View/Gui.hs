@@ -22,7 +22,7 @@ screen = InWindow "Pac Man" windowSize windowOffsetPosition
 -- screen = FullScreen
 
 windowSize :: (Int, Int)
-windowSize = (1000, 1000)
+windowSize = (1300, 1000)
 
 windowOffsetPosition :: (Int, Int)
 windowOffsetPosition = (0, 0)
@@ -51,7 +51,7 @@ initialModel = defaultGame
 -- | Render game state, aligned from bottom left corner
 drawingFunc :: GameState -> Picture
 drawingFunc gs = fromBottomLeft $ pictures [
-  renderGame gs,
+  translate 300 0 $ renderGame gs,
   renderOverlay gs
   ]
   where
@@ -69,8 +69,7 @@ drawingFunc gs = fromBottomLeft $ pictures [
       -- renderItems . items . level $ gs
       -- PointItems
       ]
-
-    renderOverlay gs = translate 0 (fromIntegral ly *  tileSize) $ pictures[
+    renderOverlay gs = pictures[
       -- renderLives . pLives . player $ gs
       -- renderScore . score $ gs
       renderDebug gs
@@ -90,18 +89,46 @@ renderTile x y tile = case tile of
   GhostDoor Closed  -> Just $ color green block
   _                 -> Nothing
   where
-    trans pic = translate (fromIntegral x * tileSize) (fromIntegral y * tileSize) pic
-    block = trans (rectangleSolid tileSize tileSize)
+    block = translateByTileSize (fromIntegral x) (fromIntegral y) (rectangleSolid tileSize tileSize)
 
+translateByTileSize :: Float -> Float -> Picture -> Picture
+translateByTileSize x y = translate (x * tileSize) (y * tileSize)
+
+-- | Int based player render
+-- renderPlayer :: GameState -> Picture
+-- renderPlayer gs = translateByTileSize x' y' . color yellow . circleSolid $ tileSize/2
+--     where
+--         (_, ly) = layoutSize $ layout $ level gs
+--         (x, y) = intPosition $ pPosition $ player gs
+--         x' =  fromIntegral x
+--         y' =  fromIntegral ly - fromIntegral (y-2)
+
+-- | Renders on Float instead of Int (But does currently shwo pacman aligned up to 0.5 - 1.49 instead of 1.0, due to engine/ engine-to-view convertion)
+-- renderPlayer :: GameState -> Picture
+-- renderPlayer gs = translateByTileSize x y' . color yellow . circleSolid $ tileSize / 2
+--     where
+--         y' =  fromIntegral ly - (y-2)
+--         (_, ly) = layoutSize $ layout $ level gs
+--         (x, y) =  pPosition $ player gs
 
 renderPlayer :: GameState -> Picture
-renderPlayer gs =
-  translate x' y' $ color yellow (circleSolid (tileSize/2))
+renderPlayer gs = translateByTileSize x y . color yellow . circleSolid $ tileSize / 2
     where
+
         (_, ly) = layoutSize $ layout $ level gs
-        (x, y) = intPosition $ pPosition $ player gs
-        x' =  fromIntegral x * tileSize
-        y' =  (fromIntegral ly * tileSize) - fromIntegral ((y+1) * round tileSize )
+        (px, py) =  pPosition $ player gs
+        y' =  fromIntegral ly - (py-2)
+
+        -- | Whacky fix to somewhat lock pacman on the middle axis of the paths
+        (x, y) = case direction gs of
+          M.Up    -> roundHorizontal
+          M.Down  -> roundHorizontal
+          M.Left  -> roundVertical
+          M.Right -> roundVertical
+          _       -> (fromIntegral $ round px, fromIntegral $ round  y')
+        roundHorizontal = (fromIntegral $ round px, y')
+        roundVertical   = (px, fromIntegral $ round y')
+
 
 -- | Returns Pictures (Picture consisting of multiple pictures
 renderGhosts :: [Ghost] -> Picture
@@ -118,18 +145,18 @@ renderScore :: Score -> Picture
 renderScore = undefined
 
 renderDebug :: GameState -> Picture
-renderDebug gs = pictures $ stack 0 100 [
+renderDebug gs = pictures . stack 0 0 $ reverse [
   -- translate 0 200 . smallText . show . score $ gs,
-  smallText . status $ gs,
-  smallText . elapsedTime $ gs,
-  smallText . unlives . pLives . player $ gs,
-  smallText . direction $ gs,
-  smallText . bufDirection $ gs,
-  smallText . pPosition . player $ gs
+  smallText "Status: "            . status $ gs,
+  smallText "Elapsed time (ms): " . elapsedTime $ gs,
+  smallText "Lives: "             . unlives . pLives . player $ gs,
+  smallText "Direction: "         . direction $ gs,
+  smallText "Buffer Direction: "  . bufDirection $ gs,
+  smallText "Position: "          . pPosition . player $ gs
   ]
   where
-    smallText :: Show a => a -> Picture
-    smallText = color white . scale 0.1 0.1 . text . show
+    smallText :: Show a => String-> a -> Picture
+    smallText name a = color white . scale 0.1 0.1 . text $ name ++ show a
 
     stack :: Float -> Float -> [Picture] -> [Picture]
     stack _ _ []  = []
