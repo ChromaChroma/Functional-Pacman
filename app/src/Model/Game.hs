@@ -7,6 +7,7 @@ module Model.Game(
   
 import Model.Characters(Ghost, blinky, pinky, inky, clyde, Player, defaultPlayer, Direction(..))
 import Model.Level(Level, defaultLevel)
+import Prelude hiding (Left, Right)
 
 -- | Time a game has been running
 type Time = Int 
