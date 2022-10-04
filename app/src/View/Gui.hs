@@ -16,6 +16,7 @@ import Data.Maybe
 import Data.List
 import Data.List.Index
 import Graphics.Gloss.Interface.IO.Game (SpecialKey(KeyEsc), Key (SpecialKey))
+import Graphics.Gloss (red)
 
 screen :: Display
 screen = InWindow "Pac Man" windowSize windowOffsetPosition
@@ -63,6 +64,7 @@ drawingFunc gs = fromBottomLeft $ pictures [
 
     renderGame gs = pictures[
       renderLevel . level $ gs,
+      renderGhosts gs,
       renderPlayer gs
       -- Render Movable?? ghost and player get rendered same way.
       -- renderGhosts . ghosts $ gs
@@ -89,7 +91,11 @@ renderTile x y tile = case tile of
   GhostDoor Closed  -> Just $ color green block
   _                 -> Nothing
   where
-    block = translateByTileSize (fromIntegral x) (fromIntegral y) (rectangleSolid tileSize tileSize)
+    block = translateByTileSize (fromIntegral x) (fromIntegral y) (rectangleSolid tileSize tileSize)-- Vertical lined walls
+    vLinedBlock = translateByTileSize (fromIntegral x) (fromIntegral y) (rectangleSolid (tileSize/2) tileSize)-- Vertical lined walls
+    hLinedBlock = translateByTileSize (fromIntegral x) (fromIntegral y) (rectangleSolid tileSize (tileSize/2)) -- Horizontal lined walls
+    blockyWalls = translateByTileSize (fromIntegral x) (fromIntegral y) (rectangleSolid (tileSize/2) (tileSize/2)) -- small block walls
+    -- todo Possibility: Render layout by converting layout to ajacent dots that create figures that can be rendered as a line/polygon pictures.
 
 translateByTileSize :: Float -> Float -> Picture -> Picture
 translateByTileSize x y = translate (x * tileSize) (y * tileSize)
@@ -111,16 +117,33 @@ translateByTileSize x y = translate (x * tileSize) (y * tileSize)
 --         (_, ly) = layoutSize $ layout $ level gs
 --         (x, y) =  pPosition $ player gs
 
-renderPlayer :: GameState -> Picture
-renderPlayer gs = translateByTileSize x y . color yellow . circleSolid $ tileSize / 2
-    where
+-- renderPlayer :: GameState -> Picture
+-- renderPlayer gs = translateByTileSize x y . color yellow . circleSolid $ tileSize / 2
+--     where
 
-        (_, ly) = layoutSize $ layout $ level gs
-        (px, py) =  pPosition $ player gs
+--         (_, ly) = layoutSize $ layout $ level gs
+--         (px, py) =  pPosition $ player gs
+--         y' =  fromIntegral ly - (py-2)
+
+
+--         (x, y) = case direction gs of
+--           M.Up    -> roundHorizontal
+--           M.Down  -> roundHorizontal
+--           M.Left  -> roundVertical
+--           M.Right -> roundVertical
+--           _       -> (fromIntegral $ round px, fromIntegral $ round  y')
+--         roundHorizontal = (fromIntegral $ round px, y')
+--         roundVertical   = (px, fromIntegral $ round y')
+
+renderMovable :: Movable a => a -> Direction -> LevelLayout -> Picture -> Picture
+renderMovable m dir ll = translateByTileSize x y
+    where
+        (_, ly) = layoutSize ll
+        (px, py) =  getPosition m
         y' =  fromIntegral ly - (py-2)
 
         -- | Whacky fix to somewhat lock pacman on the middle axis of the paths
-        (x, y) = case direction gs of
+        (x, y) = case dir of
           M.Up    -> roundHorizontal
           M.Down  -> roundHorizontal
           M.Left  -> roundVertical
@@ -129,10 +152,23 @@ renderPlayer gs = translateByTileSize x y . color yellow . circleSolid $ tileSiz
         roundHorizontal = (fromIntegral $ round px, y')
         roundVertical   = (px, fromIntegral $ round y')
 
+renderPlayer :: GameState -> Picture
+renderPlayer gs = renderMovable pl dir ll . color yellow . circleSolid $ tileSize / 2
+  where
+    pl = player gs
+    dir = direction gs
+    ll = layout $ level gs
+
 
 -- | Returns Pictures (Picture consisting of multiple pictures
-renderGhosts :: [Ghost] -> Picture
-renderGhosts = undefined
+renderGhosts :: GameState -> Picture
+renderGhosts gs = pictures . map renderGhost . ghosts $ gs
+  where
+    renderGhost g = renderMovable g Stop ll . color red . circleSolid $ tileSize / 2
+    ll = layout $ level gs
+
+    
+  
 
 -- | Returns Pictures (Picture consisting of multiple pictures)
 renderItems :: [PointItem] -> Picture

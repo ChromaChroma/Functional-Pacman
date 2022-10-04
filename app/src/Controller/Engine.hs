@@ -88,7 +88,9 @@ moveFull m dir = setPosition m (moveFullUnit m dir)
       where (x, y) = getPosition m
 
 isValidMove :: Movable m => (Tile -> Bool) -> m -> GameState -> Bool
-isValidMove f m gs = f $ tileAt (level gs) (intPosition $ getPosition m)
+isValidMove f m gs = case tileAt (level gs) (intPosition $ getPosition m) of
+    Just a  -> f a
+    _       -> False  
 
 -- | Update ghosts position and state (Chase / Scatter / Frightened)
 updateGhosts :: GameState -> GameState

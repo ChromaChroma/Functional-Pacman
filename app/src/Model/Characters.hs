@@ -96,14 +96,14 @@ instance Movable Ghost where
 -- | Default ghost constructors for each original ghost
 
 blinky :: Ghost
-blinky = Ghost "Blinky" Scatter (5,5) 0.1 Alive
+blinky = Ghost "Blinky" Scatter (12, 14) 0.1 Alive
 
 pinky :: Ghost
-pinky = Ghost "Pinky" Scatter (5,6) 0.1 Alive
+pinky = Ghost "Pinky" Scatter (13, 14) 0.1 Alive
 
 inky :: Ghost
-inky = Ghost "Inky" Scatter (6,5) 0.1 Alive
+inky = Ghost "Inky" Scatter (14, 14) 0.1 Alive
 
 clyde :: Ghost
-clyde = Ghost "Clyde" Scatter (6,6) 0.1 Alive
+clyde = Ghost "Clyde" Scatter (15, 14) 0.1 Alive
 
