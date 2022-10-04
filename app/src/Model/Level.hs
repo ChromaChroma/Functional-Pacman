@@ -73,25 +73,67 @@ tileAt level (x, y) = layout level !! y!! x
 -- | Default PacMan Maze level
 defaultLevel :: Level
 defaultLevel = Level {
-    levelNumber = 0,
-    items = [Dot (1,1) 10],
-    -- enemies = [blinky, pinky, inky, clyde],
-    -- player = defaultPlayer,
-    -- items = defaultFruits,
-    layout = defaultLayout
-    }
+  levelNumber = 0,
+  items = [Dot (1,1) 10],
+  layout = defaultLayout
+  }
 
 -- | Default PacMan level layout
+-- defaultLayout :: LevelLayout
+-- defaultLayout = [
+--   [Wall, Wall,  Wall,   Wall,   Wall, Wall, Wall, Wall, Wall, Wall],
+--   [Wall, Floor, Floor,  Floor,  Floor, Floor, Floor, Floor, Floor, Wall],
+--   [Wall, Floor, Wall,   Wall,  Wall, Wall, Floor, Wall, Floor, Wall],
+--   [Wall, Floor, Floor,  Floor,  Floor, Floor, Floor, Floor, Floor, Wall],
+--   [Wall, Floor, Wall,   Floor,  Wall, Wall, Wall, Wall, Floor, Wall],
+--   [Wall, Floor, Floor,  Floor,  Wall, Floor, Floor, Wall, Floor, Wall],
+--   [Wall, Floor, Wall,   Floor,  Wall, Floor, Floor, Wall, Floor, Wall],
+--   [Wall, Floor, Wall,   Floor,  Wall, Wall, GhostDoor Closed, Wall, Floor, Wall],
+--   [Wall, Floor, Floor,  Floor,  Floor, Floor, Floor, Floor, Floor, Wall],
+--   [Wall, Wall,  Wall,   Wall,   Wall, Wall, Wall, Wall, Wall, Wall]
+--   ]
+
+
+-- | Standard pacman level
+standardLevel :: Level
+standardLevel = Level {
+  levelNumber = 0,
+  items = [Dot (1,1) 10],
+  layout = defaultLayout
+  }
+
+-- | Standard PacMan level layout (28 x 32)
 defaultLayout :: LevelLayout
 defaultLayout = [
-  [Wall, Wall,  Wall,   Wall,   Wall, Wall, Wall, Wall, Wall, Wall],
-  [Wall, Floor, Floor,  Floor,  Floor, Floor, Floor, Floor, Floor, Wall],
-  [Wall, Floor, Wall,   Wall,  Wall, Wall, Floor, Wall, Floor, Wall],
-  [Wall, Floor, Floor,  Floor,  Floor, Floor, Floor, Floor, Floor, Wall],
-  [Wall, Floor, Wall,   Floor,  Wall, Wall, Wall, Wall, Floor, Wall],
-  [Wall, Floor, Floor,  Floor,  Wall, Floor, Floor, Wall, Floor, Wall],
-  [Wall, Floor, Wall,   Floor,  Wall, Floor, Floor, Wall, Floor, Wall],
-  [Wall, Floor, Wall,   Floor,  Wall, Wall, GhostDoor Closed, Wall, Floor, Wall],
-  [Wall, Floor, Floor,  Floor,  Floor, Floor, Floor, Floor, Floor, Wall],
-  [Wall, Wall,  Wall,   Wall,   Wall, Wall, Wall, Wall, Wall, Wall]
+  [Wall,  Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall],
+  [Wall,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Wall,   Wall,   Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Wall],
+  [Wall,  Floor,  Wall,   Wall,   Wall,   Wall,   Floor,  Wall,   Wall,   Wall,   Wall,   Wall,   Floor,  Wall,   Wall,   Floor,  Wall,   Wall,   Wall,   Wall,   Wall,   Floor,  Wall,   Wall,   Wall,   Wall,   Floor,  Wall],
+  [Wall,  Floor,  Wall,   Wall,   Wall,   Wall,   Floor,  Wall,   Wall,   Wall,   Wall,   Wall,   Floor,  Wall,   Wall,   Floor,  Wall,   Wall,   Wall,   Wall,   Wall,   Floor,  Wall,   Wall,   Wall,   Wall,   Floor,  Wall],
+  [Wall,  Floor,  Wall,   Wall,   Wall,   Wall,   Floor,  Wall,   Wall,   Wall,   Wall,   Wall,   Floor,  Wall,   Wall,   Floor,  Wall,   Wall,   Wall,   Wall,   Wall,   Floor,  Wall,   Wall,   Wall,   Wall,   Floor,  Wall],
+  [Wall,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Wall],
+  [Wall,  Floor,  Wall,   Wall,   Wall,   Wall,   Floor,  Wall,   Wall,   Floor,  Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Floor,  Wall,   Wall,   Floor,  Wall,   Wall,   Wall,   Wall,   Floor,  Wall],
+  [Wall,  Floor,  Wall,   Wall,   Wall,   Wall,   Floor,  Wall,   Wall,   Floor,  Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Floor,  Wall,   Wall,   Floor,  Wall,   Wall,   Wall,   Wall,   Floor,  Wall],
+  [Wall,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Wall,   Wall,   Floor,  Floor,  Floor,  Floor,  Wall,   Wall,   Floor,  Floor,  Floor,  Floor,  Wall,   Wall,   Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Wall],
+  [Wall,  Wall,   Wall,   Wall,   Wall,   Wall,   Floor,  Wall,   Wall,   Wall,   Wall,   Wall,   Floor,  Wall,   Wall,   Floor,  Wall,   Wall,   Wall,   Wall,   Wall,   Floor,  Wall,   Wall,   Wall,   Wall,   Wall,   Wall],
+  [Floor, Floor,  Floor,  Floor,  Floor,  Wall,   Floor,  Wall,   Wall,   Wall,   Wall,   Wall,   Floor,  Wall,   Wall,   Floor,  Wall,   Wall,   Wall,   Wall,   Wall,   Floor,  Wall,   Floor,  Floor,  Floor,  Floor,  Floor],
+  [Floor, Floor,  Floor,  Floor,  Floor,  Wall,   Floor,  Wall,   Wall,   Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Wall,   Wall,   Floor,  Wall,   Floor,  Floor,  Floor,  Floor,  Floor],
+  [Floor, Floor,  Floor,  Floor,  Floor,  Wall,   Floor,  Wall,   Wall,   Floor,  Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Floor,  Wall,   Wall,   Floor,  Wall,   Floor,  Floor,  Floor,  Floor,  Floor],
+  [Wall,  Wall,   Wall,   Wall,   Wall,   Wall,   Floor,  Wall,   Wall,   Floor,  Wall,   Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Wall,   Floor,  Wall,   Wall,   Floor,  Wall,   Wall,   Wall,   Wall,   Wall,   Wall],
+  [Floor, Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Wall,   Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Wall,   Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor],
+  [Wall,  Wall,   Wall,   Wall,   Wall,   Wall,   Floor,  Wall,   Wall,   Floor,  Wall,   Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Wall,   Floor,  Wall,   Wall,   Floor,  Wall,   Wall,   Wall,   Wall,   Wall,   Wall],
+  [Floor, Floor,  Floor,  Floor,  Floor,  Wall,   Floor,  Wall,   Wall,   Floor,  Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Floor,  Wall,   Wall,   Floor,  Wall,   Floor,  Floor,  Floor,  Floor,  Floor],
+  [Floor, Floor,  Floor,  Floor,  Floor,  Wall,   Floor,  Wall,   Wall,   Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Wall,   Wall,   Floor,  Wall,   Floor,  Floor,  Floor,  Floor,  Floor],
+  [Floor, Floor,  Floor,  Floor,  Floor,  Wall,   Floor,  Wall,   Wall,   Floor,  Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Floor,  Wall,   Wall,   Floor,  Wall,   Floor,  Floor,  Floor,  Floor,  Floor],
+  [Wall,  Wall,   Wall,   Wall,   Wall,   Wall,   Floor,  Wall,   Wall,   Floor,  Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Floor,  Wall,   Wall,   Floor,  Wall,   Wall,   Wall,   Wall,   Wall,   Wall],
+  [Wall,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Wall,   Wall,   Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Wall],
+  [Wall,  Floor,  Wall,   Wall,   Wall,   Wall,   Floor,  Wall,   Wall,   Wall,   Wall,   Wall,  Floor,   Wall,   Wall,   Floor,  Wall,   Wall,   Wall,   Wall,   Wall,   Floor,  Wall,   Wall,   Wall,   Wall,   Floor,  Wall],
+  [Wall,  Floor,  Wall,   Wall,   Wall,   Wall,   Floor,  Wall,   Wall,   Wall,   Wall,   Wall,  Floor,   Wall,   Wall,   Floor,  Wall,   Wall,   Wall,   Wall,   Wall,   Floor,  Wall,   Wall,   Wall,   Wall,   Floor,  Wall],
+  [Wall,  Floor,  Floor,  Floor,  Wall,   Wall,   Floor,  Floor,  Floor,  Floor,  Floor,  Floor, Floor,   Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Wall,   Wall,   Wall,   Wall,   Floor,  Wall],
+  [Wall,  Wall,   Wall,   Floor,  Wall,   Wall,   Floor,  Wall,   Wall,   Floor,  Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Floor,  Wall,   Wall,   Floor,  Wall,   Wall,   Wall,   Wall,   Floor,  Wall],
+  [Wall,  Wall,   Wall,   Floor,  Wall,   Wall,   Floor,  Wall,   Wall,   Floor,  Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Floor,  Wall,   Wall,   Floor,  Wall,   Wall,   Wall,   Wall,   Floor,  Wall],
+  [Wall,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Wall,   Wall,   Floor,  Floor,  Floor, Floor,   Wall,   Wall,   Floor,  Floor,  Floor,  Floor,  Wall,   Wall,   Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Wall],
+  [Wall,  Floor,  Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Floor,  Wall,   Wall,   Floor,  Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Floor,  Wall],
+  [Wall,  Floor,  Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Floor,  Wall,   Wall,   Floor,  Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Floor,  Wall],
+  [Wall,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Wall],
+  [Wall,  Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall]
   ]
