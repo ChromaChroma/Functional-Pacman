@@ -43,6 +43,7 @@ executable haskell-game
         Controller.TestController
         Controller.Engine
         Controller.LevelController
+        Controller.MovementController
         Config.TestConfig
 
     -- LANGUAGE extensions used by modules in this package.

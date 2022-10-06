@@ -7,7 +7,7 @@ module Model.Characters(
 ) where 
 
 import Model.Items (Position, Positioned)
-import Model.Movement(Movable(..), Speed, Direction(..))
+import Model.Movement(Movable(..), Speed, Direction(..), Positioned(..))
 
 -- |
 -- |  Lives
@@ -52,12 +52,14 @@ data Player = Player {
     pLives :: Lives,
     pDirection :: Direction
   } deriving (Eq)
-
+  
+-- | The player's Positioned implementation
+instance Positioned Player where
+  getPosition = pPosition
+  setPosition player pos = player {pPosition = pos}
 -- | The player's Movable implementation
 instance Movable Player where
   getSpeed = pSpeed
-  getPosition = pPosition
-  setPosition player pos = player {pPosition = pos}
 
 defaultPlayer :: Player
 defaultPlayer = Player Normal (14.5, 23) 0.1 (Lives 3) Stop
@@ -87,14 +89,15 @@ data Ghost = Ghost{
     gAlive :: LifeState
   } deriving (Eq)
 
+-- | The ghost's Positioned implementation
+instance Positioned Ghost where
+  getPosition = gPosition
+  setPosition ghost pos = ghost {gPosition = pos}
 -- | The ghost's Movable implementation
 instance Movable Ghost where
   getSpeed = gSpeed
-  getPosition = gPosition
-  setPosition ghost pos = ghost {gPosition = pos}
 
 -- | Default ghost constructors for each original ghost
-
 blinky :: Ghost
 blinky = Ghost "Blinky" Scatter (12, 14) 0.1 Alive
 

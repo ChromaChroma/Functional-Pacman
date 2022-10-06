@@ -29,6 +29,11 @@ data PointItem =
     } 
   deriving (Eq)
 
+instance Positioned PointItem where
+  getPosition = position
+  -- | PointItems By default should nog change position, so setPosition returns the passed item
+  setPosition item _ = item
+
 -- | Types of fruit
 data FruitType = Cherry | Strawberry | Orange | Apple | Melon | Galaxian | Bell | Key deriving (Eq, Show)
 

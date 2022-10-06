@@ -1,7 +1,7 @@
 module Model.Movement(
+  Positioned(..), Position, intPosition,
   Movable(..),
-  Direction(..), Speed,
-  Positioned(..), Position, intPosition
+  Direction(..), Speed
 ) where
   
 import Prelude hiding (Left, Right,Up, Down)
@@ -12,8 +12,10 @@ type Position = (Float, Float)
 intPosition :: Position -> (Int, Int)
 intPosition (x, y) = (round x, round y)
 
--- | Wrapper type of 'Position' for 'Movable' a
-data Positioned a = Positioned a Position
+-- | Something that has a position
+class Positioned a where
+  getPosition :: a -> Position
+  setPosition :: a -> Position -> a
 
 -- | Directions a movement can be in, including Stop for an idle in movement
 data Direction = Up | Down | Left | Right | Stop deriving (Eq, Show)
@@ -21,13 +23,10 @@ data Direction = Up | Down | Left | Right | Stop deriving (Eq, Show)
 -- | A movable's Speed in Ints unit
 type Speed = Float
 
--- -- | A movable's position in Floats
--- type Position = (Float, Float) -- Floats might be prefered
-class Movable a where 
+class (Positioned a) => Movable a where 
     getSpeed :: a -> Speed
-    getPosition :: a -> Position
-    setPosition :: a -> Position -> a
     move :: a -> Direction -> a
+    -- Default implementation
     move movable direction = setPosition movable (x', y')
         where
             (x, y) = getPosition movable
