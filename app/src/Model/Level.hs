@@ -7,8 +7,12 @@ module Model.Level(
   LevelSize
 ) where
 
-import Model.Characters(Ghost, blinky, pinky, inky, clyde, Player, defaultPlayer)
-import Model.Items(PointItem(..), PointItem, defaultFruits)
+import Model.Characters(Ghost, blinky, pinky, inky, clyde, Player, defaultPlayer, Movable (getPosition))
+import Model.Items(PointItem(..), PointItem, defaultFruits, Position)
+import qualified Data.Maybe
+import Data.Maybe
+import Model.Movement
+import Model.Game
 
 -- | Number/id of the level
 type LevelNumber = Int
@@ -68,14 +72,89 @@ mkLevel n layout items enemies player
   | otherwise = Nothing
 
 tileAt :: Level -> (Int, Int) -> Maybe Tile
-tileAt level (x, y) 
+tileAt level (x, y)
  | x < lvlWidth || y < lvlHeight = Just $ lvlLayout !! y!! x
  | otherwise = Nothing
- where 
+ where
   lvlLayout = layout level
   (lvlWidth, lvlHeight) = layoutSize lvlLayout
 
--- tileAt level (x, y) = layout level !! y!! x
+-- | Wrapper function for tileAt that wraps the index around if it is out of level size bounds
+tileAtW :: Level -> (Int, Int) -> Tile
+tileAtW level (x, y)
+  | x > x' = tileAtW level (x - x', y)
+  | y > y' = tileAtW level (x, y - y')
+  | x < 0 = tileAtW level (x + x', y)
+  | y < 0 = tileAtW level (x, y + y')
+  | otherwise = fromJust $ tileAt level (x, y)
+  where
+    (x', y') = layoutSize $ layout level
+
+-- moveToPosition :: Movable a => Level -> a -> Position -> a
+-- moveToPosition level m (x, y) = 
+
+isValidPosition :: Movable a => (Tile -> Bool) -> Level -> a -> Bool
+isValidPosition p level m = p . tileAtW level . intPosition $ getPosition m
+
+isValidPlayerPosition :: Level -> Player -> Bool
+isValidPlayerPosition = isValidPosition isValid
+  where
+    isValid Wall = False
+    isValid (GhostDoor _) = False
+    isValid _ = True
+
+isValidGhostPosition :: Level -> Ghost -> Bool
+isValidGhostPosition = isValidPosition isValid
+  where
+    isValid Wall = False
+    isValid (GhostDoor Open) = False
+    isValid (GhostDoor Closed) = True
+    isValid _ = True
+
+
+
+-- check bufdirection mvoe
+-- check direction move
+-- stay sameplace, update dir to stop
+
+makeMove :: Movable a => GameState -> a -> a
+makeMove gs m
+  | isValidPlayerPosition (level gs) normalMove = normalMove
+  | otherwise = a
+  where
+    (mx, my) = getPosition a -- get current x,y
+    -- check if player is on axis of direction (Up/down = x is whole number, Left/right = y is wholenumber) before checking if can move direction
+    -- This kind of checks if player position is on crossroads
+    
+    -- if so (guard cases) check if move in direction is valid like in engine
+    -- if so make move (return new player) else return original player (movable)
+    -- normalMove is 
+    normalMove = moveFull m $ direction gs
+  
+moveFull :: Movable a => a -> Direction -> a
+moveFull m dir = setPosition m (moveFullUnit m dir)
+  where
+    moveFullUnit m dir = case dir of
+      Up -> (x, y -1)
+      Down -> (x, y + 1)
+      Left -> (x -1, y)
+      Right -> (x + 1, y)
+      _ -> (x, y)
+      where
+        (x, y) = getPosition m
+   -- Player with new (x.y) position
+validateMove = undefined
+
+
+
+
+-- moveToPosition :: Movable a => Level -> a -> Maybe a
+-- moveToPosition level movable =
+--   where
+--     (x, y) = getPosition movable
+--     tile = case tileAt level (x, y) of
+--       Just t -> t
+--       Nothing -> -- do wrap check
 
 -- | Default PacMan Maze level
 defaultLevel :: Level
