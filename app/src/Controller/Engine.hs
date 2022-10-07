@@ -30,8 +30,8 @@ startNewGame = undefined
 -- | Check and possibly spawn fruit
 -- | Update score
 -- | Update timer
-step :: Int -> GameState -> GameState
-step ms gs  | status gs == Active && tickTimer gs + ms > tickDurationInMs = do
+tick :: Int -> GameState -> GameState
+tick ms gs  | status gs == Active && tickTimer gs + ms > tickDurationInMs = do
                 resetTickTimer
                   . checkGameOver
                   . updateGhosts
@@ -39,69 +39,8 @@ step ms gs  | status gs == Active && tickTimer gs + ms > tickDurationInMs = do
             | status gs == Active = gs { elapsedTime = elapsedTime gs + ms, tickTimer = tickTimer gs + ms }
             | otherwise = gs
 
-
 updatePlayerMovement :: GameState -> GameState
 updatePlayerMovement = makePlayerMove 
-  -- -- | isValidBufferMove = gs {player = bufMovedPlayer, direction = bufDirection gs, bufDirection = Stop}
-  -- | isValidNormalMove = gs {player = movedPlayer}
-  -- | otherwise = gs { direction = Stop }
-  -- where
-  --   isValidNormalMove = 
-            
-
--- updatePlayerMovement :: GameState -> GameState
--- updatePlayerMovement gs
---   | isValidBufferMove = gs {player = bufMovedPlayer, direction = bufDirection gs, bufDirection = Stop}
---   | isValidNormalMove = gs {player = movedPlayer}
---   | otherwise = gs { direction = Stop }
---   where
---     isValidBufferMove = bufDirection gs /= Stop && validateMove (bufDirection gs) gs
---     isValidNormalMove = direction gs /= Stop    && validateMove (direction gs   ) gs
-
---     validateMove dir gs = validPlayerMove (moveFull (player gs) dir) gs
-
---     movedPlayer     = roundToAxis $ movePlayer (direction gs)
---     bufMovedPlayer  = roundToAxis $ movePlayer (bufDirection gs)
---     movePlayer dir  = C.move (player gs) dir
-
---     -- | Wachy fix for player movement by locking perpendicular axis of current directino
---     roundToAxis :: Player -> Player
---     roundToAxis p@Player{pPosition = (x, y)} = case direction gs of
---       Up -> p {pPosition = (fromIntegral $ round x, y)}
---       Down -> p {pPosition = (fromIntegral $ round x, y)}
---       Left -> p {pPosition = (x, fromIntegral $ round y)}
---       Right -> p {pPosition = (x, fromIntegral $ round y)}
---       _ -> p {pPosition = (fromIntegral $ round x, fromIntegral $ round y)}
-
-validPlayerMove :: Player -> GameState -> Bool
-validPlayerMove = isValidMove isValid
-  where
-    isValid Wall = False
-    isValid (GhostDoor _) = False
-    isValid _ = True
-
--- validGhostMove :: Ghost -> GameState -> Bool
--- validGhostMove = isValidMove isValid
---   where
---     isValid Wall = False
---     isValid (GhostDoor Open) = False
---     isValid (GhostDoor Closed) = True
---     isValid _ = True
-moveFull :: Movable a => a -> Direction -> a
-moveFull m dir = setPosition m (moveFullUnit m dir)
-  where 
-    moveFullUnit m dir = case dir of
-      Up    -> (x,y-1)
-      Down  -> (x,y+1)
-      Left  -> (x-1,y)
-      Right -> (x+1,y)
-      _     -> (x,y)
-      where (x, y) = getPosition m
-
-isValidMove :: Movable m => (Tile -> Bool) -> m -> GameState -> Bool
-isValidMove f m gs = case tileAt (level gs) (intPosition $ getPosition m) of
-    Just a  -> f a
-    _       -> False  
 
 -- | Update ghosts position and state (Chase / Scatter / Frightened)
 updateGhosts :: GameState -> GameState
