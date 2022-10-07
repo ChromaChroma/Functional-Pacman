@@ -13,6 +13,7 @@ Here [here](https://stackoverflow.com/questions/8956387/cant-get-freeglut-to-wor
 
 ## Setup / How to run the game
 - Make sure you have the freeglut.dll in the root of the project. Or use a global Windows 'hack' seen [here](https://stackoverflow.com/questions/8956387/cant-get-freeglut-to-work-with-haskell-on-windows) when using windows
+- Run `cabal update`
 - Run `cabal build`
 - Run `cabal run`  
 
