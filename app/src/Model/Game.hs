@@ -7,10 +7,10 @@ module Model.Game
   )
 where
 
-import Model.Player (Player, defaultPlayer)
 import Model.Ghosts (Ghost, blinky, clyde, inky, pinky)
-import Model.Level (Level, defaultLevel)
-import Model.Movement (Direction (..))
+import Model.Level (Level(playerSpawn), defaultLevel)
+import Model.Movement (Direction (..), Positioned(setPosition))
+import Model.Player (Player, defaultPlayer)
 import Prelude hiding (Left, Right)
 
 -- | Time a game has been running
@@ -31,18 +31,23 @@ data GameState = GameState
     -- score       :: Score
   }
 
-defaultGame :: GameState
-defaultGame =
-  GameState
+loadGame lvl ghosts pl = GameState
     { status = Active,
-      player = defaultPlayer,
-      level = defaultLevel,
       elapsedTime = 0,
       direction = Stop,
       bufDirection = Stop,
-      ghosts = [blinky, pinky, inky, clyde]
+      player = pl,
+      level = lvl,
+      ghosts = ghosts
       -- score       = 0
     }
+    
+defaultGame :: GameState
+defaultGame = loadGame lvl ghosts pl
+    where
+      lvl = defaultLevel
+      pl = setPosition defaultPlayer (playerSpawn lvl)
+      ghosts = [blinky, pinky, inky, clyde]
 
 -- | Game tick duration in milliseconds
 tickDurationInMs :: Int

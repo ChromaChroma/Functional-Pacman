@@ -36,11 +36,15 @@ data DoorState = Open | Closed deriving (Eq, Show)
 -- | The layout defines the floors, walls and doors of the level
 type LevelLayout = [[Tile]]
 
+-- | Spawn location of the player
+type PlayerSpawn = (Float, Float)
+
 -- | Level data
 data Level = Level {
     levelNumber :: LevelNumber,
     items       :: [PointItem],
-    layout      :: LevelLayout
+    layout      :: LevelLayout,
+    playerSpawn :: PlayerSpawn
 }
 
 -- | Size of the level layout in tiles (or Units so to speak)
@@ -59,15 +63,18 @@ validLayout layout = length layout == x && all ((== y) . length) layout
     (x, y) = layoutSize layout
 
 -- | Safe constructor for level
-mkLevel :: LevelNumber -> LevelLayout -> [PointItem] -> [Ghost] -> Player -> Maybe Level
-mkLevel n layout items enemies player
+mkLevel :: LevelNumber 
+  -> LevelLayout 
+  -> [PointItem] 
+  -> [Ghost] 
+  -> PlayerSpawn
+  -> Maybe Level
+mkLevel n layout items enemies spawn
   | validLayout layout = Just Level {
     levelNumber = n,
     items = items,
-    -- enemies = enemies,
-    -- player = player,
-    -- items = defaultFruits,
-    layout = layout
+    layout = layout,
+    playerSpawn = spawn
     }
   | otherwise = Nothing
 
@@ -94,35 +101,12 @@ tileAtW level (x, y)
 defaultLevel :: Level
 defaultLevel = Level {
   levelNumber = 0,
-  items = [Dot (1,1) 10],
-  layout = defaultLayout
+  items = defaultDots,
+  layout = defaultLayout,
+  playerSpawn = (14, 23)
   }
 
--- | Default PacMan level layout
--- defaultLayout :: LevelLayout
--- defaultLayout = [
---   [Wall, Wall,  Wall,   Wall,   Wall, Wall, Wall, Wall, Wall, Wall],
---   [Wall, Floor, Floor,  Floor,  Floor, Floor, Floor, Floor, Floor, Wall],
---   [Wall, Floor, Wall,   Wall,  Wall, Wall, Floor, Wall, Floor, Wall],
---   [Wall, Floor, Floor,  Floor,  Floor, Floor, Floor, Floor, Floor, Wall],
---   [Wall, Floor, Wall,   Floor,  Wall, Wall, Wall, Wall, Floor, Wall],
---   [Wall, Floor, Floor,  Floor,  Wall, Floor, Floor, Wall, Floor, Wall],
---   [Wall, Floor, Wall,   Floor,  Wall, Floor, Floor, Wall, Floor, Wall],
---   [Wall, Floor, Wall,   Floor,  Wall, Wall, GhostDoor Closed, Wall, Floor, Wall],
---   [Wall, Floor, Floor,  Floor,  Floor, Floor, Floor, Floor, Floor, Wall],
---   [Wall, Wall,  Wall,   Wall,   Wall, Wall, Wall, Wall, Wall, Wall]
---   ]
-
-
--- | Standard pacman level
-standardLevel :: Level
-standardLevel = Level {
-  levelNumber = 0,
-  items = [Dot (1,1) 10],
-  layout = defaultLayout
-  }
-
--- | Standard PacMan level layout (28 x 32)
+-- | Standard, original PacMan level layout (28 x 32)
 defaultLayout :: LevelLayout
 defaultLayout = [
   [Wall,  Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall],
@@ -157,3 +141,21 @@ defaultLayout = [
   [Wall,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Wall],
   [Wall,  Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall]
   ]
+  
+defaultDots :: [PointItem]
+defaultDots = [Dot (1,1) 10]
+
+-- | Dev PacMan level layout
+-- defaultLayout :: LevelLayout
+-- defaultLayout = [
+--   [Wall, Wall,  Wall,   Wall,   Wall, Wall, Wall, Wall, Wall, Wall],
+--   [Wall, Floor, Floor,  Floor,  Floor, Floor, Floor, Floor, Floor, Wall],
+--   [Wall, Floor, Wall,   Wall,  Wall, Wall, Floor, Wall, Floor, Wall],
+--   [Wall, Floor, Floor,  Floor,  Floor, Floor, Floor, Floor, Floor, Wall],
+--   [Wall, Floor, Wall,   Floor,  Wall, Wall, Wall, Wall, Floor, Wall],
+--   [Wall, Floor, Floor,  Floor,  Wall, Floor, Floor, Wall, Floor, Wall],
+--   [Wall, Floor, Wall,   Floor,  Wall, Floor, Floor, Wall, Floor, Wall],
+--   [Wall, Floor, Wall,   Floor,  Wall, Wall, GhostDoor Closed, Wall, Floor, Wall],
+--   [Wall, Floor, Floor,  Floor,  Floor, Floor, Floor, Floor, Floor, Wall],
+--   [Wall, Wall,  Wall,   Wall,   Wall, Wall, Wall, Wall, Wall, Wall]
+--   ]

@@ -65,4 +65,4 @@ instance Movable Player where
   getSpeed = speed
 
 defaultPlayer :: Player
-defaultPlayer = Player Normal (14.5, 23) 0.1 (Lives 3)
+defaultPlayer = Player Normal (1, 1) 0.1 (Lives 3)
