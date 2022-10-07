@@ -31,12 +31,12 @@ startNewGame = undefined
 -- | Update score
 -- | Update timer
 step :: Int -> GameState -> GameState
-step ms gs  | status gs == Active && elapsedTime gs + ms > tickDurationInMs = do
-                resetElapsedTime
+step ms gs  | status gs == Active && tickTime gs + ms > tickDurationInMs = do
+                resetTickTime
                   . checkGameOver
                   . updateGhosts
                   . updatePlayerMovement $ gs
-            | status gs == Active = gs { elapsedTime = elapsedTime gs + ms }
+            | status gs == Active = gs { elapsedTime = elapsedTime gs + ms, tickTime = tickTime gs + ms }
             | otherwise = gs
 
 
@@ -115,9 +115,9 @@ checkGameOver gs
   where
     isAlive' = isAlive . P.lives . player $ gs
 
--- | Reset elapsed time to 0 for next tick cycle
-resetElapsedTime :: GameState -> GameState
-resetElapsedTime gs = gs { elapsedTime = 0 }
+-- | Reset tick time to 0 for next tick cycle
+resetTickTime :: GameState -> GameState
+resetTickTime gs = gs { tickTime = 0 }
 
 -- |
 -- | Game Input functions

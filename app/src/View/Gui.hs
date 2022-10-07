@@ -1,27 +1,26 @@
 module View.Gui where
 
-import Model.Game
-import Model.Player
-import Model.Items
-import Model.Score
-import Model.Movement as M
-import Model.Level
 import Controller.Engine
-import Controller.MovementController(formatDecimals, canMovePerpendicular)
-
-
-import Graphics.Gloss
-import Graphics.Gloss.Data.ViewPort
-import Graphics.Gloss.Interface.IO.Game as IO
-import Data.Maybe
+import Controller.MovementController (canMovePerpendicular, formatDecimals)
+import Data.Fixed
 import Data.List
 import Data.List.Index
-import Graphics.Gloss.Interface.IO.Game (SpecialKey(KeyEsc), Key (SpecialKey))
-import Data.Fixed
+import Data.Maybe
+import Graphics.Gloss
+import Graphics.Gloss.Data.ViewPort
+import Graphics.Gloss.Interface.IO.Game (Key (SpecialKey), SpecialKey (KeyEsc))
+import Graphics.Gloss.Interface.IO.Game as IO
+import Model.Game
+import Model.Items
+import Model.Level
+import Model.Movement as M
+import Model.Player
+import Model.Score
 import Numeric
 
 screen :: Display
 screen = InWindow "Pac Man" windowSize windowOffsetPosition
+
 -- screen = FullScreenpli
 
 windowSize :: (Int, Int)
@@ -53,31 +52,35 @@ initialModel = defaultGame
 
 -- | Render game state, aligned from bottom left corner
 drawingFunc :: GameState -> Picture
-drawingFunc gs = fromBottomLeft $ pictures [
-  translate 300 0 $ renderGame gs,
-  renderOverlay gs
-  ]
+drawingFunc gs =
+  fromBottomLeft $
+    pictures
+      [ translate 300 0 $ renderGame gs,
+        renderOverlay gs
+      ]
   where
     (lx, ly) = layoutSize $ layout $ level gs
-    (x, y ) = windowSize
-    x' = - fromIntegral(x `div` 2) + tileSize / 2
+    (x, y) = windowSize
+    x' = - fromIntegral (x `div` 2) + tileSize / 2
     y' = - fromIntegral (y `div` 2) + tileSize / 2
     fromBottomLeft = translate x' y'
 
-    renderGame gs = pictures[
-      renderLevel . level $ gs,
-      renderGhosts gs,
-      renderPlayer gs
-      -- Render Movable?? ghost and player get rendered same way.
-      -- renderGhosts . ghosts $ gs
-      -- renderItems . items . level $ gs
-      -- PointItems
-      ]
-    renderOverlay gs = pictures[
-      -- renderLives . lives . player $ gs
-      -- renderScore . score $ gs
-      renderDebug gs
-      ]
+    renderGame gs =
+      pictures
+        [ renderLevel . level $ gs,
+          renderGhosts gs,
+          renderPlayer gs
+          -- Render Movable?? ghost and player get rendered same way.
+          -- renderGhosts . ghosts $ gs
+          -- renderItems . items . level $ gs
+          -- PointItems
+        ]
+    renderOverlay gs =
+      pictures
+        [ -- renderLives . lives . player $ gs
+          -- renderScore . score $ gs
+          renderDebug gs
+        ]
 
 -- | Returns Pictures, consisting of all tile Pictures
 renderLevel :: Level -> Picture
@@ -88,15 +91,15 @@ renderLevel level = matrixToTilePitures $ layout level
 
 renderTile :: Int -> Int -> Tile -> Maybe Picture
 renderTile x y tile = case tile of
-  Wall              -> Just $ color blue block
-  GhostDoor Open    -> Just $ color green block
-  GhostDoor Closed  -> Just $ color green block
-  _                 -> Nothing
+  Wall -> Just $ color blue block
+  GhostDoor Open -> Just $ color green block
+  GhostDoor Closed -> Just $ color green block
+  _ -> Nothing
   where
-    block = translateByTileSize (fromIntegral x) (fromIntegral y) (rectangleSolid tileSize tileSize)-- Vertical lined walls
-    vLinedBlock = translateByTileSize (fromIntegral x) (fromIntegral y) (rectangleSolid (tileSize/2) tileSize)-- Vertical lined walls
-    hLinedBlock = translateByTileSize (fromIntegral x) (fromIntegral y) (rectangleSolid tileSize (tileSize/2)) -- Horizontal lined walls
-    blockyWalls = translateByTileSize (fromIntegral x) (fromIntegral y) (rectangleSolid (tileSize/2) (tileSize/2)) -- small block walls
+    block = translateByTileSize (fromIntegral x) (fromIntegral y) (rectangleSolid tileSize tileSize) -- Vertical lined walls
+    vLinedBlock = translateByTileSize (fromIntegral x) (fromIntegral y) (rectangleSolid (tileSize / 2) tileSize) -- Vertical lined walls
+    hLinedBlock = translateByTileSize (fromIntegral x) (fromIntegral y) (rectangleSolid tileSize (tileSize / 2)) -- Horizontal lined walls
+    blockyWalls = translateByTileSize (fromIntegral x) (fromIntegral y) (rectangleSolid (tileSize / 2) (tileSize / 2)) -- small block walls
     -- todo Possibility: Render layout by converting layout to ajacent dots that create figures that can be rendered as a line/polygon pictures.
 
 translateByTileSize :: Float -> Float -> Picture -> Picture
@@ -127,7 +130,6 @@ translateByTileSize x y = translate (x * tileSize) (y * tileSize)
 --         (px, py) =  getPosition $ player gs
 --         y' =  fromIntegral ly - (py-2)
 
-
 --         (x, y) = case direction gs of
 --           M.Up    -> roundHorizontal
 --           M.Down  -> roundHorizontal
@@ -139,20 +141,19 @@ translateByTileSize x y = translate (x * tileSize) (y * tileSize)
 
 renderMovable :: Movable a => a -> Direction -> LevelLayout -> Picture -> Picture
 renderMovable m dir ll = translateByTileSize x y
-    where
-        (_, ly) = layoutSize ll
-        (px, py) =  getPosition m
-        y' =  fromIntegral ly - (py-2)
+  where
+    (_, ly) = layoutSize ll
+    (px, py) = getPosition m
+    y' = fromIntegral ly - (py -2)
 
-        -- | Whacky fix to somewhat lock pacman on the middle axis of the paths
-        (x, y) = case dir of
-          M.Up    -> roundHorizontal
-          M.Down  -> roundHorizontal
-          M.Left  -> roundVertical
-          M.Right -> roundVertical
-          _       -> (fromIntegral $ round px, fromIntegral $ round  y')
-        roundHorizontal = (fromIntegral $ round px, y')
-        roundVertical   = (px, fromIntegral $ round y')
+    (x, y) = case dir of
+      M.Up -> roundHorizontal
+      M.Down -> roundHorizontal
+      M.Left -> roundVertical
+      M.Right -> roundVertical
+      _ -> (fromIntegral $ round px, fromIntegral $ round y')
+    roundHorizontal = (fromIntegral $ round px, y')
+    roundVertical = (px, fromIntegral $ round y')
 
 renderPlayer :: GameState -> Picture
 renderPlayer gs = renderMovable pl dir ll . color yellow . circleSolid $ tileSize / 2
@@ -160,7 +161,6 @@ renderPlayer gs = renderMovable pl dir ll . color yellow . circleSolid $ tileSiz
     pl = player gs
     dir = direction gs
     ll = layout $ level gs
-
 
 -- | Returns Pictures (Picture consisting of multiple pictures
 renderGhosts :: GameState -> Picture
@@ -180,28 +180,34 @@ renderScore :: Score -> Picture
 renderScore = undefined
 
 renderDebug :: GameState -> Picture
-renderDebug gs = pictures . stack 0 0 $ reverse [
-  -- translate 0 200 . smallText . show . score $ gs,
-  smallText "Status: "            . status $ gs,
-  smallText "Elapsed time (ms): " . elapsedTime $ gs,
-  smallText "Lives: "             . unlives . lives . player $ gs,
-  smallText "Direction: "         . direction $ gs,
-  smallText "Buffer Direction: "  . bufDirection $ gs,
-  smallText "Position: "          . getPosition . player $ gs,
-  smallText "Coordinate decimals x, y: "     $ show (formatDecimals x 1) ++ ", " ++ show (formatDecimals y 1),
-  smallText "Can switch x, y: "   $ (show . canMovePerpendicular $ x) ++ ", " ++ (show . canMovePerpendicular $ y)
-  ]
+renderDebug gs =
+  pictures . stack 0 0 25 $
+    reverse
+      [ -- translate 0 200 . smallText . show . score $ gs,
+        smallText "Status: " . status $ gs,
+        smallText "Elapsed time (s): " . msToSec . elapsedTime $ gs,
+        smallText "Tick time (ms): " . tickTime $ gs,
+        smallText "Lives: " . unlives . lives . player $ gs,
+        smallText "Direction: " . direction $ gs,
+        smallText "Buffer Direction: " . bufDirection $ gs,
+        smallText "Position: " . getPosition . player $ gs,
+        smallText "Coordinate decimals x, y: " $ show (formatDecimals x 1) ++ ", " ++ show (formatDecimals y 1),
+        smallText "Can switch x, y: " $ (show . canMovePerpendicular $ x) ++ ", " ++ (show . canMovePerpendicular $ y)
+      ]
   where
-    smallText :: Show a => String-> a -> Picture
+    smallText :: Show a => String -> a -> Picture
     smallText name a = color white . scale 0.1 0.1 . text $ name ++ show a
 
-    stack :: Float -> Float -> [Picture] -> [Picture]
-    stack _ _ []  = []
-    stack x y (l:ls) = translate x y l : stack x (y + 25) ls
+    stack :: Float -> Float -> Float -> [Picture] -> [Picture]
+    stack _ _ _ [] = []
+    stack x y pixels (l : ls) = translate x y l : stack x (y + pixels) pixels ls
+
+    msToSec :: Time -> Float
+    msToSec t = fromIntegral t / 1000
 
     (x, y) = getPosition . player $ gs
 
--- | Input handling 
+-- | Input handling
 inputHandler :: Event -> GameState -> GameState
 inputHandler (EventKey (SpecialKey KeyUp) IO.Down _ _) gs = movePlayer M.Up gs
 inputHandler (EventKey (SpecialKey KeyDown) IO.Down _ _) gs = movePlayer M.Down gs
