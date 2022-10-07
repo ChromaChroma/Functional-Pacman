@@ -18,7 +18,7 @@ import Data.List
 import Data.List.Index
 import Graphics.Gloss.Interface.IO.Game (SpecialKey(KeyEsc), Key (SpecialKey))
 import Graphics.Gloss (red, play)
-import Model.Characters (Player(pPosition))
+import Model.Characters
 import Data.Fixed
 import Numeric
 
@@ -109,7 +109,7 @@ translateByTileSize x y = translate (x * tileSize) (y * tileSize)
 -- renderPlayer gs = translateByTileSize x' y' . color yellow . circleSolid $ tileSize/2
 --     where
 --         (_, ly) = layoutSize $ layout $ level gs
---         (x, y) = intPosition $ pPosition $ player gs
+--         (x, y) = intPosition $ getPosition $ player gs
 --         x' =  fromIntegral x
 --         y' =  fromIntegral ly - fromIntegral (y-2)
 
@@ -119,14 +119,14 @@ translateByTileSize x y = translate (x * tileSize) (y * tileSize)
 --     where
 --         y' =  fromIntegral ly - (y-2)
 --         (_, ly) = layoutSize $ layout $ level gs
---         (x, y) =  pPosition $ player gs
+--         (x, y) =  getPosition $ player gs
 
 -- renderPlayer :: GameState -> Picture
 -- renderPlayer gs = translateByTileSize x y . color yellow . circleSolid $ tileSize / 2
 --     where
 
 --         (_, ly) = layoutSize $ layout $ level gs
---         (px, py) =  pPosition $ player gs
+--         (px, py) =  getPosition $ player gs
 --         y' =  fromIntegral ly - (py-2)
 
 
@@ -192,7 +192,7 @@ renderDebug gs = pictures . stack 0 0 $ reverse [
   smallText "Lives: "             . unlives . pLives . player $ gs,
   smallText "Direction: "         . direction $ gs,
   smallText "Buffer Direction: "  . bufDirection $ gs,
-  smallText "Position: "          . pPosition . player $ gs,
+  smallText "Position: "          . getPosition . player $ gs,
   smallText "Coordinate decimals x, y: "     $ show (formatDecimals x 1) ++ ", " ++ show (formatDecimals y 1),
   smallText "Can switch x, y: "   $ (show . canMovePerpendicular $ x) ++ ", " ++ (show . canMovePerpendicular $ y)
   ]
@@ -204,7 +204,7 @@ renderDebug gs = pictures . stack 0 0 $ reverse [
     stack _ _ []  = []
     stack x y (l:ls) = translate x y l : stack x (y + 25) ls
 
-    (x, y) = pPosition . player $ gs
+    (x, y) = getPosition . player $ gs
 
 
 -- | Input handling 

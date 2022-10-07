@@ -40,7 +40,7 @@ canMakeMoveToDir player dir lvl
   where
     isValid = isValidPlayerPosition lvl . moveFull player $ dir
 
-    (x, y) = pPosition player
+    (x, y) = getPosition player
 
 -- | Takes coordinate of axis perpendicular to direction you want to move on
 -- | i.e. If you want move vertically, you pass the current x axis coordinate

@@ -1,24 +1,18 @@
 module Main where
 
-import Model.TestModel
-import Controller.TestController
-import View.TestView
-
-import Model.Characters as C
-import Model.Items (Position)
-import Model.Level hiding (player)
-import Model.Game
-import Controller.Engine
+import Model.Characters ()
+import Model.Movement ( Positioned(getPosition) )
+import Model.Level ()
+import Model.Game ( GameState(player) )
+import Controller.Engine ()
 -- import View.Terminal
-import View.Gui
-
-
-import Control.Concurrent
+import View.Gui ( startRender )
+import Control.Concurrent ()
 
 
 showCoords :: GameState -> IO ()
 showCoords gs = do
-  print $ C.pPosition (player gs)
+  print . getPosition $ player gs
 
 -- gameLoop :: GameState -> IO GameState
 -- gameLoop gs = do

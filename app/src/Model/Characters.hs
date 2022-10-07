@@ -1,3 +1,5 @@
+{-# LANGUAGE DisambiguateRecordFields #-}
+
 module Model.Characters(
     Name, Direction(..), Speed,
     Movable(..),
@@ -47,7 +49,7 @@ data PlayerState = Normal | Strong deriving (Eq, Show)
 
 data Player = Player { 
     playerState :: PlayerState,
-    pPosition :: Position,
+    position :: Position,
     pSpeed :: Speed,
     pLives :: Lives,
     pDirection :: Direction
@@ -55,8 +57,8 @@ data Player = Player {
   
 -- | The player's Positioned implementation
 instance Positioned Player where
-  getPosition = pPosition
-  setPosition player pos = player {pPosition = pos}
+  getPosition = position
+  setPosition player pos = player {position = pos}
 -- | The player's Movable implementation
 instance Movable Player where
   getSpeed = pSpeed
