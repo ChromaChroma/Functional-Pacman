@@ -4,7 +4,7 @@ Game coded in Haskell made for a project of the Utrecht University.
 
 ## Team
 [Jona Leeflang](https://github.com/ChromaChroma)  
-[Sem Bode]()  
+[Sem Bode](https://github.com/Sembodi)  
 
 ## Setup
 To get the application running with the Gloss library on windows, the freeglut.dll is added to the project root to be able to execute `cabal run`

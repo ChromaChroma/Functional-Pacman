@@ -39,8 +39,12 @@ jobs:
           key: ${{ runner.os }}-${{ github.sha }}
           path: ~/.cabal/store
           restore-keys: ${{ runner.os }}-${{ github.sha }}
-      - name: Cabal Test
-        run: cabal test
+      - name: Cabal Build
+        run: cabal build
+      # - name: Cabal Test
+      #   run: cabal test
+      # - name: Cabal Bench
+      #   run: cabal bench
 
       # - uses: actions/cache@v2
       #   name: Cache ~/.stack
