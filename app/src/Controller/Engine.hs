@@ -5,6 +5,7 @@ import Model.Game
 import Model.Level
 import Model.Movement
 import Prelude hiding (Left, Right)
+import Controller.MovementController as MC
 
 
 startNewGame :: GameState
@@ -38,29 +39,39 @@ step ms gs  | status gs == Active && elapsedTime gs + ms > tickDurationInMs = do
             | status gs == Active = gs { elapsedTime = elapsedTime gs + ms }
             | otherwise = gs
 
+
 updatePlayerMovement :: GameState -> GameState
-updatePlayerMovement gs
-  | isValidBufferMove = gs {player = bufMovedPlayer, direction = bufDirection gs, bufDirection = Stop}
-  | isValidNormalMove = gs {player = movedPlayer}
-  | otherwise = gs { direction = Stop }
-  where
-    isValidBufferMove = bufDirection gs /= Stop && validateMove (bufDirection gs) gs
-    isValidNormalMove = direction gs /= Stop    && validateMove (direction gs   ) gs
+updatePlayerMovement = makePlayerMove 
+  -- -- | isValidBufferMove = gs {player = bufMovedPlayer, direction = bufDirection gs, bufDirection = Stop}
+  -- | isValidNormalMove = gs {player = movedPlayer}
+  -- | otherwise = gs { direction = Stop }
+  -- where
+  --   isValidNormalMove = 
+            
 
-    validateMove dir gs = validPlayerMove (moveFull (player gs) dir) gs
+-- updatePlayerMovement :: GameState -> GameState
+-- updatePlayerMovement gs
+--   | isValidBufferMove = gs {player = bufMovedPlayer, direction = bufDirection gs, bufDirection = Stop}
+--   | isValidNormalMove = gs {player = movedPlayer}
+--   | otherwise = gs { direction = Stop }
+--   where
+--     isValidBufferMove = bufDirection gs /= Stop && validateMove (bufDirection gs) gs
+--     isValidNormalMove = direction gs /= Stop    && validateMove (direction gs   ) gs
 
-    movedPlayer     = roundToAxis $ movePlayer (direction gs)
-    bufMovedPlayer  = roundToAxis $ movePlayer (bufDirection gs)
-    movePlayer dir  = C.move (player gs) dir
+--     validateMove dir gs = validPlayerMove (moveFull (player gs) dir) gs
 
-    -- | Wachy fix for player movement by locking perpendicular axis of current directino
-    roundToAxis :: Player -> Player
-    roundToAxis p@Player{pPosition = (x, y)} = case direction gs of
-      Up -> p {pPosition = (fromIntegral $ round x, y)}
-      Down -> p {pPosition = (fromIntegral $ round x, y)}
-      Left -> p {pPosition = (x, fromIntegral $ round y)}
-      Right -> p {pPosition = (x, fromIntegral $ round y)}
-      _ -> p {pPosition = (fromIntegral $ round x, fromIntegral $ round y)}
+--     movedPlayer     = roundToAxis $ movePlayer (direction gs)
+--     bufMovedPlayer  = roundToAxis $ movePlayer (bufDirection gs)
+--     movePlayer dir  = C.move (player gs) dir
+
+--     -- | Wachy fix for player movement by locking perpendicular axis of current directino
+--     roundToAxis :: Player -> Player
+--     roundToAxis p@Player{pPosition = (x, y)} = case direction gs of
+--       Up -> p {pPosition = (fromIntegral $ round x, y)}
+--       Down -> p {pPosition = (fromIntegral $ round x, y)}
+--       Left -> p {pPosition = (x, fromIntegral $ round y)}
+--       Right -> p {pPosition = (x, fromIntegral $ round y)}
+--       _ -> p {pPosition = (fromIntegral $ round x, fromIntegral $ round y)}
 
 validPlayerMove :: Player -> GameState -> Bool
 validPlayerMove = isValidMove isValid
