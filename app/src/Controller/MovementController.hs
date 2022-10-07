@@ -25,12 +25,9 @@ makeDirectionMove gs dir
   | otherwise = Nothing
   where
     movedPlayer = move pl dir
-
     pl = player gs
     lvl = level gs
 
--- Check for tile in next direction (x+1,y)
--- Stop movement on crossroads (0.1 diff)
 canMakeMoveToDir :: Player -> Direction -> Level -> Bool
 canMakeMoveToDir player dir lvl
   | isValid = case dir of
@@ -55,8 +52,7 @@ canMovePerpendicular n = let nFormat = formatDecimals n 1 in nFormat == 0.0 || n
 formatDecimals :: RealFloat a => a -> Int -> Float
 formatDecimals n j = read (showFFloat (Just j) (n `mod'` 1) "") :: Float
 
-
-
+-- | Moves player in direction by the valiadtionOffset to check if Movable can 'stand on' the tile at coordinate
 moveFull :: Movable a => a -> Direction -> a
 moveFull m dir = setPosition m (moveFullUnit m dir)
   where
@@ -70,23 +66,20 @@ moveFull m dir = setPosition m (moveFullUnit m dir)
         validationOffset = 0.55
         (x, y) = getPosition m
 
-
-
+-- | Checks if player is in a valid position on the level
 isValidPlayerPosition :: Level -> Player -> Bool
 isValidPlayerPosition = isValidMovablePosition isValid
   where
     isValid Floor = True
     isValid _ = False
 
--- Higher order function to check a movables position with a provided Tile predicate
+-- | Higher order function that hecks if a movable is in a valid position on the level based on a provided Tile predicate
 isValidMovablePosition :: Movable a => (Tile -> Bool) -> Level -> a -> Bool
 isValidMovablePosition p level m = case tileAt level intPPos of
   Just t -> p t
   _ -> False --Out of bounds is invalid move when not wrapping movement
   where
     intPPos = intPosition (getPosition m)
-
-
 
 -- isValidGhostPosition :: Level -> Ghost -> Bool
 -- isValidGhostPosition = isValidPosition isValid
