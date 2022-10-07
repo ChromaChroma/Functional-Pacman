@@ -28,24 +28,18 @@ executable haskell-game
     default-language: Haskell2010
     main-is:          Main.hs
     hs-source-dirs:   app/src
-
-    -- Modules included in this executable, other than Main.
     other-modules:  
-        Model.TestModel
-        Model.Game
         Model.Characters
+        Model.Game
         Model.Level
-        Model.Score
         Model.Items
         Model.Movement
-        View.TestView
-        View.Terminal
+        Model.Score
         View.Gui
-        Controller.TestController
+        View.Terminal
         Controller.Engine
         Controller.LevelController
         Controller.MovementController
-        Config.TestConfig
 
     -- LANGUAGE extensions used by modules in this package.
     other-extensions:
