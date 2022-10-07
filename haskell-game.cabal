@@ -29,8 +29,9 @@ executable haskell-game
     main-is:          Main.hs
     hs-source-dirs:   app/src
     other-modules:  
-        Model.Characters
+        Model.Player
         Model.Game
+        Model.Ghosts
         Model.Level
         Model.Items
         Model.Movement

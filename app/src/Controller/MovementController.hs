@@ -2,7 +2,7 @@ module Controller.MovementController where
 
 import Data.Fixed (mod')
 import Data.Maybe
-import Model.Characters
+import Model.Player
 import Model.Game
 import Model.Level
 import Model.Movement

@@ -7,7 +7,8 @@ module Model.Level(
   LevelSize
 ) where
 
-import Model.Characters(Ghost, blinky, pinky, inky, clyde, Player, defaultPlayer)
+import Model.Ghosts(Ghost, blinky, pinky, inky, clyde)
+import Model.Player(Player, defaultPlayer)
 import Model.Items(PointItem(..), PointItem, defaultFruits, Position)
 import qualified Data.Maybe
 import Data.Maybe

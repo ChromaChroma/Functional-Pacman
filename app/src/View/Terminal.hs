@@ -1,6 +1,7 @@
 module View.Terminal(printGame) where
 
-import Model.Characters hiding (position)
+import Model.Player hiding (position)
+import Model.Ghosts
 import Model.Game
 import Model.Items as I
 import Model.Level

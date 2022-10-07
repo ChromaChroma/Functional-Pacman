@@ -1,6 +1,6 @@
 module Main where
 
-import Model.Characters ()
+import Model.Player ()
 import Model.Movement ( Positioned(getPosition) )
 import Model.Level ()
 import Model.Game ( GameState(player) )

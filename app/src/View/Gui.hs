@@ -1,7 +1,7 @@
 module View.Gui where
 
 import Model.Game
-import Model.Characters
+import Model.Player
 import Model.Items
 import Model.Score
 import Model.Movement as M
@@ -17,8 +17,6 @@ import Data.Maybe
 import Data.List
 import Data.List.Index
 import Graphics.Gloss.Interface.IO.Game (SpecialKey(KeyEsc), Key (SpecialKey))
-import Graphics.Gloss (red, play)
-import Model.Characters
 import Data.Fixed
 import Numeric
 

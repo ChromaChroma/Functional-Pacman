@@ -1,6 +1,6 @@
 module Controller.Engine where
 
-import Model.Characters as C
+import Model.Player as P
 import Model.Game
 import Model.Level
 import Model.Movement
@@ -113,7 +113,7 @@ checkGameOver gs
   | isAlive' = gs
   | otherwise = gs {status = Lost} --todo more
   where
-    isAlive' = isAlive . C.pLives . player $ gs
+    isAlive' = isAlive . P.pLives . player $ gs
 
 -- | Reset elapsed time to 0 for next tick cycle
 resetElapsedTime :: GameState -> GameState
