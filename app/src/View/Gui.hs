@@ -186,7 +186,7 @@ renderDebug gs =
       [ -- translate 0 200 . smallText . show . score $ gs,
         smallText "Status: " . status $ gs,
         smallText "Elapsed time (s): " . msToSec . elapsedTime $ gs,
-        smallText "Tick time (ms): " . tickTime $ gs,
+        smallText "Tick time (ms): " . tickTimer $ gs,
         smallText "Lives: " . unlives . lives . player $ gs,
         smallText "Direction: " . direction $ gs,
         smallText "Buffer Direction: " . bufDirection $ gs,

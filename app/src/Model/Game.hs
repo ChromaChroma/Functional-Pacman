@@ -25,7 +25,7 @@ data GameState = GameState
     player :: Player,
     level :: Level,
     elapsedTime :: Time,
-    tickTime :: Time,
+    tickTimer :: Time,
     direction :: Direction,
     bufDirection :: Direction,
     ghosts :: [Ghost]
@@ -36,7 +36,7 @@ loadGame lvl ghosts pl =
   GameState
     { status = Active,
       elapsedTime = 0,
-      tickTime = 0,
+      tickTimer = 0,
       direction = Stop,
       bufDirection = Stop,
       player = pl,
