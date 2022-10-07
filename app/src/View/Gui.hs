@@ -7,6 +7,7 @@ import Model.Score
 import Model.Movement as M
 import Model.Level
 import Controller.Engine
+import Controller.MovementController(formatDecimals, canMovePerpendicular)
 
 
 import Graphics.Gloss
@@ -16,7 +17,10 @@ import Data.Maybe
 import Data.List
 import Data.List.Index
 import Graphics.Gloss.Interface.IO.Game (SpecialKey(KeyEsc), Key (SpecialKey))
-import Graphics.Gloss (red)
+import Graphics.Gloss (red, play)
+import Model.Characters (Player(pPosition))
+import Data.Fixed
+import Numeric
 
 screen :: Display
 screen = InWindow "Pac Man" windowSize windowOffsetPosition
@@ -167,8 +171,8 @@ renderGhosts gs = pictures . map renderGhost . ghosts $ gs
     renderGhost g = renderMovable g Stop ll . color red . circleSolid $ tileSize / 2
     ll = layout $ level gs
 
-    
-  
+
+
 
 -- | Returns Pictures (Picture consisting of multiple pictures)
 renderItems :: [PointItem] -> Picture
@@ -188,7 +192,9 @@ renderDebug gs = pictures . stack 0 0 $ reverse [
   smallText "Lives: "             . unlives . pLives . player $ gs,
   smallText "Direction: "         . direction $ gs,
   smallText "Buffer Direction: "  . bufDirection $ gs,
-  smallText "Position: "          . pPosition . player $ gs
+  smallText "Position: "          . pPosition . player $ gs,
+  smallText "Coordinate decimals x, y: "     $ show (formatDecimals x 1) ++ ", " ++ show (formatDecimals y 1),
+  smallText "Can switch x, y: "   $ (show . canMovePerpendicular $ x) ++ ", " ++ (show . canMovePerpendicular $ y)
   ]
   where
     smallText :: Show a => String-> a -> Picture
@@ -197,6 +203,9 @@ renderDebug gs = pictures . stack 0 0 $ reverse [
     stack :: Float -> Float -> [Picture] -> [Picture]
     stack _ _ []  = []
     stack x y (l:ls) = translate x y l : stack x (y + 25) ls
+
+    (x, y) = pPosition . player $ gs
+
 
 -- | Input handling 
 inputHandler :: Event -> GameState -> GameState
