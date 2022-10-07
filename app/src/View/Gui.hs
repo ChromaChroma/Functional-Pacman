@@ -22,7 +22,7 @@ import Numeric
 
 screen :: Display
 screen = InWindow "Pac Man" windowSize windowOffsetPosition
--- screen = FullScreen
+-- screen = FullScreenpli
 
 windowSize :: (Int, Int)
 windowSize = (1300, 1000)
@@ -74,7 +74,7 @@ drawingFunc gs = fromBottomLeft $ pictures [
       -- PointItems
       ]
     renderOverlay gs = pictures[
-      -- renderLives . pLives . player $ gs
+      -- renderLives . lives . player $ gs
       -- renderScore . score $ gs
       renderDebug gs
       ]
@@ -169,9 +169,6 @@ renderGhosts gs = pictures . map renderGhost . ghosts $ gs
     renderGhost g = renderMovable g Stop ll . color red . circleSolid $ tileSize / 2
     ll = layout $ level gs
 
-
-
-
 -- | Returns Pictures (Picture consisting of multiple pictures)
 renderItems :: [PointItem] -> Picture
 renderItems = undefined
@@ -187,7 +184,7 @@ renderDebug gs = pictures . stack 0 0 $ reverse [
   -- translate 0 200 . smallText . show . score $ gs,
   smallText "Status: "            . status $ gs,
   smallText "Elapsed time (ms): " . elapsedTime $ gs,
-  smallText "Lives: "             . unlives . pLives . player $ gs,
+  smallText "Lives: "             . unlives . lives . player $ gs,
   smallText "Direction: "         . direction $ gs,
   smallText "Buffer Direction: "  . bufDirection $ gs,
   smallText "Position: "          . getPosition . player $ gs,
@@ -203,7 +200,6 @@ renderDebug gs = pictures . stack 0 0 $ reverse [
     stack x y (l:ls) = translate x y l : stack x (y + 25) ls
 
     (x, y) = getPosition . player $ gs
-
 
 -- | Input handling 
 inputHandler :: Event -> GameState -> GameState

@@ -113,7 +113,7 @@ checkGameOver gs
   | isAlive' = gs
   | otherwise = gs {status = Lost} --todo more
   where
-    isAlive' = isAlive . P.pLives . player $ gs
+    isAlive' = isAlive . P.lives . player $ gs
 
 -- | Reset elapsed time to 0 for next tick cycle
 resetElapsedTime :: GameState -> GameState

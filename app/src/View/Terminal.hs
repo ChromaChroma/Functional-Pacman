@@ -1,7 +1,7 @@
 module View.Terminal(printGame) where
 
 import Model.Player hiding (position)
-import Model.Ghosts
+import Model.Ghosts hiding (position)
 import Model.Game
 import Model.Items as I
 import Model.Level
@@ -33,7 +33,7 @@ printGame :: GameState -> IO ()
 printGame GameState {status = status, player = player, level = level, elapsedTime = eT, ghosts = ghosts, direction = dir, bufDirection = bDir} = do
   putStrLn $ "Status: " ++ show status
   putStrLn $ "Elapsed time: " ++ show eT
-  putStrLn $ "Lives left: " ++ show (unlives (pLives player))
+  putStrLn $ "Lives left: " ++ show (unlives (lives player))
   putStrLn $ "Active Ghosts: " ++ showGhosts ghosts
   putStrLn $ "Level: " ++ show (levelNumber level)
   putStrLn $ "Direction: " ++ show dir
@@ -75,7 +75,7 @@ projectItems :: [PointItem] -> [[String]] -> [[String]]
 projectItems items layoutArray = foldl (\layout item -> updateMatrix layout (show item) (intPosition(position item))) layoutArray items
 
 projectGhosts :: [Ghost] -> [[String]] -> [[String]]
-projectGhosts ghosts layoutArray = foldl (\layout ghost -> updateMatrix layout (show ghost) (intPosition(gPosition ghost))) layoutArray ghosts
+projectGhosts ghosts layoutArray = foldl (\layout ghost -> updateMatrix layout (show ghost) (intPosition(getPosition ghost))) layoutArray ghosts
 
 projectPlayer :: Player -> [[String]]  -> [[String]]
 projectPlayer player layout = updateMatrix layout (show player) (intPosition (getPosition player))

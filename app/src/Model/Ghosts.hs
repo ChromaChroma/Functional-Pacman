@@ -28,18 +28,18 @@ data GhostState = Chasing | Frightend | Scatter deriving (Eq, Show)
 data Ghost = Ghost
   { gName :: Name,
     mode :: GhostState,
-    gPosition :: Position,
-    gSpeed :: Speed,
-    gAlive :: LifeState
+    position :: Position,
+    speed :: Speed,
+    lifeState :: LifeState
   }
   deriving (Eq)
 
 instance Positioned Ghost where
-  getPosition = gPosition
-  setPosition ghost pos = ghost {gPosition = pos}
+  getPosition = position
+  setPosition ghost pos = ghost {position = pos}
 
 instance Movable Ghost where
-  getSpeed = gSpeed
+  getSpeed = speed
 
 -- | Default ghost constructors for each original ghost
 blinky :: Ghost

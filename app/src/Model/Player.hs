@@ -52,8 +52,8 @@ data PlayerState = Normal | Strong deriving (Eq, Show)
 data Player = Player
   { playerState :: PlayerState,
     position :: Position,
-    pSpeed :: Speed,
-    pLives :: Lives
+    speed :: Speed,
+    lives :: Lives
   }
   deriving (Eq)
 
@@ -62,7 +62,7 @@ instance Positioned Player where
   setPosition player pos = player {position = pos}
 
 instance Movable Player where
-  getSpeed = pSpeed
+  getSpeed = speed
 
 defaultPlayer :: Player
 defaultPlayer = Player Normal (14.5, 23) 0.1 (Lives 3)
