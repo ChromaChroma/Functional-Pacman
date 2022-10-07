@@ -8,7 +8,9 @@ on:
       - main
 jobs:
   hlint:
+    name: Haskell HLint - Linux
     runs-on: ubuntu-latest
+  
     steps:
     - uses: actions/checkout@v3
 
@@ -27,22 +29,31 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - uses: haskell/actions/setup@v2
+
+      - name: Setup haskell
+        uses: haskell/actions/setup@v2
         with:
           ghc-version: '8.10.7' 
           cabal-version: 'latest'
           enable-stack: true
           stack-version: 'latest'
-      - name: cache
-        uses: actions/cache@v2
+
+      - name: Cache
+        uses: actions/cache@V2
         with:
           key: ${{ runner.os }}-${{ github.sha }}
           path: ~/.cabal/store
           restore-keys: ${{ runner.os }}-${{ github.sha }}
+
+      - name: Install freeglut 
+        run: sudo apt-get install freeglut3 freeglut3-dev
+
       - name: Cabal Update package list
         run: cabal update
+
       - name: Cabal Install dependencies
         run: cabal install
+
       - name: Cabal Build
         run: cabal build
       # - name: Cabal Test
