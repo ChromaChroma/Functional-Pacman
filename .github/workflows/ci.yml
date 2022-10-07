@@ -29,7 +29,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: haskell/actions/setup@v2
         with:
-          ghc-version: '8.8.4' 
+          ghc-version: '8.10.7' 
           cabal-version: 'latest'
           enable-stack: true
           stack-version: 'latest'
@@ -39,6 +39,10 @@ jobs:
           key: ${{ runner.os }}-${{ github.sha }}
           path: ~/.cabal/store
           restore-keys: ${{ runner.os }}-${{ github.sha }}
+      - name: Cabal Update package list
+        run: cabal update
+      - name: Cabal Install dependencies
+        run: cabal install
       - name: Cabal Build
         run: cabal build
       # - name: Cabal Test
