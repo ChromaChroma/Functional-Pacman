@@ -1,15 +1,17 @@
 module Model.Score(
     HighScores, getFirstPlace,
-    Score, mkScore
+    Score, Points, mkScore
 ) where
 
 import Data.List (sort)
 
+-- | Score points
+type Points = Int
+
 -- | Score of a player
 data Score = Score{
     name  :: String,
-    score :: Int
-    -- etc
+    score :: Points
 }
 
 -- | Eq implementation for Score

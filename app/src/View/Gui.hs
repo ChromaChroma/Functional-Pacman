@@ -139,7 +139,7 @@ translateByTileSize x y = translate (x * tileSize) (y * tileSize)
 --         roundHorizontal = (fromIntegral $ round px, y')
 --         roundVertical   = (px, fromIntegral $ round y')
 
-renderMovable :: Movable a => a -> Direction -> LevelLayout -> Picture -> Picture
+renderMovable :: Movable a => a -> Direction -> Layout -> Picture -> Picture
 renderMovable m dir ll = translateByTileSize x y
   where
     (_, ly) = layoutSize ll

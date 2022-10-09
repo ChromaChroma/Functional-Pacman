@@ -5,14 +5,12 @@ module Model.Items(
 ) where
 
 import Model.Movement(Position, Positioned(..))
-
--- | Score points
-type Points = Int
+import Model.Score (Points)
 
 -- | Item representing an object that can give point score to the player when eaten
--- | Dot is the most common item to be consumed and are needed to complete a level
--- | PowerPellet is a special item that gives the player the ability to eat ghosts
--- | Fruit is a special item that gives the player a large amount of points
+-- | Dot          : is the most common item to be consumed and are needed to complete a level
+-- | PowerPellet  : is a special item that gives the player the ability to eat ghosts
+-- | Fruit        : is a special item that gives the player a large amount of points
 data PointItem = 
     Dot {
       position :: Position,
@@ -31,8 +29,7 @@ data PointItem =
 
 instance Positioned PointItem where
   getPosition = position
-  -- | PointItems By default should nog change position, so setPosition returns the passed item
-  setPosition item _ = item
+  setPosition item _ = item -- PointItems By default should nog change position, so setPosition returns the passed data
 
 -- | Types of fruit
 data FruitType = Cherry | Strawberry | Orange | Apple | Melon | Galaxian | Bell | Key deriving (Eq, Show)
