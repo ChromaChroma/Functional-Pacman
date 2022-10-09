@@ -2,7 +2,7 @@ module Model.Level(
   LevelNumber, mkLevelNumber,
   Tile(..), tileAt,
   DoorState(..),
-  LevelLayout(..), layoutSize,
+  Layout(..), layoutSize,
   Level(..), mkLevel, defaultLevel,
   LevelSize
 ) where
@@ -11,17 +11,11 @@ import Model.Ghosts(Ghost, blinky, pinky, inky, clyde)
 import Model.Player(Player, defaultPlayer)
 import Model.Items(PointItem(..), PointItem, defaultFruits, Position)
 import qualified Data.Maybe
-import Data.Maybe
-import Model.Movement
+import Data.Maybe ( fromJust )
+import Model.Movement ()
 
--- | Number/id of the level
+-- | Number or id of the level
 type LevelNumber = Int
-
--- | Safe constructor for level number
-mkLevelNumber :: Int -> Maybe LevelNumber
-mkLevelNumber num
- | num >= 0 = Just num
- | otherwise = Nothing
 
 -- | Different types of tiles a level can have
 -- | Wall is a tile player nor ghost can move through
@@ -32,9 +26,9 @@ data Tile = Wall | Floor | GhostDoor DoorState deriving (Eq)
 -- | State of the ghost door
 data DoorState = Open | Closed deriving (Eq, Show)
 
--- | Level layout as a 2D Tile matrix
+-- | Layout as a Tile matrix made from 2D lists
 -- | The layout defines the floors, walls and doors of the level
-type LevelLayout = [[Tile]]
+type Layout = [[Tile]]
 
 -- | Spawn location of the player
 type PlayerSpawn = (Float, Float)
@@ -43,28 +37,30 @@ type PlayerSpawn = (Float, Float)
 data Level = Level {
     levelNumber :: LevelNumber,
     items       :: [PointItem],
-    layout      :: LevelLayout,
+    layout      :: Layout,
     playerSpawn :: PlayerSpawn
 }
 
--- | Size of the level layout in tiles (or Units so to speak)
+-- | Size of the level layout in amount of tiles
 type LevelSize = (Int, Int)
 
--- | Returns the size of the level (based on the level layout)
-layoutSize :: LevelLayout -> LevelSize
-layoutSize layout = (x, y)
-  where
-    x = length layout
-    y = length . head $ layout
+-- | Safe constructor for level number
+mkLevelNumber :: Int -> Maybe LevelNumber
+mkLevelNumber num
+ | num >= 0 = Just num
+ | otherwise = Nothing
 
-validLayout :: LevelLayout -> Bool
-validLayout layout = length layout == x && all ((== y) . length) layout
-  where
-    (x, y) = layoutSize layout
+-- | Returns the size of the provided level layout
+layoutSize :: Layout -> LevelSize
+layoutSize layout = (length layout, length . head $ layout)
 
+-- | Validates the size of the provided layout, checking that all lists are the correct length
+validLayout :: Layout -> Bool
+validLayout l = let (x, y) = layoutSize l in length l == y && all ((== x) . length) l
+    
 -- | Safe constructor for level
 mkLevel :: LevelNumber 
-  -> LevelLayout 
+  -> Layout 
   -> [PointItem] 
   -> [Ghost] 
   -> PlayerSpawn
@@ -78,6 +74,7 @@ mkLevel n layout items enemies spawn
     }
   | otherwise = Nothing
 
+-- | Gets the tile at the provided position in the layout if present, otherwise returns Nothing
 tileAt :: Level -> (Int, Int) -> Maybe Tile
 tileAt level (x, y)
  | x < lvlWidth || y < lvlHeight = Just $ lvlLayout !! y!! x
@@ -97,7 +94,11 @@ tileAtW level (x, y)
   where
     (x', y') = layoutSize $ layout level
 
--- | Default PacMan Maze level
+-- |
+-- | Default level
+-- |
+
+-- | Default PacMan level
 defaultLevel :: Level
 defaultLevel = Level {
   levelNumber = 0,
@@ -106,8 +107,8 @@ defaultLevel = Level {
   playerSpawn = (14, 23)
   }
 
--- | Standard, original PacMan level layout (28 x 32)
-defaultLayout :: LevelLayout
+-- | Original PacMan layout (28 x 32 maze)
+defaultLayout :: Layout
 defaultLayout = [
   [Wall,  Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall,   Wall],
   [Wall,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Wall,   Wall,   Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Floor,  Wall],
@@ -145,8 +146,8 @@ defaultLayout = [
 defaultDots :: [PointItem]
 defaultDots = [Dot (1,1) 10]
 
--- | Dev PacMan level layout
--- defaultLayout :: LevelLayout
+-- | Development level layout
+-- defaultLayout :: Layout
 -- defaultLayout = [
 --   [Wall, Wall,  Wall,   Wall,   Wall, Wall, Wall, Wall, Wall, Wall],
 --   [Wall, Floor, Floor,  Floor,  Floor, Floor, Floor, Floor, Floor, Wall],
