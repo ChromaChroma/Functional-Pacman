@@ -21,12 +21,12 @@ type Name = String
 -- | States a ghost can be in
 -- | Chasing is the state in which ghosts chase the player
 -- | Frightend is the state in which ghosts run away from the player
--- | Scatter is the state in which ghosts move to a specific location
+-- | Scatter is the state in which ghosts move to their specific location 
 data GhostState = Chasing | Frightend | Scatter deriving (Eq, Show)
 
 -- | The ghost's current state
 data Ghost = Ghost
-  { gName :: Name,
+  { name :: Name,
     mode :: GhostState,
     position :: Position,
     speed :: Speed,

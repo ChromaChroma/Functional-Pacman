@@ -54,7 +54,7 @@ printGame GameState {status = status, player = player, level = level, elapsedTim
 
 showGhosts :: [Ghost] -> String
 showGhosts [] = ""
-showGhosts (g:gs) = show (gName g) ++ " " ++ showGhosts gs
+showGhosts (g:gs) = show (name g) ++ " " ++ showGhosts gs
 
 -- -- | Functions to build a string representation of the level including the layout, player, enemies and items
 -- toStringMatrix :: Level -> [[String]]
