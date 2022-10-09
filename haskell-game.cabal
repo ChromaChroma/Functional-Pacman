@@ -9,15 +9,11 @@ build-type:         Simple
 license:            GPL-3
 license-file:       LICENSE
 copyright:          (c) 2022 Jona Leeflang && Sem Bode
-
-
--- A short (one-line) description of the package.
--- synopsis:
-
--- A longer description of the package.
--- description:
-
-
+synopsis: A haskell implementation of Pac-Man
+description: 
+    This project is an implementation of Pac-Man for a school assignment of Functional Programming. 
+    The main focus of this project is to learn to program in a functional way.
+    
 extra-source-files:
     README.md
 
