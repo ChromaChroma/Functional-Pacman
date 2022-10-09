@@ -3,7 +3,7 @@ module Model.Game
     defaultGame,
     Status (..),
     Time,
-    tickDurationInMs,
+    tickDurationIn,
   )
 where
 
@@ -13,7 +13,7 @@ import Model.Movement (Direction (..), Positioned (setPosition))
 import Model.Player (Player, defaultPlayer)
 import Prelude hiding (Left, Right)
 
--- | Time a game has been running
+-- | Time the game or the tickTimer has been running in milliseconds
 type Time = Int
 
 -- | Acitivity status of the game
@@ -29,9 +29,9 @@ data GameState = GameState
     direction :: Direction,
     bufDirection :: Direction,
     ghosts :: [Ghost]
-    -- score       :: Score
   }
 
+loadGame :: Level -> [Ghost] -> Player -> GameState
 loadGame lvl ghosts pl =
   GameState
     { status = Active,
@@ -42,7 +42,6 @@ loadGame lvl ghosts pl =
       player = pl,
       level = lvl,
       ghosts = ghosts
-      -- score       = 0
     }
 
 defaultGame :: GameState
@@ -52,6 +51,7 @@ defaultGame = loadGame lvl ghosts pl
     pl = setPosition defaultPlayer (playerSpawn lvl)
     ghosts = [blinky, pinky, inky, clyde]
 
--- | Game tick duration in milliseconds
-tickDurationInMs :: Int
-tickDurationInMs = 30
+-- | The specified minimal duration between each game tick
+
+tickDurationIn :: Time
+tickDurationIn = 30

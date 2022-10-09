@@ -31,7 +31,7 @@ startNewGame = undefined
 -- | Update score
 -- | Update timer
 tick :: Int -> GameState -> GameState
-tick ms gs  | status gs == Active && tickTimer gs + ms > tickDurationInMs = do
+tick ms gs  | status gs == Active && tickTimer gs + ms > tickDurationIn = do
                 resetTickTimer
                   . checkGameOver
                   . updateGhosts
