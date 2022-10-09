@@ -46,7 +46,7 @@ isAlive = (> 0) . unlives
 
 -- | A Player's state
 -- | Normal is the players default state
--- | Strong is the state the player is in when he eats a power pellet and when he can attack the ghosts
+-- | Strong is the state after the player eats a power pellet, in which the player can eat ghosts
 data PlayerState = Normal | Strong deriving (Eq, Show)
 
 data Player = Player
