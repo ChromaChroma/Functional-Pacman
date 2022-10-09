@@ -10,15 +10,19 @@ license:            GPL-3
 license-file:       LICENSE
 copyright:          (c) 2022 Jona Leeflang && Sem Bode
 
+
 -- A short (one-line) description of the package.
 -- synopsis:
 
 -- A longer description of the package.
 -- description:
 
+
 extra-source-files:
     README.md
 
+data-files:
+    app/data/test.txt
 executable haskell-game
     build-depends:    
         base ^>=4.14.3.0,
