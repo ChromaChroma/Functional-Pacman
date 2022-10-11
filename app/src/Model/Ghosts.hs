@@ -30,9 +30,10 @@ data Ghost = Ghost
     mode :: GhostState,
     position :: Position,
     speed :: Speed,
-    lifeState :: LifeState
-  }
-  deriving (Eq)
+    lifeState :: LifeState,
+    direction :: Direction,
+    prevDirection :: Direction
+  } deriving (Eq)
 
 instance Positioned Ghost where
   getPosition = position
@@ -43,13 +44,13 @@ instance Movable Ghost where
 
 -- | Default ghost constructors for each original ghost
 blinky :: Ghost
-blinky = Ghost "Blinky" Scatter (12, 14) 0.1 Alive
+blinky = Ghost "Blinky" Scatter (12, 14) 0.1 Alive Stop Stop
 
 pinky :: Ghost
-pinky = Ghost "Pinky" Scatter (13, 14) 0.1 Alive
+pinky = Ghost "Pinky" Scatter (13, 14) 0.1 Alive Stop Stop
 
 inky :: Ghost
-inky = Ghost "Inky" Scatter (14, 14) 0.1 Alive
+inky = Ghost "Inky" Scatter (14, 14) 0.1 Alive Stop Stop
 
 clyde :: Ghost
-clyde = Ghost "Clyde" Scatter (15, 14) 0.1 Alive
+clyde = Ghost "Clyde" Scatter (15, 14) 0.1 Alive Stop Stop
