@@ -17,23 +17,7 @@ import Model.Movement as M
 import Model.Player
 import Model.Score
 import Numeric
-
-screen :: Display
-screen = InWindow "Pac Man" windowSize windowOffsetPosition
-
--- screen = FullScreenpli
-
-windowSize :: (Int, Int)
-windowSize = (1300, 1000)
-
-windowOffsetPosition :: (Int, Int)
-windowOffsetPosition = (0, 0)
-
-fps :: Int
-fps = 60
-
-tileSize :: Float
-tileSize = 32
+import View.Config
 
 startRender :: IO ()
 startRender =
@@ -55,7 +39,7 @@ drawingFunc :: GameState -> Picture
 drawingFunc gs =
   fromBottomLeft $
     pictures
-      [ translate 300 0 $ renderGame gs,
+      [ translateToLevelSection $ renderGame gs,
         renderOverlay gs
       ]
   where
@@ -68,11 +52,10 @@ drawingFunc gs =
     renderGame gs =
       pictures
         [ renderLevel . level $ gs,
+          renderIntersections gs,
           renderGhosts gs,
-          renderPlayer gs,
-          renderIntersections gs
+          renderPlayer gs
           -- Render Movable?? ghost and player get rendered same way.
-          -- renderGhosts . ghosts $ gs
           -- renderItems . items . level $ gs
           -- PointItems
         ]
@@ -82,16 +65,6 @@ drawingFunc gs =
           -- renderScore . score $ gs
           renderDebug gs
         ]
-
-renderIntersections :: GameState -> Picture
-renderIntersections gs =
-  pictures
-    [block (x, y) | (x, y) <- levelIntersections . level $ gs]
-    where
-      block (x, y) = color red $ translateByTileSize (fromIntegral x) (fromIntegral y') (rectangleSolid (tileSize / 2) (tileSize / 2))
-        where
-          (w, h) = layoutSize . layout . level $ gs
-          y' = h - 1 - y
 
 -- | Returns Pictures, consisting of all tile Pictures
 renderLevel :: Level -> Picture
@@ -112,43 +85,6 @@ renderTile x y tile = case tile of
     hLinedBlock = translateByTileSize (fromIntegral x) (fromIntegral y) (rectangleSolid tileSize (tileSize / 2)) -- Horizontal lined walls
     blockyWalls = translateByTileSize (fromIntegral x) (fromIntegral y) (rectangleSolid (tileSize / 2) (tileSize / 2)) -- small block walls
     -- todo Possibility: Render layout by converting layout to ajacent dots that create figures that can be rendered as a line/polygon pictures.
-
-translateByTileSize :: Float -> Float -> Picture -> Picture
-translateByTileSize x y = translate (x * tileSize) (y * tileSize)
-
--- | Int based player render
--- renderPlayer :: GameState -> Picture
--- renderPlayer gs = translateByTileSize x' y' . color yellow . circleSolid $ tileSize/2
---     where
---         (_, ly) = layoutSize $ layout $ level gs
---         (x, y) = intPosition $ getPosition $ player gs
---         x' =  fromIntegral x
---         y' =  fromIntegral ly - fromIntegral (y-2)
-
--- | Renders on Float instead of Int (But does currently shwo pacman aligned up to 0.5 - 1.49 instead of 1.0, due to engine/ engine-to-view convertion)
--- renderPlayer :: GameState -> Picture
--- renderPlayer gs = translateByTileSize x y' . color yellow . circleSolid $ tileSize / 2
---     where
---         y' =  fromIntegral ly - (y-2)
---         (_, ly) = layoutSize $ layout $ level gs
---         (x, y) =  getPosition $ player gs
-
--- renderPlayer :: GameState -> Picture
--- renderPlayer gs = translateByTileSize x y . color yellow . circleSolid $ tileSize / 2
---     where
-
---         (_, ly) = layoutSize $ layout $ level gs
---         (px, py) =  getPosition $ player gs
---         y' =  fromIntegral ly - (py-2)
-
---         (x, y) = case direction gs of
---           M.Up    -> roundHorizontal
---           M.Down  -> roundHorizontal
---           M.Left  -> roundVertical
---           M.Right -> roundVertical
---           _       -> (fromIntegral $ round px, fromIntegral $ round  y')
---         roundHorizontal = (fromIntegral $ round px, y')
---         roundVertical   = (px, fromIntegral $ round y')
 
 renderMovable :: Movable a => a -> Direction -> Layout -> Picture -> Picture
 renderMovable m dir ll = translateByTileSize x y
@@ -192,50 +128,66 @@ renderScore = undefined
 
 renderDebug :: GameState -> Picture
 renderDebug gs =
-  pictures . stack 0 0 25 $
-    reverse
-      [ -- translate 0 200 . smallText . show . score $ gs,
-        smallText "Status: " . status $ gs,
-        smallText "Elapsed time (s): " . msToSec . elapsedTime $ gs,
-        smallText "Tick time (ms): " . tickTimer $ gs,
-        smallText "Lives: " . unlives . lives . player $ gs,
-        smallText "Direction: " . direction $ gs,
-        smallText "Buffer Direction: " . bufDirection $ gs,
-        smallText "Position: " . getPosition . player $ gs,
-        smallText "Coordinate decimals x, y: " $ show (formatDecimals x 1) ++ ", " ++ show (formatDecimals y 1),
-        smallText "Can switch x, y: " $ (show . canMovePerpendicular $ x) ++ ", " ++ (show . canMovePerpendicular $ y),
-        smallText "Intersections: " . levelIntersections . level $ gs
-      ]
+  let (x, y) = getPosition . player $ gs
+   in pictures . stack 0 0 25 $
+        reverse
+          [ -- translate 0 200 . smallText . show . score $ gs,
+            smallText "Status: " . status $ gs,
+            smallText "Elapsed time (s): " . msToSec . elapsedTime $ gs,
+            smallText "Tick time (ms): " . tickTimer $ gs,
+            smallText "Lives: " . unlives . lives . player $ gs,
+            smallText "Direction: " . direction $ gs,
+            smallText "Buffer Direction: " . bufDirection $ gs,
+            smallText "Position: " . getPosition . player $ gs,
+            smallText "Coordinate decimals x, y: " $ show (formatDecimals x 1) ++ ", " ++ show (formatDecimals y 1),
+            smallText "Can switch x, y: " $ (show . canMovePerpendicular $ x) ++ ", " ++ (show . canMovePerpendicular $ y),
+            smallText "Intersections: " . levelIntersections . level $ gs
+          ]
+
+-- | Renders the intersections calculated by the game based on the level layout
+renderIntersections :: GameState -> Picture
+renderIntersections gs = pictures [block (x, y) | (x, y) <- levelIntersections . level $ gs]
   where
-    smallText :: Show a => String -> a -> Picture
-    smallText name a = color white . scale 0.1 0.1 . text $ name ++ show a
+    block (x, y) = color (dim green) . translateByTileSize (fromIntegral x) y' $ rectangleSolid intersectionSize intersectionSize
+      where
+        (_, h) = layoutSize . layout . level $ gs
+        y' = fromIntegral (h - 1 - y)
+        intersectionSize = tileSize / 2
 
-    stack :: Float -> Float -> Float -> [Picture] -> [Picture]
-    stack _ _ _ [] = []
-    stack x y pixels (l : ls) = translate x y l : stack x (y + pixels) pixels ls
+-- |
+-- | Render Helper functions
+-- |
+translateToLevelSection :: Picture -> Picture
+translateToLevelSection = translate 300 0
 
-    msToSec :: Time -> Float
-    msToSec t = fromIntegral t / 1000
+translateByTileSize :: Float -> Float -> Picture -> Picture
+translateByTileSize x y = translate (x * tileSize) (y * tileSize)
 
-    (x, y) = getPosition . player $ gs
+smallText :: Show a => String -> a -> Picture
+smallText name a = color white . scale 0.1 0.1 . text $ name ++ show a
+
+stack :: Float -> Float -> Float -> [Picture] -> [Picture]
+stack _ _ _ [] = []
+stack x y pixels (l : ls) = translate x y l : stack x (y + pixels) pixels ls
+
+msToSec :: Time -> Float
+msToSec t = fromIntegral t / 1000
 
 -- | Input handling
 inputHandler :: Event -> GameState -> GameState
+
 -- | Movement with arrow keys
 inputHandler (EventKey (SpecialKey KeyUp) IO.Down _ _) gs = movePlayer M.Up gs
 inputHandler (EventKey (SpecialKey KeyDown) IO.Down _ _) gs = movePlayer M.Down gs
 inputHandler (EventKey (SpecialKey KeyRight) IO.Down _ _) gs = movePlayer M.Right gs
 inputHandler (EventKey (SpecialKey KeyLeft) IO.Down _ _) gs = movePlayer M.Left gs
--- | Movement with WASD
 inputHandler (EventKey (Char 'w') IO.Down _ _) gs = movePlayer M.Up gs
 inputHandler (EventKey (Char 's') IO.Down _ _) gs = movePlayer M.Down gs
 inputHandler (EventKey (Char 'd') IO.Down _ _) gs = movePlayer M.Right gs
 inputHandler (EventKey (Char 'a') IO.Down _ _) gs = movePlayer M.Left gs
--- | Actions 
 inputHandler (EventKey (Char 'p') IO.Down _ _) gs = pause gs
 inputHandler (EventKey (Char 'r') IO.Down _ _) gs = resume gs
 inputHandler (EventKey (Char 'q') IO.Down _ _) gs = quit gs
--- | Ignore all other events
 inputHandler _ gs = gs
 
 -- | Update function ran each iteration
