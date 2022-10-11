@@ -192,7 +192,8 @@ renderDebug gs =
         smallText "Buffer Direction: " . bufDirection $ gs,
         smallText "Position: " . getPosition . player $ gs,
         smallText "Coordinate decimals x, y: " $ show (formatDecimals x 1) ++ ", " ++ show (formatDecimals y 1),
-        smallText "Can switch x, y: " $ (show . canMovePerpendicular $ x) ++ ", " ++ (show . canMovePerpendicular $ y)
+        smallText "Can switch x, y: " $ (show . canMovePerpendicular $ x) ++ ", " ++ (show . canMovePerpendicular $ y),
+        smallText "Intersections: " . levelIntersections . level $ gs
       ]
   where
     smallText :: Show a => String -> a -> Picture
