@@ -3,8 +3,6 @@ module Model.Score(
     Score, Points, mkScore
 ) where
 
-import Data.List (sort)
-
 -- | Score points
 type Points = Int
 
