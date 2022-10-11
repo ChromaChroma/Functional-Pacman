@@ -69,7 +69,8 @@ drawingFunc gs =
       pictures
         [ renderLevel . level $ gs,
           renderGhosts gs,
-          renderPlayer gs
+          renderPlayer gs,
+          renderIntersections gs
           -- Render Movable?? ghost and player get rendered same way.
           -- renderGhosts . ghosts $ gs
           -- renderItems . items . level $ gs
@@ -81,6 +82,16 @@ drawingFunc gs =
           -- renderScore . score $ gs
           renderDebug gs
         ]
+
+renderIntersections :: GameState -> Picture
+renderIntersections gs =
+  pictures
+    [block (x, y) | (x, y) <- levelIntersections . level $ gs]
+    where
+      block (x, y) = color red $ translateByTileSize (fromIntegral x) (fromIntegral y') (rectangleSolid (tileSize / 2) (tileSize / 2))
+        where
+          (w, h) = layoutSize . layout . level $ gs
+          y' = h - 1 - y
 
 -- | Returns Pictures, consisting of all tile Pictures
 renderLevel :: Level -> Picture
@@ -144,7 +155,7 @@ renderMovable m dir ll = translateByTileSize x y
   where
     (_, ly) = layoutSize ll
     (px, py) = getPosition m
-    y' = fromIntegral ly - (py -2)
+    y' = fromIntegral ly - 1 - py
 
     (x, y) = case dir of
       M.Up -> roundHorizontal
