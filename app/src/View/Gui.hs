@@ -1,27 +1,32 @@
 module View.Gui where
 
-import Controller.Engine
+import Controller.Engine (movePlayer, pause, quit, resume, tick)
 import Controller.MovementController (canMovePerpendicular, formatDecimals)
-import Data.Fixed
-import Data.List
-import Data.List.Index
-import Data.Maybe
-import Graphics.Gloss
-import Graphics.Gloss.Data.ViewPort
+import Data.List ()
+import Data.List.Index ()
+import Data.Maybe ()
+import Graphics.Gloss (Picture, black, pictures, play, translate)
+import Graphics.Gloss.Data.ViewPort ()
 import Graphics.Gloss.Interface.IO.Game (Key (SpecialKey), SpecialKey (KeyEsc))
 import Graphics.Gloss.Interface.IO.Game as IO
-import Model.Game
-import Model.Items
-import Model.Level
-import Model.Movement as M
-import Model.Player hiding (position)
-import Model.Score
-import Numeric
-import View.Config
-import View.Debug
-import View.Helpers
-import View.InfoSection
-import View.LevelSection
+  ( Event (EventKey),
+    Key (Char, SpecialKey),
+    KeyState (Down),
+    SpecialKey (KeyDown, KeyLeft, KeyRight, KeyUp),
+  )
+import Model.Game (GameState, defaultGame)
+import Model.Items ()
+import Model.Level ()
+import Model.Movement as M (Direction (Down, Left, Right, Up))
+import Model.Player ()
+import Model.Score ()
+import Numeric ()
+import View.Config (fps, screen, tileSize, windowSize)
+import View.Debug (renderDebug)
+import View.Helpers ()
+import View.InfoSection (renderInfoSection)
+import View.LevelSection (renderLevelSection)
+import View.Overlays (renderOverlay)
 
 startRender :: IO ()
 startRender =
@@ -40,8 +45,9 @@ initialModel = defaultGame
 
 -- | Render game state, aligned from bottom left corner
 drawingFunc :: GameState -> Picture
-drawingFunc gs = fromBottomLeft $ pictures [renderLevelSection gs, renderInfoSection gs, renderDebug gs]
+drawingFunc gs = pictures ( renders : [renderOverlay gs])
   where
+    renders = fromBottomLeft $ pictures [renderLevelSection gs, renderInfoSection gs, renderDebug gs]
     (x, y) = windowSize
     x' = - fromIntegral (x `div` 2) + tileSize / 2
     y' = - fromIntegral (y `div` 2) + tileSize / 2

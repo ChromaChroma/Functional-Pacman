@@ -19,6 +19,7 @@ extra-source-files:
 
 data-files:
     app/data/test.txt
+
 executable haskell-game
     build-depends:    
         base ^>=4.14.3.0,
@@ -43,6 +44,7 @@ executable haskell-game
         View.InfoSection
         View.LevelSection
         View.Helpers
+        View.Overlays
         View.Terminal
         Controller.Engine
         Controller.LevelController
