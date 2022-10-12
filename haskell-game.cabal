@@ -36,8 +36,12 @@ executable haskell-game
         Model.Items
         Model.Movement
         Model.Score
-        View.Gui
         View.Config
+        View.Debug
+        View.Gui
+        View.InfoSection
+        View.LevelSection
+        View.Helpers
         View.Terminal
         Controller.Engine
         Controller.LevelController
