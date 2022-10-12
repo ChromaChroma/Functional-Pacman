@@ -1,26 +1,27 @@
 module View.LevelSection (renderLevelSection) where
 
-import Data.Maybe
 import Data.List.Index
+import Data.Maybe
 import Graphics.Gloss
-
-import View.Helpers
-import View.Config
 import Model.Game
 import Model.Items
 import Model.Level
 import Model.Movement as M
 import Model.Player hiding (position)
+import View.Config
+import View.Debug
+import View.Helpers
 
 renderLevelSection :: GameState -> Picture
-renderLevelSection gs = 
-  let fs = [ 
-        renderLevel . level,
+renderLevelSection gs = translateToLevelSection . pictures $ map ($ gs) fs
+  where
+    fs =
+      [ renderLevel . level,
+        renderIntersections,
         renderGhosts,
         renderPlayer,
         renderItems . items . level
-        ] 
-  in translateToLevelSection . pictures $ map ($ gs) fs
+      ]
 
 -- | Returns Pictures, consisting of all tile Pictures
 renderLevel :: Level -> Picture
@@ -71,10 +72,10 @@ renderGhosts gs = pictures . map renderGhost . ghosts $ gs
 
 -- | Returns Pictures (Picture consisting of multiple pictures)
 renderItems :: [PointItem] -> Picture
-renderItems = pictures . map trans
+renderItems = pictures . map renderItem 
   where
-    trans item = let (x, y) = getPosition item in translate x y (renderItem item)
-    renderItem pic = case pic of
+    renderItem item = let (x, y) = getPosition item in translateByTileSize x y (toPicture item)
+    toPicture pic = case pic of
       Dot _ _ -> color white . circleSolid $ tileSize / 8
       PowerPellet _ _ -> color white . circleSolid $ tileSize / 4
       _ -> Blank --Fruit ignored for now

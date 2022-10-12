@@ -10,7 +10,13 @@ import View.Config
 import View.Helpers
 
 renderDebug :: GameState -> Picture
-renderDebug gs = pictures [(renderIntersections gs), (renderDebugDetails gs)]
+renderDebug gs = renderIfDebug $pictures [(renderDebugDetails gs)]
+
+-- | Checks if application is in debug mode, if so render the passed Picture else return Blank
+renderIfDebug :: Picture -> Picture
+renderIfDebug f = case debug of
+  False -> blank
+  True -> f
 
 renderDebugDetails :: GameState -> Picture
 renderDebugDetails gs =
@@ -31,7 +37,7 @@ renderDebugDetails gs =
 
 -- | Renders the intersections calculated by the game based on the level layout
 renderIntersections :: GameState -> Picture
-renderIntersections gs = translateToLevelSection $ pictures [block (x, y) | (x, y) <- levelIntersections . level $ gs]
+renderIntersections gs = renderIfDebug $ pictures [block (x, y) | (x, y) <- levelIntersections . level $ gs]
   where
     block (x, y) = color (dim green) . translateByTileSize (fromIntegral x) (fromIntegral y) $ rectangleSolid renderSize renderSize
     renderSize = tileSize / 2

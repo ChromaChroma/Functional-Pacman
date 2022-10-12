@@ -17,3 +17,6 @@ fps = 60
 
 tileSize :: Float
 tileSize = 32
+
+debug :: Bool
+debug = True
