@@ -1,5 +1,5 @@
 module Model.Items(
-  PointItem(..),
+  PointItem(..), mkDot, mkPowerPellet,
   FruitType, defaultFruits,
   Positioned(..), Position(..)
 ) where
@@ -26,6 +26,12 @@ data PointItem =
       points :: Points
     } 
   deriving (Eq)
+
+mkDot :: Position -> PointItem
+mkDot pos = Dot pos 10
+
+mkPowerPellet :: Position -> PointItem
+mkPowerPellet pos = PowerPellet pos 50
 
 instance Positioned PointItem where
   getPosition = position

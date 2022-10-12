@@ -18,9 +18,9 @@ renderLevelSection gs = translateToLevelSection . pictures $ map ($ gs) fs
     fs =
       [ renderLevel . level,
         renderIntersections,
+        renderItems . items . level,
         renderGhosts,
-        renderPlayer,
-        renderItems . items . level
+        renderPlayer
       ]
 
 -- | Returns Pictures, consisting of all tile Pictures
@@ -72,10 +72,11 @@ renderGhosts gs = pictures . map renderGhost . ghosts $ gs
 
 -- | Returns Pictures (Picture consisting of multiple pictures)
 renderItems :: [PointItem] -> Picture
-renderItems = pictures . map renderItem 
+renderItems = pictures . map renderItem
   where
+    dotColor = light . light . light . light $ yellow
     renderItem item = let (x, y) = getPosition item in translateByTileSize x y (toPicture item)
     toPicture pic = case pic of
-      Dot _ _ -> color white . circleSolid $ tileSize / 8
-      PowerPellet _ _ -> color white . circleSolid $ tileSize / 4
+      Dot _ _ -> color dotColor . circleSolid $ tileSize / 8
+      PowerPellet _ _ -> color dotColor . circleSolid $ tileSize / 3
       _ -> Blank --Fruit ignored for now
