@@ -1,12 +1,24 @@
 module Controller.MovementController where
 
 import Data.Fixed (mod')
-import Data.Maybe
-import Model.Player
-import Model.Game
+import Data.Maybe (Maybe (..), fromJust, isJust)
+import Model.Game (GameState (bufDirection, direction, level, player))
+import Model.Ghosts (Ghost)
 import Model.Level
+  ( DoorState (Open),
+    Level (layout),
+    Tile (Floor, GhostDoor),
+    layoutSize,
+    tileAtW,
+  )
 import Model.Movement
-import Numeric
+  ( Direction (..),
+    Movable (move),
+    Positioned (getPosition, setPosition),
+    intPosition,
+  )
+import Model.Player (Player)
+import Numeric (showFFloat)
 import Prelude hiding (Down, Left, Right, Up)
 
 makePlayerMove :: GameState -> GameState
@@ -20,11 +32,13 @@ makePlayerMove gs
 
 makeDirectionMove :: GameState -> Direction -> Maybe Player
 makeDirectionMove gs dir
-  | dir /= Stop && canMakeMoveToDir pl dir lvl && isValidPlayerPosition lvl movedPlayer =
+  | dir /= Stop && canMoveInDir && isValidMovePosition =
     Just movedPlayer
   | otherwise = Nothing
   where
-    movedPlayer = move pl dir
+    canMoveInDir = canMakeMoveToDir pl dir lvl
+    isValidMovePosition = isValidPlayerPosition lvl movedPlayer
+    movedPlayer = move pl dir (layoutSize . layout $ lvl)
     pl = player gs
     lvl = level gs
 
@@ -39,7 +53,6 @@ canMakeMoveToDir player dir lvl
   | otherwise = False
   where
     isValid = isValidPlayerPosition lvl . moveFull player $ dir
-
     (x, y) = getPosition player
 
 -- | Takes coordinate of axis perpendicular to direction you want to move on
@@ -66,29 +79,14 @@ moveFull m dir = setPosition m (moveFullUnit m dir)
         validationOffset = 0.55
         (x, y) = getPosition m
 
--- | Checks if player is in a valid position on the level
+-- | Checks if the player is in a valid position on the level
 isValidPlayerPosition :: Level -> Player -> Bool
-isValidPlayerPosition = isValidMovablePosition isValid
-  where
-    isValid Floor = True
-    isValid _ = False
+isValidPlayerPosition = isValidMovablePosition (== Floor)
 
 -- | Higher order function that hecks if a movable is in a valid position on the level based on a provided Tile predicate
 isValidMovablePosition :: Movable a => (Tile -> Bool) -> Level -> a -> Bool
-isValidMovablePosition p level m = case tileAt level intPPos of
-  Just t -> p t
-  _ -> False --Out of bounds is invalid move when not wrapping movement
-  where
-    intPPos = intPosition (getPosition m)
+isValidMovablePosition p level m = p . tileAtW level . intPosition $ getPosition m
 
--- isValidGhostPosition :: Level -> Ghost -> Bool
--- isValidGhostPosition = isValidPosition isValid
---   where
---     isValid Wall = False
---     isValid (GhostDoor Open) = False
---     isValid (GhostDoor Closed) = True
---     isValid _ = True
-
--- isValidPosition when using tileAtW
--- isValidPosition :: Movable a => (Tile -> Bool) -> Level -> a -> Bool
--- isValidPosition p level m = p . tileAtW level . intPosition $ getPosition m
+-- | Checks if the ghost is in a valid position on the level
+isValidGhostPosition :: Level -> Ghost -> Bool
+isValidGhostPosition = isValidMovablePosition (`elem` [Floor, GhostDoor Open])

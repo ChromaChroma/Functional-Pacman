@@ -2,7 +2,7 @@ module Model.Level
   ( LevelNumber,
     mkLevelNumber,
     Tile (..),
-    tileAt,
+    tileAtW,
     DoorState (..),
     Layout (..),
     layoutSize,
@@ -94,16 +94,18 @@ tileAt level (x, y)
     lvlLayout = layout level
     (lvlWidth, lvlHeight) = layoutSize lvlLayout
 
--- | Wrapper function for tileAt that wraps the index around if it is out of level size bounds
+-- | Function to find tile on coordinate in level, wrapping around if out of bounds
 tileAtW :: Level -> (Int, Int) -> Tile
-tileAtW level (x, y)
-  | x >= x' = tileAtW level (x - x', y)
-  | y >= y' = tileAtW level (x, y - y')
+tileAtW level (x, y) 
   | x < 0 = tileAtW level (x + x', y)
   | y < 0 = tileAtW level (x, y + y')
-  | otherwise = fromJust $ tileAt level (x, y)
+  | otherwise = fromJust $ tileAt level (x `mod` x', y `mod` y')
   where
     (x', y') = layoutSize $ layout level
+
+
+
+
 
 type Intersection = (Int, Int)
 
