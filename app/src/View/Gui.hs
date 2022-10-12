@@ -14,7 +14,7 @@ import Model.Game
 import Model.Items
 import Model.Level
 import Model.Movement as M
-import Model.Player
+import Model.Player hiding (position)
 import Model.Score
 import Numeric
 import View.Config
@@ -43,7 +43,6 @@ drawingFunc gs =
         renderOverlay gs
       ]
   where
-    (lx, ly) = layoutSize $ layout $ level gs
     (x, y) = windowSize
     x' = - fromIntegral (x `div` 2) + tileSize / 2
     y' = - fromIntegral (y `div` 2) + tileSize / 2
@@ -54,7 +53,8 @@ drawingFunc gs =
         [ renderLevel . level $ gs,
           renderIntersections gs,
           renderGhosts gs,
-          renderPlayer gs
+          renderPlayer gs,
+          renderItems . items . level $ gs
           -- Render Movable?? ghost and player get rendered same way.
           -- renderItems . items . level $ gs
           -- PointItems
@@ -70,7 +70,7 @@ drawingFunc gs =
 renderLevel :: Level -> Picture
 renderLevel level = matrixToTilePitures $ layout level
   where
-    matrixToTilePitures = pictures . catMaybes . concat . imap rowToTilePictures . reverse
+    matrixToTilePitures = pictures . catMaybes . concat . imap rowToTilePictures
     rowToTilePictures y = imap (`renderTile` y)
 
 renderTile :: Int -> Int -> Tile -> Maybe Picture
@@ -89,18 +89,15 @@ renderTile x y tile = case tile of
 renderMovable :: Movable a => a -> Direction -> Layout -> Picture -> Picture
 renderMovable m dir ll = translateByTileSize x y
   where
-    (_, ly) = layoutSize ll
     (px, py) = getPosition m
-    y' = fromIntegral ly - 1 - py
-
     (x, y) = case dir of
       M.Up -> roundHorizontal
       M.Down -> roundHorizontal
       M.Left -> roundVertical
       M.Right -> roundVertical
-      _ -> (fromIntegral $ round px, fromIntegral $ round y')
-    roundHorizontal = (fromIntegral $ round px, y')
-    roundVertical = (px, fromIntegral $ round y')
+      _ -> (fromIntegral $ round px, fromIntegral $ round py)
+    roundHorizontal = (fromIntegral $ round px, py)
+    roundVertical = (px, fromIntegral $ round py)
 
 renderPlayer :: GameState -> Picture
 renderPlayer gs = renderMovable pl dir ll . color yellow . circleSolid $ tileSize / 2
@@ -118,7 +115,13 @@ renderGhosts gs = pictures . map renderGhost . ghosts $ gs
 
 -- | Returns Pictures (Picture consisting of multiple pictures)
 renderItems :: [PointItem] -> Picture
-renderItems = undefined
+renderItems = pictures . map trans
+  where
+    trans item = let (x, y) = getPosition item in translate x y (renderItem item)
+    renderItem pic = case pic of
+      Dot _ _ -> color white . circleSolid $ tileSize / 8
+      PowerPellet _ _ -> color white . circleSolid $ tileSize / 4
+      _ -> Blank --Fruit ignored for now
 
 renderLives :: Lives -> [Picture]
 renderLives = undefined
@@ -142,17 +145,15 @@ renderDebug gs =
             smallText "Coordinate decimals x, y: " $ show (formatDecimals x 1) ++ ", " ++ show (formatDecimals y 1),
             smallText "Can switch x, y: " $ (show . canMovePerpendicular $ x) ++ ", " ++ (show . canMovePerpendicular $ y),
             smallText "Intersections: " . levelIntersections . level $ gs
+            -- smallText "Items: " . items . level $ gs
           ]
 
 -- | Renders the intersections calculated by the game based on the level layout
 renderIntersections :: GameState -> Picture
 renderIntersections gs = pictures [block (x, y) | (x, y) <- levelIntersections . level $ gs]
   where
-    block (x, y) = color (dim green) . translateByTileSize (fromIntegral x) y' $ rectangleSolid intersectionSize intersectionSize
-      where
-        (_, h) = layoutSize . layout . level $ gs
-        y' = fromIntegral (h - 1 - y)
-        intersectionSize = tileSize / 2
+    intersectionSize = tileSize / 2
+    block (x, y) = color (dim green) . translateByTileSize (fromIntegral x) (fromIntegral y) $ rectangleSolid intersectionSize intersectionSize
 
 -- |
 -- | Render Helper functions

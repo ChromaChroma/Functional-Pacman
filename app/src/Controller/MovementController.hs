@@ -57,8 +57,8 @@ moveFull :: Movable a => a -> Direction -> a
 moveFull m dir = setPosition m (moveFullUnit m dir)
   where
     moveFullUnit m dir = case dir of
-      Up -> (x, y - validationOffset)
-      Down -> (x, y + validationOffset)
+      Up -> (x, y + validationOffset)
+      Down -> (x, y - validationOffset)
       Left -> (x - validationOffset, y)
       Right -> (x + validationOffset, y)
       _ -> (x, y)
