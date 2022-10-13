@@ -103,10 +103,7 @@ tileAtW level (x, y)
   where
     (x', y') = layoutSize $ layout level
 
-
-
-
-
+-- | an Intersecion is an (Int, Int) tuple corresponding with a tile position on which 3 or more directions can be moved
 type Intersection = (Int, Int)
 
 levelIntersections :: Level -> [Intersection]
