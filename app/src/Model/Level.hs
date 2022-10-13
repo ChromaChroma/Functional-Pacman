@@ -96,7 +96,7 @@ tileAt level (x, y)
 
 -- | Function to find tile on coordinate in level, wrapping around if out of bounds
 tileAtW :: Level -> (Int, Int) -> Tile
-tileAtW level (x, y) 
+tileAtW level (x, y)
   | x < 0 = tileAtW level (x + x', y)
   | y < 0 = tileAtW level (x, y + y')
   | otherwise = fromJust $ tileAt level (x `mod` x', y `mod` y')
@@ -118,10 +118,8 @@ levelIntersections level =
   ]
   where
     (width, height) = layoutSize $ layout level
-
-    isIntersection (x', y') = any (\(x, y) -> x == Floor && y == Floor) intersectionTileCombinations
+    isIntersection (x', y') = (length . filter (== Floor) $ [left, right, up, down]) >= 3
       where
-        intersectionTileCombinations = [(left, up), (left, down), (right, up), (right, down)]
         left = tileAtW level (x' - 1, y')
         right = tileAtW level (x' + 1, y')
         up = tileAtW level (x', y' + 1)
