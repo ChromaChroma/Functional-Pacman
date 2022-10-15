@@ -2,7 +2,6 @@ module Model.Player
   ( Speed,
     Movable (..),
     Player (..),
-    PlayerState,
     defaultPlayer,
     Lives (..),
     mkLives,
@@ -44,14 +43,8 @@ isAlive = (> 0) . unlives
 -- |  Player
 -- |
 
--- | A Player's state
--- | Normal is the players default state
--- | Strong is the state after the player eats a power pellet, in which the player can eat ghosts
-data PlayerState = Normal | Strong deriving (Eq, Show)
-
 data Player = Player
-  { playerState :: PlayerState,
-    position :: Position,
+  { position :: Position,
     speed :: Speed,
     lives :: Lives
   }
