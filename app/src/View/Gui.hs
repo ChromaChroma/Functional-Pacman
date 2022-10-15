@@ -21,6 +21,7 @@ import Model.Movement as M (Direction (Down, Left, Right, Up))
 import Model.Player ()
 import Model.Score ()
 import Numeric ()
+import View.Animation
 import View.Config (fps, screen, tileSize, windowSize)
 import View.Debug (renderDebug)
 import View.Helpers ()
@@ -28,49 +29,59 @@ import View.InfoSection (renderInfoSection)
 import View.LevelSection (renderLevelSection)
 import View.Overlays (renderOverlay)
 
-startRender :: IO ()
-startRender =
+startRender :: Textures -> IO ()
+startRender textures = do
   play
     screen
     black
     fps
-    initialModel
+    (initialModel textures)
     drawingFunc
     inputHandler
     tickEngine
 
+data TotalState = TotalState {gameState :: GameState, textures :: Textures}
+
 -- | Initial state of the game at startup
-initialModel :: GameState
-initialModel = defaultGame
+initialModel :: Textures -> TotalState
+initialModel t = TotalState {gameState = defaultGame, textures = t}
 
 -- | Render game state, aligned from bottom left corner
-drawingFunc :: GameState -> Picture
-drawingFunc gs = pictures ( renders : [renderOverlay gs])
+drawingFunc :: TotalState -> Picture
+drawingFunc ts = pictures (renders : [renderOverlay gs])
   where
-    renders = fromBottomLeft $ pictures [renderLevelSection gs, renderInfoSection gs, renderDebug gs]
+    gs = gameState ts
+    t = textures ts
+    renders =
+      fromBottomLeft $
+        pictures
+          [ renderLevelSection t gs,
+            renderInfoSection gs,
+            renderDebug gs
+          ]
     (x, y) = windowSize
     x' = - fromIntegral (x `div` 2) + tileSize / 2
     y' = - fromIntegral (y `div` 2) + tileSize / 2
     fromBottomLeft = translate x' y'
 
 -- | Input handling
-inputHandler :: Event -> GameState -> GameState
+inputHandler :: Event -> TotalState -> TotalState
 
 -- | Movement with arrow keys
-inputHandler (EventKey (SpecialKey KeyUp) IO.Down _ _) gs = movePlayer M.Up gs
-inputHandler (EventKey (SpecialKey KeyDown) IO.Down _ _) gs = movePlayer M.Down gs
-inputHandler (EventKey (SpecialKey KeyRight) IO.Down _ _) gs = movePlayer M.Right gs
-inputHandler (EventKey (SpecialKey KeyLeft) IO.Down _ _) gs = movePlayer M.Left gs
-inputHandler (EventKey (Char 'w') IO.Down _ _) gs = movePlayer M.Up gs
-inputHandler (EventKey (Char 's') IO.Down _ _) gs = movePlayer M.Down gs
-inputHandler (EventKey (Char 'd') IO.Down _ _) gs = movePlayer M.Right gs
-inputHandler (EventKey (Char 'a') IO.Down _ _) gs = movePlayer M.Left gs
-inputHandler (EventKey (Char 'p') IO.Down _ _) gs = pause gs
-inputHandler (EventKey (Char 'r') IO.Down _ _) gs = resume gs
-inputHandler (EventKey (Char 'q') IO.Down _ _) gs = quit gs
-inputHandler _ gs = gs
+inputHandler (EventKey (SpecialKey KeyUp) IO.Down _ _) ts = ts {gameState = movePlayer M.Up (gameState ts)}
+inputHandler (EventKey (SpecialKey KeyDown) IO.Down _ _) ts = ts {gameState = movePlayer M.Down (gameState ts)}
+inputHandler (EventKey (SpecialKey KeyRight) IO.Down _ _) ts = ts {gameState = movePlayer M.Right (gameState ts)}
+inputHandler (EventKey (SpecialKey KeyLeft) IO.Down _ _) ts = ts {gameState = movePlayer M.Left (gameState ts)}
+inputHandler (EventKey (Char 'w') IO.Down _ _) ts = ts {gameState = movePlayer M.Up (gameState ts)}
+inputHandler (EventKey (Char 's') IO.Down _ _) ts = ts {gameState = movePlayer M.Down (gameState ts)}
+inputHandler (EventKey (Char 'd') IO.Down _ _) ts = ts {gameState = movePlayer M.Right (gameState ts)}
+inputHandler (EventKey (Char 'a') IO.Down _ _) ts = ts {gameState = movePlayer M.Left (gameState ts)}
+inputHandler (EventKey (Char 'p') IO.Down _ _) ts = ts {gameState = pause (gameState ts)}
+inputHandler (EventKey (Char 'r') IO.Down _ _) ts = ts {gameState = resume (gameState ts)}
+inputHandler (EventKey (Char 'q') IO.Down _ _) ts = ts {gameState = quit (gameState ts)}
+inputHandler _ ts = ts
 
 -- | Update function ran each iteration
 -- | Takes seconds since last update as Float, converts it to milliseconds and passes it to the engine step function
-tickEngine :: Float -> GameState -> GameState
-tickEngine s gs = let ms = round (s * 1000) in tick ms gs
+tickEngine :: Float -> TotalState -> TotalState
+tickEngine s ts = let ms = round (s * 1000) in ts {gameState = tick ms (gameState ts)}

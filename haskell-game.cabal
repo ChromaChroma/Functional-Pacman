@@ -38,6 +38,7 @@ executable haskell-game
         Model.Movement
         Model.Score
         Model.Utils
+        View.Animation
         View.Config
         View.Debug
         View.Gui
