@@ -3,7 +3,6 @@ module View.LevelSection (renderLevelSection) where
 import Data.List.Index
 import Data.Maybe
 import Graphics.Gloss
-import Model.Game
 import Model.Items
 import Model.Level
 import Model.Movement as M
@@ -11,8 +10,9 @@ import Model.Player hiding (position)
 import View.Config
 import View.Debug
 import View.Helpers
-import View.Animation
-import Model.Game (GameState(bufDirection))
+import View.Animation ( Textures, pacMan, ghost )
+import Model.Game
+import Model.Ghosts
 
 renderLevelSection :: Textures -> GameState -> Picture
 renderLevelSection textures gs = translateToLevelSection (layoutSize . layout . level $ gs). pictures $ map ($ gs) fs
@@ -21,7 +21,7 @@ renderLevelSection textures gs = translateToLevelSection (layoutSize . layout . 
       [ renderLevel . level,
         renderIntersections,
         renderItems . items . level,
-        renderGhosts,
+        renderGhosts textures,
         renderPlayer textures
       ]
 
@@ -62,14 +62,14 @@ renderPlayer :: Textures -> GameState -> Picture
 renderPlayer textures gs = renderMovable pl dir ll . pacMan textures $ dir
   where
     pl = player gs
-    dir = direction gs
+    dir = Model.Game.direction gs
     ll = layout $ level gs
 
 -- | Returns Pictures (Picture consisting of multiple pictures
-renderGhosts :: GameState -> Picture
-renderGhosts gs = pictures . map renderGhost . ghosts $ gs
+renderGhosts :: Textures -> GameState -> Picture
+renderGhosts t gs = pictures . map renderGhost $ ghosts gs
   where
-    renderGhost g = renderMovable g Stop ll . color red . circleSolid $ tileSize / 2
+    renderGhost g = renderMovable g Stop ll $ ghost t (name g) (Model.Ghosts.direction g)
     ll = layout $ level gs
 
 -- | Returns Pictures (Picture consisting of multiple pictures)

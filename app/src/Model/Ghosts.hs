@@ -1,7 +1,7 @@
 module Model.Ghosts
   ( Ghost (..),
     GhostState,
-    Name,
+    Name(..),
     LifeState,
     blinky,
     pinky,
@@ -16,7 +16,7 @@ import Model.Movement (Collidable, Direction (..), Movable (..), Position, Posit
 data LifeState = Alive | Dead deriving (Eq, Show)
 
 -- | Name of a Ghost
-type Name = String
+data Name = Blinky | Pinky | Inky | Clyde deriving (Eq, Show)
 
 -- | States a ghost can be in
 -- | Chasing is the state in which ghosts chase the player
@@ -46,13 +46,13 @@ instance Movable Ghost where
 
 -- | Default ghost constructors for each original ghost
 blinky :: Ghost
-blinky = Ghost "Blinky" Scatter (12, 16) 0.1 Alive Stop Stop
+blinky = Ghost Blinky Scatter (12, 16) 0.1 Alive Stop Stop
 
 pinky :: Ghost
-pinky = Ghost "Pinky" Scatter (13, 16) 0.1 Alive Stop Stop
+pinky = Ghost Pinky Scatter (13, 16) 0.1 Alive Stop Stop
 
 inky :: Ghost
-inky = Ghost "Inky" Scatter (14, 16) 0.1 Alive Stop Stop
+inky = Ghost Inky Scatter (14, 16) 0.1 Alive Stop Stop
 
 clyde :: Ghost
-clyde = Ghost "Clyde" Scatter (15, 16) 0.1 Alive Stop Stop
+clyde = Ghost Clyde Scatter (15, 16) 0.1 Alive Stop Stop

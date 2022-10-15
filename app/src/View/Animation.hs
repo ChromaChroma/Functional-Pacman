@@ -1,9 +1,10 @@
-module View.Animation where
+module View.Animation (Textures (..), loadTextures, pacMan, ghost) where
 
 import Control.Applicative ((<$>), (<*>))
 import Data.Fixed (mod')
 import Graphics.Gloss (Picture, loadBMP, rotate)
 import Model.Game ()
+import Model.Ghosts (Name (..))
 import Model.Movement as M (Direction (..))
 import qualified View.Config hiding (fps)
 
@@ -20,10 +21,17 @@ type ElapsedTime = Float
 -- | Data structure that contains all the texture and animation data
 data Textures = Textures
   { elapsedTime :: ElapsedTime,
-    pacman :: Animation
+    pacman :: Animation,
+    blinky :: DirectionalAnimation,
+    pinky :: DirectionalAnimation,
+    inky :: DirectionalAnimation,
+    clyde :: DirectionalAnimation,
+    ghostFrightened :: Animation
   }
 
 data Animation = Animation {fps :: FramesPerSecond, frames :: [Picture]}
+
+data DirectionalAnimation = DirectionalAnimation {left :: Animation, right :: Animation, up :: Animation, down :: Animation}
 
 -------------------------------------------------------------------------------
 -- Impure, initial texture loading function
@@ -33,15 +41,53 @@ data Animation = Animation {fps :: FramesPerSecond, frames :: [Picture]}
 loadTextures :: IO Textures
 loadTextures = do
   pacmanAnimation <- Animation 12 <$> mapM loadBMP ["assets/pacman-1.bmp", "assets/pacman-2.bmp", "assets/pacman-3.bmp"]
-  return Textures {elapsedTime = 0, pacman = pacmanAnimation}
+  blinkyAnimation <-
+    DirectionalAnimation . Animation 6 <$> mapM loadBMP ["assets/blinky-left-1.bmp", "assets/blinky-left-2.bmp"]
+      <*> (Animation 6 <$> mapM loadBMP ["assets/blinky-right-1.bmp", "assets/blinky-right-2.bmp"])
+      <*> (Animation 6 <$> mapM loadBMP ["assets/blinky-up-1.bmp", "assets/blinky-up-2.bmp"])
+      <*> (Animation 6 <$> mapM loadBMP ["assets/blinky-down-1.bmp", "assets/blinky-down-2.bmp"])
+  pinkyAnimation <-
+    DirectionalAnimation . Animation 6 <$> mapM loadBMP ["assets/pinky-left-1.bmp", "assets/pinky-left-2.bmp"]
+      <*> (Animation 6 <$> mapM loadBMP ["assets/pinky-right-1.bmp", "assets/pinky-right-2.bmp"])
+      <*> (Animation 6 <$> mapM loadBMP ["assets/pinky-up-1.bmp", "assets/pinky-up-2.bmp"])
+      <*> (Animation 6 <$> mapM loadBMP ["assets/pinky-down-1.bmp", "assets/pinky-down-2.bmp"])
+  inkyAnimation <-
+    DirectionalAnimation . Animation 6 <$> mapM loadBMP ["assets/inky-left-1.bmp", "assets/inky-left-2.bmp"]
+      <*> (Animation 6 <$> mapM loadBMP ["assets/inky-right-1.bmp", "assets/inky-right-2.bmp"])
+      <*> (Animation 6 <$> mapM loadBMP ["assets/inky-up-1.bmp", "assets/inky-up-2.bmp"])
+      <*> (Animation 6 <$> mapM loadBMP ["assets/inky-down-1.bmp", "assets/inky-down-2.bmp"])
+  clydeAnimation <-
+    DirectionalAnimation . Animation 6 <$> mapM loadBMP ["assets/clyde-left-1.bmp", "assets/clyde-left-2.bmp"]
+      <*> (Animation 6 <$> mapM loadBMP ["assets/clyde-right-1.bmp", "assets/clyde-right-2.bmp"])
+      <*> (Animation 6 <$> mapM loadBMP ["assets/clyde-up-1.bmp", "assets/clyde-up-2.bmp"])
+      <*> (Animation 6 <$> mapM loadBMP ["assets/clyde-down-1.bmp", "assets/clyde-down-2.bmp"])
+  return
+    Textures
+      { elapsedTime = 0,
+        pacman = pacmanAnimation,
+        blinky = blinkyAnimation,
+        pinky = pinkyAnimation,
+        inky = inkyAnimation,
+        clyde = clydeAnimation,
+        ghostFrightened = pacmanAnimation
+      }
 
 -------------------------------------------------------------------------------
 -- Pure, generic texture loading functions
 -------------------------------------------------------------------------------
 
--- | Loads a rotated version of the current frame of the animation based on the direction.
-loadAnimationFrameInDirection :: Animation -> ElapsedTime -> Direction -> Picture
-loadAnimationFrameInDirection anim elapsedTime dir = rotate (dirRotation dir) (loadAnimationFrame anim elapsedTime)
+-- | Loads the current frame of the animation of the movement direction.
+loadAnimationFrameInDirection :: DirectionalAnimation -> ElapsedTime -> Direction -> Picture
+loadAnimationFrameInDirection dAnim elapsedTime dir = case dir of
+  M.Right -> loadAnimationFrame (right dAnim) elapsedTime
+  M.Down -> loadAnimationFrame (down dAnim) elapsedTime
+  M.Left -> loadAnimationFrame (left dAnim) elapsedTime
+  M.Up -> loadAnimationFrame (up dAnim) elapsedTime
+  M.Stop -> loadAnimationFrame (right dAnim) elapsedTime
+
+-- | Loads the rotated version of the current frame of the animation based on the direction.
+loadAnimationFrameRotated :: Animation -> ElapsedTime -> Direction -> Picture
+loadAnimationFrameRotated anim elapsedTime dir = rotate (dirRotation dir) (loadAnimationFrame anim elapsedTime)
 
 -- | Loads the current frame of the animation based on the elapsed time.
 loadAnimationFrame :: Animation -> ElapsedTime -> Picture
@@ -65,6 +111,13 @@ getFrameNumber anim eT = floor $ (eT * fps anim) `mod'` totalFrames
 -- Pure, specific texture (Picture) loading functions
 -------------------------------------------------------------------------------
 
--- | Function for the texture updating. It is called every frame.
+-- | Function to get the PacMan animation frame
 pacMan :: Textures -> Direction -> Picture
-pacMan ts = loadAnimationFrameInDirection (pacman ts) (elapsedTime ts)
+pacMan ts = loadAnimationFrameRotated (pacman ts) (elapsedTime ts)
+
+-- | Function to get the ghost animation frame
+ghost :: Textures -> Name -> Direction -> Picture
+ghost ts Blinky = loadAnimationFrameInDirection (blinky ts) (elapsedTime ts)
+ghost ts Pinky = loadAnimationFrameInDirection (pinky ts) (elapsedTime ts)
+ghost ts Inky = loadAnimationFrameInDirection (inky ts) (elapsedTime ts)
+ghost ts Clyde = loadAnimationFrameInDirection (clyde ts) (elapsedTime ts)
