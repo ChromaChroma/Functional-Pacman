@@ -4,17 +4,18 @@ import Graphics.Gloss (Picture (Blank), color, pictures, polygon, rectangleSolid
 import Model.Game (GameState (elapsedTime, level, player, points), Time)
 import Model.Level (Level (layout), layoutSize)
 import Model.Player (Lives (Lives, unlives), Player (lives))
-import Model.Score (Score, Points)
+import Model.Score (Points, Score)
 import View.Config (tileSize)
-import View.Helpers (smallText, smallTextOnly, translateToAboveLevelSection)
+import View.Helpers (msToSec, smallText, smallTextOnly, translateToAboveLevelSection)
 
 renderInfoSection :: GameState -> Picture
 renderInfoSection gs =
   translateToAboveLevelSection (layoutSize . layout . level $ gs) $
     pictures
-      [ renderScore . points $ gs,
-        renderLives . lives . player $ gs,
-        renderTime . elapsedTime $gs
+      [ renderLives . lives . player $ gs,
+        translate 150 0 . renderTime . elapsedTime $gs,
+        translate 400 0 . renderScore . points $ gs,
+        translate 600 0 . renderHighScore $ gs
       ]
 
 -- | Render the players lives, if lives is bigger than 3, render a life picture with the number of lives
@@ -26,8 +27,11 @@ renderLives (Lives lives)
     lifePictures = pictures . map life $ [1 .. (fromIntegral lives)]
     life n = translate ((n -1) * tileSize) (tileSize / 5) . color rose . rectangleSolid (tileSize / 2) $ (tileSize / 2)
 
-renderScore :: Points -> Picture
-renderScore x = Blank
-
 renderTime :: Time -> Picture
-renderTime x = Blank
+renderTime = smallText "Elapsed time: " . floor . msToSec
+
+renderScore :: Points -> Picture
+renderScore = smallText "Score: "
+
+renderHighScore :: GameState -> Picture
+renderHighScore gs = Blank
