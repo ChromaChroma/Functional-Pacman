@@ -34,13 +34,29 @@ tick :: Int -> GameState -> GameState
 tick ms gs  | status gs == Active && tickTimer gs + ms > tickDurationIn = do
                 resetTickTimer
                   . checkGameOver
+                  . checkCollisions
                   . updateGhosts
                   . updatePlayerMovement $ gs
             | status gs == Active = gs { elapsedTime = elapsedTime gs + ms, tickTimer = tickTimer gs + ms }
             | otherwise = gs
 
 updatePlayerMovement :: GameState -> GameState
-updatePlayerMovement = makePlayerMove 
+updatePlayerMovement = makePlayerMove
+
+checkCollisions :: GameState -> GameState
+checkCollisions = checkGhostsCollisions
+  where
+    checkItemCollisions :: GameState -> GameState
+    checkItemCollisions gs = map (`removeItem ` gs) ( filter (player gs `collides`) (items . level $ gs))
+    removeItem item gs = gs { level = (level gs) { items = filter (/= item) (items . level $ gs) } }
+
+    checkGhostsCollisions gs = if any (player gs `collides`) $ ghosts gs
+      then respawnPlayer . reduceLife $ gs
+      else gs
+    reduceLife gs = gs {player = (player gs) {lives = rmLife . lives . player $ gs}}
+    respawnPlayer gs
+      | isAlive . lives $ player gs = gs { player = (player gs) { position = playerSpawn . level $ gs } }
+      | otherwise = gs { status = Lost }
 
 -- | Update ghosts position and state (Chase / Scatter / Frightened)
 updateGhosts :: GameState -> GameState

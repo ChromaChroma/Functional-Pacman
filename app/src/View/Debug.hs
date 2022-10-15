@@ -14,9 +14,7 @@ renderDebug gs = renderIfDebug $pictures [(renderDebugDetails gs)]
 
 -- | Checks if application is in debug mode, if so render the passed Picture else return Blank
 renderIfDebug :: Picture -> Picture
-renderIfDebug f = case debug of
-  False -> blank
-  True -> f
+renderIfDebug f = if debug then f else blank
 
 renderDebugDetails :: GameState -> Picture
 renderDebugDetails gs =
@@ -32,8 +30,12 @@ renderDebugDetails gs =
             smallText "Position: " . getPosition . player $ gs,
             smallText "Coordinate decimals x, y: " $ show (formatDecimals x 1) ++ ", " ++ show (formatDecimals y 1),
             smallText "Can switch x, y: " $ (show . canMovePerpendicular $ x) ++ ", " ++ (show . canMovePerpendicular $ y),
-            smallText "Intersections: " . levelIntersections . level $ gs
+            smallText "Intersections: " . levelIntersections . level $ gs,
+            smallText "Player is colliding: " . isColliding $ gs
           ]
+  where
+    isColliding gs = any (player gs `collides`) $ ghosts gs
+
 
 -- | Renders the intersections calculated by the game based on the level layout
 renderIntersections :: GameState -> Picture

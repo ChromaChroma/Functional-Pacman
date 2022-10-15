@@ -10,7 +10,7 @@ module Model.Ghosts
   )
 where
 
-import Model.Movement (Direction (..), Movable (..), Position, Positioned (..), Speed)
+import Model.Movement (Collidable, Direction (..), Movable (..), Position, Positioned (..), Speed)
 
 -- | State of living of a Ghost
 data LifeState = Alive | Dead deriving (Eq, Show)
@@ -38,6 +38,8 @@ data Ghost = Ghost
 instance Positioned Ghost where
   getPosition = position
   setPosition ghost pos = ghost {position = pos}
+  
+instance Collidable Ghost
 
 instance Movable Ghost where
   getSpeed = speed

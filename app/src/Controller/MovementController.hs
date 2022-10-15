@@ -61,7 +61,7 @@ canMovePerpendicular :: RealFloat a => a -> Bool
 canMovePerpendicular n = let nFormat = formatDecimals n 1 in nFormat == 0.0 || nFormat == 1.0
 
 -- | Takes float `n` and returns a float of the decimal places rounded to `j` decimals
--- | i.e formatDecimals 9.005 1 = 0.0, formatDecimals 9.05 1 = 0.5
+-- | i.e formatDecimals 9.005 1 = 0.0, formatDecimals 9.05 1 = 0.1
 formatDecimals :: RealFloat a => a -> Int -> Float
 formatDecimals n j = read (showFFloat (Just j) (n `mod'` 1) "") :: Float
 

@@ -11,7 +11,7 @@ module Model.Player
   )
 where
 
-import Model.Movement (Direction (..), Movable (..), Position, Positioned (..), Speed)
+import Model.Movement (Collidable, Direction (..), Movable (..), Position, Positioned (..), Speed)
 
 -- |
 -- |  Lives
@@ -61,8 +61,11 @@ instance Positioned Player where
   getPosition = position
   setPosition player pos = player {position = pos}
 
+instance Collidable Player
+
 instance Movable Player where
   getSpeed = speed
+  
 
 defaultPlayer :: Player
 defaultPlayer = Player Normal (1, 1) 0.1 (Lives 3)

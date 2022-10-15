@@ -2,12 +2,13 @@ module Model.Movement
   ( Positioned (..),
     Position,
     intPosition,
+    Collidable(..),
     Movable (..),
     Direction (..),
     Speed,
   )
 where
- 
+
 import Model.Utils (mod')
 import Prelude hiding (Down, Left, Right, Up)
 
@@ -21,6 +22,15 @@ intPosition (x, y) = (round x, round y)
 class Positioned a where
   getPosition :: a -> Position
   setPosition :: a -> Position -> a
+
+-- | Class to check if a Positioned collides with another Positioned
+class (Positioned a) => Collidable a where
+  collides :: Collidable b =>  a -> b -> Bool
+  a `collides` b = checkPositions (getPosition a) (getPosition b)
+    where
+      checkPositions (ax, ay) (bx, by) = isWithinThreshhold ax bx && isWithinThreshhold ay by
+      isWithinThreshhold z z' = abs (z - z') <= threshhold
+      threshhold = 0.1 -- 0.1 is a constant deviation from another collidable that would count as collision
 
 -- | Directions a movement can be in, including Stop for an idle in movement
 data Direction = Up | Down | Left | Right | Stop deriving (Eq, Show)
