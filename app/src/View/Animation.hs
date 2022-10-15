@@ -31,8 +31,10 @@ data Textures = Textures
     ghostEaten :: DirectionalAnimation
   }
 
+-- | Data structure that contains the frames of an animation
 data Animation = Animation {fps :: FramesPerSecond, frames :: [Picture]}
 
+-- | Data structure that contains animations for each direction
 data DirectionalAnimation = DirectionalAnimation {left :: Animation, right :: Animation, up :: Animation, down :: Animation}
 
 -------------------------------------------------------------------------------
