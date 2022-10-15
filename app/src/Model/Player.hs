@@ -65,7 +65,6 @@ instance Collidable Player
 
 instance Movable Player where
   getSpeed = speed
-  
 
 defaultPlayer :: Player
 defaultPlayer = Player Normal (1, 1) 0.1 (Lives 3)

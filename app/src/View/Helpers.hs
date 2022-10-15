@@ -30,6 +30,10 @@ translateToAboveLevelSection (lw, lh) = translate (sw' - lw') (sh' + lh')
 translateByTileSize :: Float -> Float -> Picture -> Picture
 translateByTileSize x y = translate (x * tileSize) (y * tileSize)
 
+-- | Create a Text Picture with the given text 
+smallTextOnly :: String -> Picture
+smallTextOnly = color white . scale 0.1 0.1 . text
+
 -- | Create a Text Picture with the given text and result of show `a`
 smallText :: Show a => String -> a -> Picture
 smallText name a = color white . scale 0.1 0.1 . text $ name ++ show a
