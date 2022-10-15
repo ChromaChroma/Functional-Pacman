@@ -2,14 +2,14 @@ module View.Overlays (renderOverlay) where
 
 import Graphics.Gloss (Picture, blank, color, rectangleSolid, pictures,)
 import Graphics.Gloss.Data.Color (makeColorI)
-import Model.Game (GameState (status), Status (Paused, Lost))
+import Model.Game (GameState (status), Status (Paused, GameOver))
 import View.Config (windowSize)
 import View.Helpers ( layeredText )
 
 renderOverlay :: GameState -> Picture
 renderOverlay gs
   | status gs == Paused = renderPauseOverlay
-  | status gs == Lost = renderGameOver
+  | status gs == GameOver = renderGameOver
   | otherwise = blank
 
 renderPauseOverlay :: Picture

@@ -9,6 +9,7 @@ module Model.Level
     Level (..),
     mkLevel,
     defaultLevel,
+    isLevelComplete,
     LevelSize,
     levelIntersections,
   )
@@ -122,6 +123,12 @@ levelIntersections level =
         up = tileAtW level (x', y' + 1)
         down = tileAtW level (x', y' - 1)
 
+isLevelComplete :: Level -> Bool
+isLevelComplete level = not $ any isDot (items level)
+  where
+    isDot (Dot _ _) = True
+    isDot _ = False
+    
 -- |
 -- | Default level
 -- |

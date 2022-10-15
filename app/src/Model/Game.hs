@@ -4,7 +4,8 @@ module Model.Game
     Status (..),
     Time,
     tickDurationIn,
-    checkCollisions
+    checkCollisions,
+    checkGameOver,
   )
 where
 
@@ -13,14 +14,14 @@ import qualified Model.Items as I
 import Model.Level (Level (items, playerSpawn), defaultLevel)
 import Model.Movement (Collidable (collides), Direction (..), Positioned (setPosition))
 import Model.Player (Player (lives), defaultPlayer, isAlive, position, rmLife)
-import Prelude hiding (Left, Right)
 import Model.Score (Points)
+import Prelude hiding (Left, Right)
 
 -- | Time the game or the tickTimer has been running in milliseconds
 type Time = Int
 
 -- | Acitivity status of the game
-data Status = Waiting | Active | Paused | Lost deriving (Eq, Show)
+data Status = Waiting | Active | Paused | GameOver deriving (Eq, Show)
 
 -- | State of the complete game
 data GameState = GameState
@@ -56,6 +57,14 @@ defaultGame = loadGame lvl ghosts pl
     pl = setPosition defaultPlayer (playerSpawn lvl)
     ghosts = [blinky, pinky, inky, clyde]
 
+-- | Check if game is over and update it if necessary
+checkGameOver :: GameState -> GameState
+checkGameOver gs
+  | isAlive' = gs
+  | otherwise = gs {status = GameOver} 
+  where
+    isAlive' = isAlive . lives . player $ gs
+
 -- | The specified minimal duration between each game tick
 tickDurationIn :: Time
 tickDurationIn = 30
@@ -73,7 +82,7 @@ checkGhostCollisions gs =
     reduceLife gs = gs {player = (player gs) {lives = rmLife . lives . player $ gs}}
     respawnPlayer gs
       | isAlive . lives $ player gs = gs {player = (player gs) {position = playerSpawn . level $ gs}}
-      | otherwise = gs {status = Lost}
+      | otherwise = gs {status = GameOver}
 
 checkItemCollisions :: GameState -> GameState
 checkItemCollisions gs = foldr (\item -> removeItem item . addItemScore item . handleItemType item) gs (filter (player gs `collides`) (items . level $ gs))
@@ -81,6 +90,5 @@ checkItemCollisions gs = foldr (\item -> removeItem item . addItemScore item . h
     removeItem item gs = gs {level = (level gs) {items = filter (/= item) (items . level $ gs)}}
     addItemScore item gs = gs {points = points gs + I.points item}
     handleItemType item gs = case item of
-      I.PowerPellet {} -> gs-- Check if item is power pellet, if so, set ghost state to weak
+      I.PowerPellet {} -> gs -- todo: Check if item is power pellet, if so, set ghost state to weak
       _ -> gs
-  

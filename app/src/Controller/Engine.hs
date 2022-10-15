@@ -1,15 +1,17 @@
 module Controller.Engine where
 
-import Model.Player as P ( Player(lives), isAlive )
+import Controller.MovementController as MC (makePlayerMove)
 import Model.Game
-    ( tickDurationIn,
-      GameState(elapsedTime, player, tickTimer, bufDirection, status),
-      Status(Lost, Paused, Active), checkCollisions )
-import Model.Level ()
-import Model.Movement ( Direction )
+  ( GameState (bufDirection, elapsedTime, player, status, tickTimer, level),
+    Status (Active, GameOver, Paused),
+    checkCollisions,
+    checkGameOver,
+    tickDurationIn,
+  )
+import Model.Level (isLevelComplete)
+import Model.Movement (Direction)
+import Model.Player as P (Player (lives), isAlive)
 import Prelude hiding (Left, Right)
-import Controller.MovementController as MC ( makePlayerMove )
-
 
 startNewGame :: GameState
 startNewGame = undefined
@@ -34,14 +36,22 @@ startNewGame = undefined
 -- | Update score
 -- | Update timer
 tick :: Int -> GameState -> GameState
-tick ms gs  | status gs == Active && tickTimer gs + ms > tickDurationIn = do
-                resetTickTimer
-                  . checkGameOver
-                  . checkCollisions
-                  . updateGhosts
-                  . updatePlayerMovement $ gs
-            | status gs == Active = gs { elapsedTime = elapsedTime gs + ms, tickTimer = tickTimer gs + ms }
-            | otherwise = gs
+tick ms gs
+  | status gs == Active && tickTimer gs + ms > tickDurationIn = do
+    resetTickTimer
+      . checkGameOver
+      . checkLevelComplete
+      . checkCollisions
+      . updateGhosts
+      . updatePlayerMovement
+      $ gs
+  | status gs == Active = gs {elapsedTime = elapsedTime gs + ms, tickTimer = tickTimer gs + ms}
+  | otherwise = gs
+
+checkLevelComplete :: GameState -> GameState
+checkLevelComplete gs = if isLevelComplete . level $ gs
+  then gs {status = GameOver} --todo: next level / reset current level/maze
+  else gs
 
 updatePlayerMovement :: GameState -> GameState
 updatePlayerMovement = makePlayerMove
@@ -50,17 +60,9 @@ updatePlayerMovement = makePlayerMove
 updateGhosts :: GameState -> GameState
 updateGhosts gs = gs --todo
 
--- | Check if game is over and update it if necessary
-checkGameOver :: GameState -> GameState
-checkGameOver gs
-  | isAlive' = gs
-  | otherwise = gs {status = Lost} --todo more
-  where
-    isAlive' = isAlive . P.lives . player $ gs
-
 -- | Reset tick time to 0 for next tick cycle
 resetTickTimer :: GameState -> GameState
-resetTickTimer gs = gs { tickTimer = 0 }
+resetTickTimer gs = gs {tickTimer = 0}
 
 -- |
 -- | Game Input functions
@@ -68,18 +70,20 @@ resetTickTimer gs = gs { tickTimer = 0 }
 
 -- | Change player's direction / stop
 movePlayer :: Direction -> GameState -> GameState
-movePlayer dir gs = gs { bufDirection = dir }
+movePlayer dir gs = gs {bufDirection = dir}
 
 --  Pause the game
 pause :: GameState -> GameState
-pause gs  | status gs == Active = gs { status = Paused }
-          | otherwise = gs
+pause gs
+  | status gs == Active = gs {status = Paused}
+  | otherwise = gs
 
 -- | Resume the game
 resume :: GameState -> GameState
-resume gs | status gs == Paused = gs { status = Active }
-          | otherwise = gs
+resume gs
+  | status gs == Paused = gs {status = Active}
+  | otherwise = gs
 
 -- | End the game (forfeiting the current game)
 quit :: GameState -> GameState
-quit gs = gs { status = Lost }
+quit gs = gs {status = GameOver}
