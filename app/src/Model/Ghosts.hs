@@ -2,7 +2,7 @@ module Model.Ghosts
   ( Ghost (..),
     GhostState(..),
     Name(..),
-    LifeState,
+    LifeState(..),
     blinky,
     pinky,
     inky,

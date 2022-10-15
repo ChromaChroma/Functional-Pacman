@@ -4,7 +4,7 @@ import Control.Applicative ((<$>), (<*>))
 import Data.Fixed (mod')
 import Graphics.Gloss (Picture, loadBMP, rotate)
 import Model.Game ()
-import Model.Ghosts (Name (..), GhostState (Frightened))
+import Model.Ghosts (GhostState (Frightened), LifeState (Alive, Dead), Name (..))
 import Model.Movement as M (Direction (..))
 import qualified View.Config hiding (fps)
 
@@ -27,7 +27,8 @@ data Textures = Textures
     inky :: DirectionalAnimation,
     clyde :: DirectionalAnimation,
     ghostFrightened :: Animation,
-    ghostFrightenedFlashing :: Animation
+    ghostFrightenedFlashing :: Animation,
+    ghostEaten :: DirectionalAnimation
   }
 
 data Animation = Animation {fps :: FramesPerSecond, frames :: [Picture]}
@@ -64,6 +65,11 @@ loadTextures = do
       <*> (Animation 6 <$> mapM loadBMP ["assets/clyde-right-1.bmp", "assets/clyde-right-2.bmp"])
       <*> (Animation 6 <$> mapM loadBMP ["assets/clyde-up-1.bmp", "assets/clyde-up-2.bmp"])
       <*> (Animation 6 <$> mapM loadBMP ["assets/clyde-down-1.bmp", "assets/clyde-down-2.bmp"])
+  ghostEatenAnimation <-
+    DirectionalAnimation . Animation 6 <$> mapM loadBMP ["assets/ghost-eaten-left.bmp"]
+      <*> (Animation 6 <$> mapM loadBMP ["assets/ghost-eaten-right.bmp"])
+      <*> (Animation 6 <$> mapM loadBMP ["assets/ghost-eaten-up.bmp"])
+      <*> (Animation 6 <$> mapM loadBMP ["assets/ghost-eaten-down.bmp"])
   return
     Textures
       { elapsedTime = 0,
@@ -73,7 +79,8 @@ loadTextures = do
         inky = inkyAnimation,
         clyde = clydeAnimation,
         ghostFrightened = ghostFrigthenedAnimation,
-        ghostFrightenedFlashing = ghostFrigthenedFlashingAnimation
+        ghostFrightenedFlashing = ghostFrigthenedFlashingAnimation,
+        ghostEaten = ghostEatenAnimation
       }
 
 -------------------------------------------------------------------------------
@@ -120,15 +127,17 @@ pacMan :: Textures -> Direction -> Picture
 pacMan ts = loadAnimationFrameRotated (pacman ts) (elapsedTime ts)
 
 -- | Function to get the ghost animation frame, based on the ghost name, mode and alive state
-ghost :: Textures -> Name -> GhostState -> Direction -> Picture
-ghost ts name state dir = case state of 
-  Frightened -> loadAnimationFrame (ghostFrightened ts) (elapsedTime ts)
-  _ -> getGhostAnimation ts name dir
+ghost :: Textures -> Name -> GhostState -> LifeState -> Direction -> Picture
+ghost ts name state ls dir = case (ls, state) of
+  (Alive, Frightened) -> loadAnimationFrame (ghostFrightened ts) (elapsedTime ts)
+  _ -> getGhostAnimation ts name ls dir
 
 -- | Function to get the ghost animation frame
-getGhostAnimation :: Textures -> Name -> Direction -> Picture
-getGhostAnimation ts name dir = case name of
-  Blinky ->loadAnimationFrameInDirection (blinky ts) (elapsedTime ts) dir
-  Pinky -> loadAnimationFrameInDirection (pinky ts) (elapsedTime ts) dir
-  Inky -> loadAnimationFrameInDirection (inky ts) (elapsedTime ts) dir
-  Clyde -> loadAnimationFrameInDirection (clyde ts) (elapsedTime ts) dir
+getGhostAnimation :: Textures -> Name -> LifeState -> Direction -> Picture
+getGhostAnimation ts name ls dir = case ls of
+  Dead -> loadAnimationFrameInDirection (ghostEaten ts) (elapsedTime ts) dir
+  _ -> case name of
+    Blinky -> loadAnimationFrameInDirection (blinky ts) (elapsedTime ts) dir
+    Pinky -> loadAnimationFrameInDirection (pinky ts) (elapsedTime ts) dir
+    Inky -> loadAnimationFrameInDirection (inky ts) (elapsedTime ts) dir
+    Clyde -> loadAnimationFrameInDirection (clyde ts) (elapsedTime ts) dir
