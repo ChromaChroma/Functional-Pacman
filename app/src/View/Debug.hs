@@ -22,6 +22,7 @@ renderDebugDetails gs =
    in pictures . stack 25 $
         reverse
           [ smallText "Status: " . status $ gs,
+            smallText "Points: " . points $ gs,
             smallText "Elapsed time (s): " . msToSec . elapsedTime $ gs,
             smallText "Tick time (ms): " . tickTimer $ gs,
             smallText "Lives: " . unlives . lives . player $ gs,

@@ -14,6 +14,7 @@ import Model.Level (Level (items, playerSpawn), defaultLevel)
 import Model.Movement (Collidable (collides), Direction (..), Positioned (setPosition))
 import Model.Player (Player (lives), defaultPlayer, isAlive, position, rmLife)
 import Prelude hiding (Left, Right)
+import Model.Score (Points)
 
 -- | Time the game or the tickTimer has been running in milliseconds
 type Time = Int
@@ -30,7 +31,8 @@ data GameState = GameState
     tickTimer :: Time,
     direction :: Direction,
     bufDirection :: Direction,
-    ghosts :: [Ghost]
+    ghosts :: [Ghost],
+    points :: Points
   }
 
 loadGame :: Level -> [Ghost] -> Player -> GameState
@@ -43,7 +45,8 @@ loadGame lvl ghosts pl =
       bufDirection = Stop,
       player = pl,
       level = lvl,
-      ghosts = ghosts
+      ghosts = ghosts,
+      points = 0
     }
 
 defaultGame :: GameState
@@ -73,10 +76,11 @@ checkGhostCollisions gs =
       | otherwise = gs {status = Lost}
 
 checkItemCollisions :: GameState -> GameState
-checkItemCollisions gs = foldr removeItem gs (filter (player gs `collides`) (items . level $ gs))
+checkItemCollisions gs = foldr (\item -> removeItem item . addItemScore item . handleItemType item) gs (filter (player gs `collides`) (items . level $ gs))
   where
-    removeItem item@(I.Dot pos pts) gs = gs {level = (level gs) {items = filter (/= item) (items . level $ gs)}}
-    removeItem item@(I.PowerPellet pos pts) gs = gs {level = (level gs) {items = filter (/= item) (items . level $ gs)}}
-    removeItem item@(I.Fruit pos _ pts) gs = gs {level = (level gs) {items = filter (/= item) (items . level $ gs)}}
-  -- Add score on remove item
-  -- Check if item is power pellet, if so, set ghost state to weak
+    removeItem item gs = gs {level = (level gs) {items = filter (/= item) (items . level $ gs)}}
+    addItemScore item gs = gs {points = points gs + I.points item}
+    handleItemType item gs = case item of
+      I.PowerPellet {} -> gs-- Check if item is power pellet, if so, set ghost state to weak
+      _ -> gs
+  

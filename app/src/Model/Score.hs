@@ -3,7 +3,7 @@ module Model.Score(
     Score, Points, mkScore
 ) where
 
--- | Score points
+-- | A score's points
 type Points = Int
 
 -- | Score of a player
@@ -12,11 +12,9 @@ data Score = Score{
     score :: Points
 }
 
--- | Eq implementation for Score
 instance Eq Score where
     x == y = score x == score y
 
--- | Ord implementation for Score
 instance Ord Score where
     compare x y = compare (score x) (score y)
 
