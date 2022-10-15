@@ -1,33 +1,51 @@
 module View.Animation where
 
-import Data.Fixed
 import Control.Applicative ((<$>), (<*>))
-import Graphics.Gloss
-import Model.Game hiding (elapsedTime)
-import Model.Movement as M
+import Data.Fixed (mod')
+import Graphics.Gloss (Picture, loadBMP, rotate)
+import Model.Game ()
+import Model.Movement as M (Direction (..))
+import qualified View.Config hiding (fps)
 
+-------------------------------------------------------------------------------
+-- Data structures
+-------------------------------------------------------------------------------
+
+-- | Frames per second of an animation
 type FramesPerSecond = Float
 
+-- | Elapsed time in seconds
+type ElapsedTime = Float
+
+-- | Data structure that contains all the texture and animation data
 data Textures = Textures
-  { elapsedTime :: Float, -- In seconds
+  { elapsedTime :: ElapsedTime,
     pacman :: Animation
   }
 
-data Animation = Animation {framesPerSecond :: FramesPerSecond, frames :: [Picture]}
+data Animation = Animation {fps :: FramesPerSecond, frames :: [Picture]}
+
+-------------------------------------------------------------------------------
+-- Impure, initial texture loading function
+-------------------------------------------------------------------------------
 
 -- | Function for the initial texture loading. It is called once at the beginning of the game.
 loadTextures :: IO Textures
 loadTextures = do
   pacmanAnimation <- Animation 12 <$> mapM loadBMP ["assets/pacman-1.bmp", "assets/pacman-2.bmp", "assets/pacman-3.bmp"]
-  return $ Textures 0 pacmanAnimation
+  return Textures {elapsedTime = 0, pacman = pacmanAnimation}
 
--- | Function for the texture updating. It is called every frame.
-pacMan :: Textures -> Direction -> Picture
-pacMan ts dir = rotate (dirRotation dir) (frms !! frameNr) 
-  where
-    frameNr = getFrameNumber anim (elapsedTime ts)
-    frms = frames anim
-    anim = pacman ts
+-------------------------------------------------------------------------------
+-- Pure, generic texture loading functions
+-------------------------------------------------------------------------------
+
+-- | Loads a rotated version of the current frame of the animation based on the direction.
+loadAnimationFrameInDirection :: Animation -> ElapsedTime -> Direction -> Picture
+loadAnimationFrameInDirection anim elapsedTime dir = rotate (dirRotation dir) (loadAnimationFrame anim elapsedTime)
+
+-- | Loads the current frame of the animation based on the elapsed time.
+loadAnimationFrame :: Animation -> ElapsedTime -> Picture
+loadAnimationFrame anim elapsedTime = frames anim !! getFrameNumber anim elapsedTime
 
 -- | Function to rotate picture based on the movement direction
 dirRotation :: Direction -> Float
@@ -37,9 +55,16 @@ dirRotation M.Left = 180
 dirRotation M.Up = 270
 dirRotation M.Stop = 270
 
+-------------------------------------------------------------------------------
+-- Pure, specific texture (Picture) loading functions
+-------------------------------------------------------------------------------
+
+-- | Function for the texture updating. It is called every frame.
+pacMan :: Textures -> Direction -> Picture
+pacMan ts = loadAnimationFrameInDirection (pacman ts) (elapsedTime ts)
+
 -- | Function to get the current frame number based on the elapsed time and the frames per second of the animation
-getFrameNumber :: Animation -> Float -> Int
-getFrameNumber anim eT = floor $ (eT * fps) `mod'` frms
+getFrameNumber :: Animation -> ElapsedTime -> Int
+getFrameNumber anim eT = floor $ (eT * fps anim) `mod'` totalFrames
   where
-    fps = framesPerSecond anim
-    frms = fromIntegral . length $ frames anim
+    totalFrames = fromIntegral . length $ frames anim

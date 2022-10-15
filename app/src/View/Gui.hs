@@ -21,8 +21,8 @@ import Model.Movement as M (Direction (Down, Left, Right, Up))
 import Model.Player ()
 import Model.Score ()
 import Numeric ()
-import View.Animation
-import View.Config (fps, screen, tileSize, windowSize)
+import View.Animation ( Textures(elapsedTime) )
+import View.Config (framesPerSecond, screen, tileSize, windowSize)
 import View.Debug (renderDebug)
 import View.Helpers ()
 import View.InfoSection (renderInfoSection)
@@ -34,7 +34,7 @@ startRender textures = do
   play
     screen
     black
-    fps
+    framesPerSecond
     (initialModel textures)
     drawingFunc
     inputHandler
