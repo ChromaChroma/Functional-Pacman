@@ -23,7 +23,7 @@ startNewGame = undefined
 -- | Check for Next level
 -- | Check Level Complete
 -- | Add life on n score
--- | Check and possibly respawn dead ghosts
+-- | Check and possibly respawn eaten ghosts
 -- | Check and possibly respawn dead player
 -- | Update Player state
 -- | Update Enemies state

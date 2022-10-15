@@ -4,7 +4,7 @@ import Control.Applicative ((<$>), (<*>))
 import Data.Fixed (mod')
 import Graphics.Gloss (Picture, loadBMP, rotate)
 import Model.Game ()
-import Model.Ghosts (Ghost (direction, lifeState, mode, name), GhostState (Frightened), LifeState (Alive, Dead), Name (..))
+import Model.Ghosts (Ghost (direction, lifeState, mode, name), GhostState (Frightened), LifeState (Alive, Eaten), Name (..))
 import Model.Movement as M (Direction (..))
 import qualified View.Config hiding (fps)
 
@@ -136,7 +136,7 @@ ghost ts g =
 -- | Function to get the ghost animation frame
 getGhostAnimation :: Textures -> Ghost -> Picture
 getGhostAnimation ts g = case lifeState g of
-  Dead -> loadAnimationFrameInDirection (ghostEaten ts) (elapsedTime ts) dir
+  Eaten -> loadAnimationFrameInDirection (ghostEaten ts) (elapsedTime ts) dir
   _ -> case name g of
     Blinky -> loadAnimationFrameInDirection (blinky ts) (elapsedTime ts) dir
     Pinky -> loadAnimationFrameInDirection (pinky ts) (elapsedTime ts) dir

@@ -13,7 +13,7 @@ where
 import Model.Movement (Collidable, Direction (..), Movable (..), Position, Positioned (..), Speed)
 
 -- | State of living of a Ghost
-data LifeState = Alive | Dead deriving (Eq, Show)
+data LifeState = Alive | Eaten deriving (Eq, Show)
 
 -- | Name of a Ghost
 data Name = Blinky | Pinky | Inky | Clyde deriving (Eq, Show)
