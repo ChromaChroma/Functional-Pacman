@@ -84,4 +84,8 @@ inputHandler _ ts = ts
 -- | Update function ran each iteration
 -- | Takes seconds since last update as Float, converts it to milliseconds and passes it to the engine step function
 tickEngine :: Float -> TotalState -> TotalState
-tickEngine s ts = let ms = round (s * 1000) in ts {gameState = tick ms (gameState ts)}
+tickEngine s ts = ts {gameState = newGameState, textures = newTextures}
+  where
+    newTextures = (textures ts) { elapsedTime = elapsedTime (textures ts) + s }
+    newGameState = tick ms (gameState ts)
+    ms = round (s * 1000) 
