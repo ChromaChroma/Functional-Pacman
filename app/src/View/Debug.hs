@@ -31,10 +31,12 @@ renderDebugDetails gs =
             smallText "Coordinate decimals x, y: " $ show (formatDecimals x 1) ++ ", " ++ show (formatDecimals y 1),
             smallText "Can switch x, y: " $ (show . canMovePerpendicular $ x) ++ ", " ++ (show . canMovePerpendicular $ y),
             smallText "Intersections: " . levelIntersections . level $ gs,
-            smallText "Player is colliding: " . isColliding $ gs
+            smallText "Player is colliding with ghost: " . isCollidingWithGhost $ gs,
+            smallText "Player is colliding with item: " . isCollidingWithItem $ gs
           ]
   where
-    isColliding gs = any (player gs `collides`) $ ghosts gs
+    isCollidingWithGhost gs = any (player gs `collides`) $ ghosts gs
+    isCollidingWithItem gs = any (player gs `collides`) (items . level $ gs)
 
 
 -- | Renders the intersections calculated by the game based on the level layout

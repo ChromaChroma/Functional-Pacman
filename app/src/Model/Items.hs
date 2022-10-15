@@ -4,7 +4,7 @@ module Model.Items(
   Positioned(..), Position(..)
 ) where
 
-import Model.Movement(Position, Positioned(..))
+import Model.Movement(Position, Positioned(..), Collidable)
 import Model.Score (Points)
 
 -- | Item representing an object that can give point score to the player when eaten
@@ -37,6 +37,8 @@ instance Positioned PointItem where
   getPosition = position
   setPosition item _ = item -- PointItems By default should nog change position, so setPosition returns the passed data
 
+instance Collidable PointItem where
+  
 -- | Types of fruit
 data FruitType = Cherry | Strawberry | Orange | Apple | Melon | Galaxian | Bell | Key deriving (Eq, Show)
 

@@ -4,13 +4,15 @@ module Model.Game
     Status (..),
     Time,
     tickDurationIn,
+    checkCollisions
   )
 where
 
 import Model.Ghosts (Ghost, blinky, clyde, inky, pinky)
-import Model.Level (Level (playerSpawn), defaultLevel)
-import Model.Movement (Direction (..), Positioned (setPosition))
-import Model.Player (Player, defaultPlayer)
+import qualified Model.Items as I
+import Model.Level (Level (items, playerSpawn), defaultLevel)
+import Model.Movement (Collidable (collides), Direction (..), Positioned (setPosition))
+import Model.Player (Player (lives), defaultPlayer, isAlive, position, rmLife)
 import Prelude hiding (Left, Right)
 
 -- | Time the game or the tickTimer has been running in milliseconds
@@ -52,6 +54,29 @@ defaultGame = loadGame lvl ghosts pl
     ghosts = [blinky, pinky, inky, clyde]
 
 -- | The specified minimal duration between each game tick
-
 tickDurationIn :: Time
 tickDurationIn = 30
+
+-- | Logic for collisions
+checkCollisions :: GameState -> GameState
+checkCollisions = checkGhostCollisions . checkItemCollisions
+
+checkGhostCollisions :: GameState -> GameState
+checkGhostCollisions gs =
+  if any (player gs `collides`) $ ghosts gs
+    then respawnPlayer . reduceLife $ gs
+    else gs
+  where
+    reduceLife gs = gs {player = (player gs) {lives = rmLife . lives . player $ gs}}
+    respawnPlayer gs
+      | isAlive . lives $ player gs = gs {player = (player gs) {position = playerSpawn . level $ gs}}
+      | otherwise = gs {status = Lost}
+
+checkItemCollisions :: GameState -> GameState
+checkItemCollisions gs = foldr removeItem gs (filter (player gs `collides`) (items . level $ gs))
+  where
+    removeItem item@(I.Dot pos pts) gs = gs {level = (level gs) {items = filter (/= item) (items . level $ gs)}}
+    removeItem item@(I.PowerPellet pos pts) gs = gs {level = (level gs) {items = filter (/= item) (items . level $ gs)}}
+    removeItem item@(I.Fruit pos _ pts) gs = gs {level = (level gs) {items = filter (/= item) (items . level $ gs)}}
+  -- Add score on remove item
+  -- Check if item is power pellet, if so, set ghost state to weak
