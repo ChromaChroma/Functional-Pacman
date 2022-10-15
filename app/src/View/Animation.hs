@@ -4,7 +4,7 @@ import Control.Applicative ((<$>), (<*>))
 import Data.Fixed (mod')
 import Graphics.Gloss (Picture, loadBMP, rotate)
 import Model.Game ()
-import Model.Ghosts (GhostState (Frightened), LifeState (Alive, Dead), Name (..))
+import Model.Ghosts (Ghost (direction, lifeState, mode, name), GhostState (Frightened), LifeState (Alive, Dead), Name (..))
 import Model.Movement as M (Direction (..))
 import qualified View.Config hiding (fps)
 
@@ -127,17 +127,20 @@ pacMan :: Textures -> Direction -> Picture
 pacMan ts = loadAnimationFrameRotated (pacman ts) (elapsedTime ts)
 
 -- | Function to get the ghost animation frame, based on the ghost name, mode and alive state
-ghost :: Textures -> Name -> GhostState -> LifeState -> Direction -> Picture
-ghost ts name state ls dir = case (ls, state) of
-  (Alive, Frightened) -> loadAnimationFrame (ghostFrightened ts) (elapsedTime ts)
-  _ -> getGhostAnimation ts name ls dir
+ghost :: Textures -> Ghost -> Picture
+ghost ts g =
+  if lifeState g == Alive && mode g == Frightened
+    then loadAnimationFrame (ghostFrightened ts) (elapsedTime ts)
+    else getGhostAnimation ts g
 
 -- | Function to get the ghost animation frame
-getGhostAnimation :: Textures -> Name -> LifeState -> Direction -> Picture
-getGhostAnimation ts name ls dir = case ls of
+getGhostAnimation :: Textures -> Ghost -> Picture
+getGhostAnimation ts g = case lifeState g of
   Dead -> loadAnimationFrameInDirection (ghostEaten ts) (elapsedTime ts) dir
-  _ -> case name of
+  _ -> case name g of
     Blinky -> loadAnimationFrameInDirection (blinky ts) (elapsedTime ts) dir
     Pinky -> loadAnimationFrameInDirection (pinky ts) (elapsedTime ts) dir
     Inky -> loadAnimationFrameInDirection (inky ts) (elapsedTime ts) dir
     Clyde -> loadAnimationFrameInDirection (clyde ts) (elapsedTime ts) dir
+  where
+    dir = direction g
