@@ -55,6 +55,12 @@ dirRotation M.Left = 180
 dirRotation M.Up = 270
 dirRotation M.Stop = 270
 
+-- | Function to get the current frame number based on the elapsed time and the frames per second of the animation
+getFrameNumber :: Animation -> ElapsedTime -> Int
+getFrameNumber anim eT = floor $ (eT * fps anim) `mod'` totalFrames
+  where
+    totalFrames = fromIntegral . length $ frames anim
+
 -------------------------------------------------------------------------------
 -- Pure, specific texture (Picture) loading functions
 -------------------------------------------------------------------------------
@@ -62,9 +68,3 @@ dirRotation M.Stop = 270
 -- | Function for the texture updating. It is called every frame.
 pacMan :: Textures -> Direction -> Picture
 pacMan ts = loadAnimationFrameInDirection (pacman ts) (elapsedTime ts)
-
--- | Function to get the current frame number based on the elapsed time and the frames per second of the animation
-getFrameNumber :: Animation -> ElapsedTime -> Int
-getFrameNumber anim eT = floor $ (eT * fps anim) `mod'` totalFrames
-  where
-    totalFrames = fromIntegral . length $ frames anim
