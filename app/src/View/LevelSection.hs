@@ -11,7 +11,8 @@ import Model.Player hiding (position)
 import View.Config
 import View.Debug
 import View.Helpers
-import View.Animation 
+import View.Animation
+import Model.Game (GameState(bufDirection))
 
 renderLevelSection :: Textures -> GameState -> Picture
 renderLevelSection textures gs = translateToLevelSection (layoutSize . layout . level $ gs). pictures $ map ($ gs) fs
@@ -21,7 +22,7 @@ renderLevelSection textures gs = translateToLevelSection (layoutSize . layout . 
         renderIntersections,
         renderItems . items . level,
         renderGhosts,
-        (renderPlayer textures)
+        renderPlayer textures
       ]
 
 -- | Returns Pictures, consisting of all tile Pictures
@@ -58,7 +59,7 @@ renderMovable m dir ll = translateByTileSize x y
     roundVertical = (px, fromIntegral $ round py)
 
 renderPlayer :: Textures -> GameState -> Picture
-renderPlayer textures gs = renderMovable pl dir ll $ (pacMan textures)
+renderPlayer textures gs = renderMovable pl dir ll . pacMan textures $ dir
   where
     pl = player gs
     dir = direction gs
