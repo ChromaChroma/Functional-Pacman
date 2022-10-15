@@ -18,6 +18,14 @@ translateToLevelSection (lw, lh) = translate (sw' - lw') (sh' - lh')
     (sw', sh') = (fromIntegral sw / 2, fromIntegral sh / 2)
     (sw, sh) = windowSize
 
+-- | Translate a picture to the info section of the screen above the level, based on the level size and screen size
+translateToAboveLevelSection :: LevelSize -> Picture -> Picture
+translateToAboveLevelSection (lw, lh) = translate (sw' - lw') (sh' + lh')
+  where
+    (lw', lh') = (fromIntegral lw /2 * tileSize, fromIntegral lh / 2 * tileSize)
+    (sw', sh') = (fromIntegral sw / 2, fromIntegral sh / 2)
+    (sw, sh) = windowSize
+
 -- | Translate a picture by their coordinate on a level times the current tile size
 translateByTileSize :: Float -> Float -> Picture -> Picture
 translateByTileSize x y = translate (x * tileSize) (y * tileSize)

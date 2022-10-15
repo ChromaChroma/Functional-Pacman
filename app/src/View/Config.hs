@@ -16,7 +16,7 @@ fps :: Int
 fps = 60
 
 tileSize :: Float
-tileSize = 32
+tileSize = 24
 
 debug :: Bool
 debug = True
