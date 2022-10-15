@@ -13,7 +13,7 @@ import View.Debug
 import View.Helpers
 
 renderLevelSection :: GameState -> Picture
-renderLevelSection gs = translateToLevelSection . pictures $ map ($ gs) fs
+renderLevelSection gs = translateToLevelSection (layoutSize . layout . level $ gs). pictures $ map ($ gs) fs
   where
     fs =
       [ renderLevel . level,
