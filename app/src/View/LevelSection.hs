@@ -69,7 +69,7 @@ renderPlayer textures gs = renderMovable pl dir ll . pacMan textures $ dir
 renderGhosts :: Textures -> GameState -> Picture
 renderGhosts t gs = pictures . map renderGhost $ ghosts gs
   where
-    renderGhost g = renderMovable g Stop ll $ ghost t (name g) (Model.Ghosts.direction g)
+    renderGhost g = renderMovable g Stop ll $ ghost t (name g) (mode g) (Model.Ghosts.direction g)
     ll = layout $ level gs
 
 -- | Returns Pictures (Picture consisting of multiple pictures)

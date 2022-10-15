@@ -4,7 +4,7 @@ import Control.Applicative ((<$>), (<*>))
 import Data.Fixed (mod')
 import Graphics.Gloss (Picture, loadBMP, rotate)
 import Model.Game ()
-import Model.Ghosts (Name (..))
+import Model.Ghosts (Name (..), GhostState (Frightened))
 import Model.Movement as M (Direction (..))
 import qualified View.Config hiding (fps)
 
@@ -26,7 +26,8 @@ data Textures = Textures
     pinky :: DirectionalAnimation,
     inky :: DirectionalAnimation,
     clyde :: DirectionalAnimation,
-    ghostFrightened :: Animation
+    ghostFrightened :: Animation,
+    ghostFrightenedFlashing :: Animation
   }
 
 data Animation = Animation {fps :: FramesPerSecond, frames :: [Picture]}
@@ -40,7 +41,9 @@ data DirectionalAnimation = DirectionalAnimation {left :: Animation, right :: An
 -- | Function for the initial texture loading. It is called once at the beginning of the game.
 loadTextures :: IO Textures
 loadTextures = do
-  pacmanAnimation <- Animation 12 <$> mapM loadBMP ["assets/pacman-1.bmp", "assets/pacman-2.bmp", "assets/pacman-3.bmp"]
+  pacmanAnimation <- Animation 9 <$> mapM loadBMP ["assets/pacman-1.bmp", "assets/pacman-2.bmp", "assets/pacman-3.bmp"]
+  ghostFrigthenedAnimation <- Animation 6 <$> mapM loadBMP ["assets/ghost-frightened-1.bmp", "assets/ghost-frightened-2.bmp"]
+  ghostFrigthenedFlashingAnimation <- Animation 6 <$> mapM loadBMP ["assets/ghost-frightened-flashing-1.bmp", "assets/ghost-frightened-flashing-2.bmp"]
   blinkyAnimation <-
     DirectionalAnimation . Animation 6 <$> mapM loadBMP ["assets/blinky-left-1.bmp", "assets/blinky-left-2.bmp"]
       <*> (Animation 6 <$> mapM loadBMP ["assets/blinky-right-1.bmp", "assets/blinky-right-2.bmp"])
@@ -69,7 +72,8 @@ loadTextures = do
         pinky = pinkyAnimation,
         inky = inkyAnimation,
         clyde = clydeAnimation,
-        ghostFrightened = pacmanAnimation
+        ghostFrightened = ghostFrigthenedAnimation,
+        ghostFrightenedFlashing = ghostFrigthenedFlashingAnimation
       }
 
 -------------------------------------------------------------------------------
@@ -115,9 +119,16 @@ getFrameNumber anim eT = floor $ (eT * fps anim) `mod'` totalFrames
 pacMan :: Textures -> Direction -> Picture
 pacMan ts = loadAnimationFrameRotated (pacman ts) (elapsedTime ts)
 
+-- | Function to get the ghost animation frame, based on the ghost name, mode and alive state
+ghost :: Textures -> Name -> GhostState -> Direction -> Picture
+ghost ts name state dir = case state of 
+  Frightened -> loadAnimationFrame (ghostFrightened ts) (elapsedTime ts)
+  _ -> getGhostAnimation ts name dir
+
 -- | Function to get the ghost animation frame
-ghost :: Textures -> Name -> Direction -> Picture
-ghost ts Blinky = loadAnimationFrameInDirection (blinky ts) (elapsedTime ts)
-ghost ts Pinky = loadAnimationFrameInDirection (pinky ts) (elapsedTime ts)
-ghost ts Inky = loadAnimationFrameInDirection (inky ts) (elapsedTime ts)
-ghost ts Clyde = loadAnimationFrameInDirection (clyde ts) (elapsedTime ts)
+getGhostAnimation :: Textures -> Name -> Direction -> Picture
+getGhostAnimation ts name dir = case name of
+  Blinky ->loadAnimationFrameInDirection (blinky ts) (elapsedTime ts) dir
+  Pinky -> loadAnimationFrameInDirection (pinky ts) (elapsedTime ts) dir
+  Inky -> loadAnimationFrameInDirection (inky ts) (elapsedTime ts) dir
+  Clyde -> loadAnimationFrameInDirection (clyde ts) (elapsedTime ts) dir

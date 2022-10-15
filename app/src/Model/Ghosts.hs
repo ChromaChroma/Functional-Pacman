@@ -1,6 +1,6 @@
 module Model.Ghosts
   ( Ghost (..),
-    GhostState,
+    GhostState(..),
     Name(..),
     LifeState,
     blinky,
