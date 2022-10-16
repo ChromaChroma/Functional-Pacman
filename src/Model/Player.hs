@@ -12,15 +12,39 @@ where
 
 import Model.Movement (Collidable, Direction (..), Movable (..), Position, Positioned (..), Speed)
 
--- |
--- |  Lives
--- |
+-------------------------------------------------------------------------------
+-- Data structures
+-------------------------------------------------------------------------------
 
 -- | Number of lives the player has left
-newtype Lives = Lives
-  { unlives :: Int
+newtype Lives = Lives {unlives :: Int} deriving (Eq, Show)
+
+-- | Player data structure containing all information about the player and its movement
+data Player = Player
+  { position :: Position,
+    speed :: Speed,
+    lives :: Lives,
+    direction :: Direction,
+    bufDirection :: Direction
   }
-  deriving (Eq, Show)
+  deriving (Eq)
+
+-------------------------------------------------------------------------------
+-- Type class implementations
+-------------------------------------------------------------------------------
+
+instance Positioned Player where
+  getPosition = position
+  setPosition player pos = player {position = pos}
+
+instance Collidable Player
+
+instance Movable Player where
+  getSpeed = speed
+
+-------------------------------------------------------------------------------
+-- Logic
+-------------------------------------------------------------------------------
 
 -- | Safe Lives constructor
 mkLives :: Int -> Maybe Lives
@@ -39,27 +63,9 @@ rmLife lives
 isAlive :: Lives -> Bool
 isAlive = (> 0) . unlives
 
--- |
--- |  Player
--- |
-
-data Player = Player
-  { position :: Position,
-    speed :: Speed,
-    lives :: Lives,
-    direction :: Direction,
-    bufDirection :: Direction
-  }
-  deriving (Eq)
-
-instance Positioned Player where
-  getPosition = position
-  setPosition player pos = player {position = pos}
-
-instance Collidable Player
-
-instance Movable Player where
-  getSpeed = speed
+-------------------------------------------------------------------------------
+-- Default value functions
+-------------------------------------------------------------------------------
 
 defaultPlayer :: Player
 defaultPlayer = Player (1, 1) 0.1 (Lives 3) Stop Stop

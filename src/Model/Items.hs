@@ -12,6 +12,13 @@ where
 import Model.Movement (Collidable, Position, Positioned (..))
 import Model.Score (Points)
 
+-------------------------------------------------------------------------------
+-- Data structures
+-------------------------------------------------------------------------------
+
+-- | Types of fruit
+data FruitType = Cherry | Strawberry | Orange | Apple | Melon | Galaxian | Bell | Key deriving (Eq, Show)
+
 -- | Item representing an object that can give point score to the player when eaten
 -- | Dot          : is the most common item to be consumed and are needed to complete a level
 -- | PowerPellet  : is a special item that gives the player the ability to eat ghosts
@@ -32,11 +39,9 @@ data PointItem
       }
   deriving (Eq)
 
-mkDot :: Position -> PointItem
-mkDot pos = Dot pos 10
-
-mkPowerPellet :: Position -> PointItem
-mkPowerPellet pos = PowerPellet pos 50
+-------------------------------------------------------------------------------
+-- Type class implementations
+-------------------------------------------------------------------------------
 
 instance Positioned PointItem where
   getPosition = position
@@ -44,8 +49,19 @@ instance Positioned PointItem where
 
 instance Collidable PointItem
 
--- | Types of fruit
-data FruitType = Cherry | Strawberry | Orange | Apple | Melon | Galaxian | Bell | Key deriving (Eq, Show)
+-------------------------------------------------------------------------------
+-- Logic
+-------------------------------------------------------------------------------
+
+mkDot :: Position -> PointItem
+mkDot pos = Dot pos 10
+
+mkPowerPellet :: Position -> PointItem
+mkPowerPellet pos = PowerPellet pos 50
+
+-------------------------------------------------------------------------------
+-- Default value functions
+-------------------------------------------------------------------------------
 
 defaultFruits :: [PointItem]
 defaultFruits =

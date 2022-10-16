@@ -9,12 +9,16 @@ module Model.Game
   )
 where
 
-import Model.Ghosts (Ghost (lifeState, mode), blinky, clyde, inky, pinky, GhostState (Frightened), LifeState (Alive, Eaten), collidesWithMovable, canBeEaten)
+import Model.Ghosts (Ghost (lifeState, mode), GhostState (Frightened), LifeState (Alive, Eaten), blinky, canBeEaten, clyde, collidesWithMovable, inky, pinky)
 import qualified Model.Items as I
 import Model.Level (Level (items, playerSpawn), defaultLevel)
-import Model.Movement (Collidable (collides), Positioned (setPosition), Movable (getSpeed))
+import Model.Movement (Collidable (collides), Movable (getSpeed), Positioned (setPosition))
 import Model.Player (Player (lives), defaultPlayer, isAlive, position, rmLife)
 import Model.Score (Points)
+
+-------------------------------------------------------------------------------
+-- Data structures
+-------------------------------------------------------------------------------
 
 -- | Time the game or the tickTimer has been running in milliseconds
 type Time = Int
@@ -32,6 +36,11 @@ data GameState = GameState
     ghosts :: [Ghost],
     points :: Points
   }
+  deriving (Eq)
+
+-------------------------------------------------------------------------------
+-- Logic
+-------------------------------------------------------------------------------
 
 loadGame :: Level -> [Ghost] -> Player -> GameState
 loadGame lvl ghosts pl =
@@ -44,13 +53,6 @@ loadGame lvl ghosts pl =
       ghosts = ghosts,
       points = 0
     }
-
-defaultGame :: GameState
-defaultGame = loadGame lvl ghosts pl
-  where
-    lvl = defaultLevel
-    pl = setPosition defaultPlayer (playerSpawn lvl)
-    ghosts = [blinky, pinky, inky, clyde]
 
 -- | Check if game is over and update it if necessary
 checkGameOver :: GameState -> GameState
@@ -66,22 +68,7 @@ tickDurationIn = 30
 
 -- | Logic for collisions
 checkCollisions :: GameState -> GameState
-checkCollisions = checkGhostCollisions . checkItemCollisions
-
-checkGhostCollisions :: GameState -> GameState
-checkGhostCollisions gs = handleGhostCollisions gs (filter (`collidesWithMovable` player gs) $ ghosts gs)
-
-handleGhostCollisions :: GameState -> [Ghost] -> GameState
-handleGhostCollisions gs [] = gs
-handleGhostCollisions gs (g : _) = if canBeEaten g
-  then eatGhost gs
-  else respawnPlayer . reduceLife $ gs
-  where
-    eatGhost gs = gs {ghosts = map (\x -> if x == g then x {lifeState = Eaten} else x) (ghosts gs)}
-    reduceLife gs = gs {player = (player gs) {lives = rmLife . lives . player $ gs}}
-    respawnPlayer gs
-      | isAlive . lives $ player gs = gs {player = (player gs) {position = playerSpawn . level $ gs}}
-      | otherwise = gs {status = GameOver}
+checkCollisions = checkItemCollisions . checkGhostCollisions
 
 checkItemCollisions :: GameState -> GameState
 checkItemCollisions gs = foldr (\item -> removeItem item . addItemScore item . handleItemType item) gs (filter (player gs `collides`) (items . level $ gs))
@@ -89,5 +76,32 @@ checkItemCollisions gs = foldr (\item -> removeItem item . addItemScore item . h
     removeItem item gs = gs {level = (level gs) {items = filter (/= item) (items . level $ gs)}}
     addItemScore item gs = gs {points = points gs + I.points item}
     handleItemType item gs = case item of
-      I.PowerPellet _ _  -> gs {ghosts = map (\x -> x {mode = Frightened}) (ghosts gs)}
+      I.PowerPellet _ _ -> gs {ghosts = map (\x -> x {mode = Frightened}) (ghosts gs)}
       _ -> gs
+
+checkGhostCollisions :: GameState -> GameState
+checkGhostCollisions gs = handleGhostCollisions gs (filter (`collidesWithMovable` player gs) $ ghosts gs)
+
+handleGhostCollisions :: GameState -> [Ghost] -> GameState
+handleGhostCollisions gs [] = gs
+handleGhostCollisions gs (g : _) =
+  if canBeEaten g
+    then eatGhost gs
+    else respawnPlayer . reduceLife $ gs
+  where
+    eatGhost gs = gs {ghosts = map (\x -> if x == g then x {lifeState = Eaten} else x) (ghosts gs)}
+    reduceLife gs = gs {player = (player gs) {lives = rmLife . lives . player $ gs}}
+    respawnPlayer gs
+      | isAlive . lives $ player gs = gs {player = (player gs) {position = playerSpawn . level $ gs}}
+      | otherwise = gs {status = GameOver}
+
+-------------------------------------------------------------------------------
+-- Default value functions
+-------------------------------------------------------------------------------
+
+defaultGame :: GameState
+defaultGame = loadGame lvl ghosts pl
+  where
+    lvl = defaultLevel
+    pl = setPosition defaultPlayer (playerSpawn lvl)
+    ghosts = [blinky, pinky, inky, clyde]

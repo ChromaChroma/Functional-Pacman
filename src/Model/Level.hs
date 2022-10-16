@@ -22,6 +22,10 @@ import Model.Items (PointItem (..), Position, defaultFruits, mkDot, mkPowerPelle
 import Model.Movement ()
 import Model.Player (Player, defaultPlayer)
 
+-------------------------------------------------------------------------------
+-- Data structures
+-------------------------------------------------------------------------------
+
 -- | Number or id of the level
 type LevelNumber = Int
 
@@ -49,23 +53,23 @@ data Level = Level
     layout :: Layout,
     playerSpawn :: PlayerSpawn
   }
+  deriving (Eq)
 
 -- | Size of the level layout in amount of tiles
 type LevelSize = (Int, Int)
+
+-- | an Intersecion is an (Int, Int) tuple corresponding with a tile position on which 3 or more directions can be moved
+type Intersection = (Int, Int)
+
+-------------------------------------------------------------------------------
+-- Logic
+-------------------------------------------------------------------------------
 
 -- | Safe constructor for level number
 mkLevelNumber :: Int -> Maybe LevelNumber
 mkLevelNumber num
   | num >= 0 = Just num
   | otherwise = Nothing
-
--- | Returns the size of the provided level layout
-layoutSize :: Layout -> LevelSize
-layoutSize layout = (length . head $ layout, length layout)
-
--- | Validates the size of the provided layout, checking that all lists are the correct length
-validLayout :: Layout -> Bool
-validLayout l = let (x, y) = layoutSize l in length l == y && all ((== x) . length) l
 
 -- | Safe constructor for level
 mkLevel ::
@@ -76,7 +80,7 @@ mkLevel ::
   PlayerSpawn ->
   Maybe Level
 mkLevel n layout items enemies spawn
-  | validLayout layout =
+  | isValidLayout layout =
     Just
       Level
         { levelNumber = n,
@@ -86,33 +90,38 @@ mkLevel n layout items enemies spawn
         }
   | otherwise = Nothing
 
--- | Gets the tile at the provided position in the layout if present, otherwise returns Nothing
-tileAt :: Level -> (Int, Int) -> Maybe Tile
-tileAt level (x, y)
-  | x < lvlWidth && y < lvlHeight = Just $ lvlLayout !! y !! x
-  | otherwise = Nothing
+-- | Validates the size of the provided layout, checking that all lists are the correct length
+isValidLayout :: Layout -> Bool
+isValidLayout l = let (x, y) = layoutSize l in length l == y && all ((== x) . length) l
+
+-- | Returns the size of the provided level layout
+layoutSize :: Layout -> LevelSize
+layoutSize layout = (length . head $ layout, length layout)
+
+-- | Validates if the level is complete, meaning all dots are eaten
+isLevelComplete :: Level -> Bool
+isLevelComplete level = not $ any isDot (items level)
   where
-    lvlLayout = layout level
-    (lvlWidth, lvlHeight) = layoutSize lvlLayout
+    isDot (Dot _ _) = True
+    isDot _ = False
 
 -- | Function to find tile on coordinate in level, wrapping around if out of bounds
 tileAtW :: Level -> (Int, Int) -> Tile
 tileAtW level (x, y)
   | x < 0 = tileAtW level (x + x', y)
   | y < 0 = tileAtW level (x, y + y')
-  | otherwise = fromJust $ tileAt level (x `mod` x', y `mod` y')
+  | otherwise = layout level !! y !! x
   where
-    (x', y') = layoutSize $ layout level
+    (x', y') = layoutSize . layout $ level
 
--- | an Intersecion is an (Int, Int) tuple corresponding with a tile position on which 3 or more directions can be moved
-type Intersection = (Int, Int)
-
+-- Calculates the floor intersections of the level
 levelIntersections :: Level -> [Intersection]
 levelIntersections level =
   [ (x, y)
     | x <- [0 .. (width -1)],
       y <- [0 .. (height -1)],
-      tileAtW level (x, y) == Floor && isIntersection (x, y)
+      tileAtW level (x, y) == Floor,
+      isIntersection (x, y)
   ]
   where
     (width, height) = layoutSize $ layout level
@@ -123,15 +132,9 @@ levelIntersections level =
         up = tileAtW level (x', y' + 1)
         down = tileAtW level (x', y' - 1)
 
-isLevelComplete :: Level -> Bool
-isLevelComplete level = not $ any isDot (items level)
-  where
-    isDot (Dot _ _) = True
-    isDot _ = False
-    
--- |
--- | Default level
--- |
+-------------------------------------------------------------------------------
+-- Default value functions
+-------------------------------------------------------------------------------
 
 -- | Default PacMan level
 defaultLevel :: Level
@@ -179,6 +182,16 @@ defaultLayout =
     [Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall, Wall]
   ]
 
+-- | Original power pellet locations
+defaultPowerPellets :: [PointItem]
+defaultPowerPellets =
+  [ mkPowerPellet (1, 7),
+    mkPowerPellet (26, 7),
+    mkPowerPellet (1, 27),
+    mkPowerPellet (26, 27)
+  ]
+
+-- | Original dot locations
 defaultDots :: [PointItem]
 defaultDots =
   [ mkDot (1, 1),
@@ -424,26 +437,3 @@ defaultDots =
     mkDot (25, 29),
     mkDot (26, 29)
   ]
-
-defaultPowerPellets :: [PointItem]
-defaultPowerPellets =
-  [ mkPowerPellet (1, 7),
-    mkPowerPellet (26, 7),
-    mkPowerPellet (1, 27),
-    mkPowerPellet (26, 27)
-  ]
-
--- | Development level layout
--- defaultLayout :: Layout
--- defaultLayout = [
---   [Wall, Wall,  Wall,   Wall,   Wall, Wall, Wall, Wall, Wall, Wall],
---   [Wall, Floor, Floor,  Floor,  Floor, Floor, Floor, Floor, Floor, Wall],
---   [Wall, Floor, Wall,   Wall,  Wall, Wall, Floor, Wall, Floor, Wall],
---   [Wall, Floor, Floor,  Floor,  Floor, Floor, Floor, Floor, Floor, Wall],
---   [Wall, Floor, Wall,   Floor,  Wall, Wall, Wall, Wall, Floor, Wall],
---   [Wall, Floor, Floor,  Floor,  Wall, Floor, Floor, Wall, Floor, Wall],
---   [Wall, Floor, Wall,   Floor,  Wall, Floor, Floor, Wall, Floor, Wall],
---   [Wall, Floor, Wall,   Floor,  Wall, Wall, GhostDoor Closed, Wall, Floor, Wall],
---   [Wall, Floor, Floor,  Floor,  Floor, Floor, Floor, Floor, Floor, Wall],
---   [Wall, Wall,  Wall,   Wall,   Wall, Wall, Wall, Wall, Wall, Wall]
---   ]

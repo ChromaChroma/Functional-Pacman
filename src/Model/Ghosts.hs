@@ -1,15 +1,15 @@
 module Model.Ghosts
   ( Ghost (..),
-    GhostState(..),
-    Name(..),
-    LifeState(..),
+    GhostState (..),
+    Name (..),
+    LifeState (..),
     blinky,
     pinky,
     inky,
     clyde,
     isEaten,
     canBeEaten,
-    collidesWithMovable
+    collidesWithMovable,
   )
 where
 
@@ -26,9 +26,9 @@ data LifeState = Alive | Eaten deriving (Eq, Show)
 data Name = Blinky | Pinky | Inky | Clyde deriving (Eq, Show)
 
 -- | States a ghost can be in
--- | Chasing is the state in which ghosts chase the player
--- | Frightened is the state in which ghosts run away from the player
--- | Scatter is the state in which ghosts move to their specific location 
+-- | Chasing    : is the state in which ghosts chase the player
+-- | Frightened : is the state in which ghosts run away from the player
+-- | Scatter    : is the state in which ghosts move to their specific location
 data GhostState = Chasing | Frightened | Scatter deriving (Eq, Show)
 
 -- | The ghost's current state
@@ -40,7 +40,8 @@ data Ghost = Ghost
     lifeState :: LifeState,
     direction :: Direction,
     prevDirection :: Direction
-  } deriving (Eq)
+  }
+  deriving (Eq)
 
 -------------------------------------------------------------------------------
 -- Type class implementations
@@ -49,13 +50,12 @@ data Ghost = Ghost
 instance Positioned Ghost where
   getPosition = position
   setPosition ghost pos = ghost {position = pos}
-  
+
 instance Collidable Ghost
 
 instance Movable Ghost where
   getSpeed = speed
 
-  
 -------------------------------------------------------------------------------
 -- Logic
 -------------------------------------------------------------------------------

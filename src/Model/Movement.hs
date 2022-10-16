@@ -12,11 +12,22 @@ where
 import Model.Utils (mod')
 import Prelude hiding (Down, Left, Right, Up)
 
+-------------------------------------------------------------------------------
+-- Data structures
+-------------------------------------------------------------------------------
+
 -- | Position of something
 type Position = (Float, Float)
 
-intPosition :: Position -> (Int, Int)
-intPosition (x, y) = (round x, round y)
+-- | Directions a movement can be in, including Stop for an idle in movement
+data Direction = Up | Down | Left | Right | Stop deriving (Eq, Show)
+
+-- | A movable's Speed in Ints unit
+type Speed = Float
+
+-------------------------------------------------------------------------------
+-- Type classes
+-------------------------------------------------------------------------------
 
 -- | Something that has a position
 class Positioned a where
@@ -31,12 +42,6 @@ class (Positioned a) => Collidable a where
       checkPositions (ax, ay) (bx, by) = isWithinThreshhold ax bx && isWithinThreshhold ay by
       isWithinThreshhold z z' = abs (z - z') <= threshhold
       threshhold = 0.1 -- 0.1 is a constant deviation from another collidable that would count as collision
-
--- | Directions a movement can be in, including Stop for an idle in movement
-data Direction = Up | Down | Left | Right | Stop deriving (Eq, Show)
-
--- | A movable's Speed in Ints unit
-type Speed = Float
 
 class (Positioned a) => Movable a where
   getSpeed :: a -> Speed
@@ -54,3 +59,10 @@ class (Positioned a) => Movable a where
         Stop -> (x, y)
       wrapMovement :: Position -> Position
       wrapMovement (x, y) = (x `mod'` (fromIntegral w-1), y `mod'` (fromIntegral h - 1))
+
+-------------------------------------------------------------------------------
+-- Helper functions
+-------------------------------------------------------------------------------
+
+intPosition :: Position -> (Int, Int)
+intPosition (x, y) = (round x, round y)
