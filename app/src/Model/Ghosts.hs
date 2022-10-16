@@ -7,10 +7,17 @@ module Model.Ghosts
     pinky,
     inky,
     clyde,
+    isEaten,
+    canBeEaten,
+    collidesWithMovable
   )
 where
 
-import Model.Movement (Collidable, Direction (..), Movable (..), Position, Positioned (..), Speed)
+import Model.Movement (Collidable (collides), Direction (..), Movable (..), Position, Positioned (..), Speed)
+
+-------------------------------------------------------------------------------
+-- Data structures
+-------------------------------------------------------------------------------
 
 -- | State of living of a Ghost
 data LifeState = Alive | Eaten deriving (Eq, Show)
@@ -35,6 +42,10 @@ data Ghost = Ghost
     prevDirection :: Direction
   } deriving (Eq)
 
+-------------------------------------------------------------------------------
+-- Type class implementations
+-------------------------------------------------------------------------------
+
 instance Positioned Ghost where
   getPosition = position
   setPosition ghost pos = ghost {position = pos}
@@ -43,6 +54,24 @@ instance Collidable Ghost
 
 instance Movable Ghost where
   getSpeed = speed
+
+  
+-------------------------------------------------------------------------------
+-- Logic
+-------------------------------------------------------------------------------
+
+isEaten :: Ghost -> Bool
+isEaten = (/= Alive) . lifeState
+
+canBeEaten :: Ghost -> Bool
+canBeEaten ghost = mode ghost == Frightened && lifeState ghost == Alive
+
+collidesWithMovable :: (Movable a, Collidable a) => Ghost -> a -> Bool
+collidesWithMovable ghost m = lifeState ghost == Alive && ghost `collides` m
+
+-------------------------------------------------------------------------------
+-- Default value functions
+-------------------------------------------------------------------------------
 
 -- | Default ghost constructors for each original ghost
 blinky :: Ghost

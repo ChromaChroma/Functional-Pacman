@@ -4,7 +4,7 @@ import Control.Applicative ((<$>), (<*>))
 import Data.Fixed (mod')
 import Graphics.Gloss (Picture, loadBMP, rotate)
 import Model.Game ()
-import Model.Ghosts (Ghost (direction, lifeState, mode, name), GhostState (Frightened), LifeState (Alive, Eaten), Name (..))
+import Model.Ghosts (Ghost (direction, lifeState, mode, name), GhostState (Frightened), LifeState (Alive, Eaten), Name (..), isEaten)
 import Model.Movement as M (Direction (..))
 import qualified View.Config hiding (fps)
 
@@ -137,12 +137,13 @@ ghost ts g =
 
 -- | Function to get the ghost animation frame
 getGhostAnimation :: Textures -> Ghost -> Picture
-getGhostAnimation ts g = case lifeState g of
-  Eaten -> loadAnimationFrameInDirection (ghostEaten ts) (elapsedTime ts) dir
-  _ -> case name g of
-    Blinky -> loadAnimationFrameInDirection (blinky ts) (elapsedTime ts) dir
-    Pinky -> loadAnimationFrameInDirection (pinky ts) (elapsedTime ts) dir
-    Inky -> loadAnimationFrameInDirection (inky ts) (elapsedTime ts) dir
-    Clyde -> loadAnimationFrameInDirection (clyde ts) (elapsedTime ts) dir
+getGhostAnimation ts g =
+  if isEaten g
+    then loadAnimationFrameInDirection (ghostEaten ts) (elapsedTime ts) dir
+    else case name g of
+      Blinky -> loadAnimationFrameInDirection (blinky ts) (elapsedTime ts) dir
+      Pinky -> loadAnimationFrameInDirection (pinky ts) (elapsedTime ts) dir
+      Inky -> loadAnimationFrameInDirection (inky ts) (elapsedTime ts) dir
+      Clyde -> loadAnimationFrameInDirection (clyde ts) (elapsedTime ts) dir
   where
     dir = direction g

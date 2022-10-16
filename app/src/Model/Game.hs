@@ -9,7 +9,7 @@ module Model.Game
   )
 where
 
-import Model.Ghosts (Ghost (lifeState, mode), blinky, clyde, inky, pinky, GhostState (Frightened), LifeState (Alive, Eaten))
+import Model.Ghosts (Ghost (lifeState, mode), blinky, clyde, inky, pinky, GhostState (Frightened), LifeState (Alive, Eaten), collidesWithMovable, canBeEaten)
 import qualified Model.Items as I
 import Model.Level (Level (items, playerSpawn), defaultLevel)
 import Model.Movement (Collidable (collides), Direction (..), Positioned (setPosition), Movable (getSpeed))
@@ -74,24 +74,15 @@ checkCollisions :: GameState -> GameState
 checkCollisions = checkGhostCollisions . checkItemCollisions
 
 checkGhostCollisions :: GameState -> GameState
-checkGhostCollisions gs = handleGhostCollisions gs (filter (\g -> player gs `collides` g && lifeState g == Alive) $ ghosts gs)
-  -- let collidingGhosts = filter (player gs `collides`) $ ghosts gs
-  --  in if not (null collidingGhosts)
-  --       then respawnPlayer . reduceLife $ gs
-  --       else gs
-  -- where
-  --   reduceLife gs = gs {player = (player gs) {lives = rmLife . lives . player $ gs}}
-  --   respawnPlayer gs
-  --     | isAlive . lives $ player gs = gs {player = (player gs) {position = playerSpawn . level $ gs}}
-  --     | otherwise = gs {status = GameOver}
+checkGhostCollisions gs = handleGhostCollisions gs (filter (`collidesWithMovable` player gs) $ ghosts gs)
 
 handleGhostCollisions :: GameState -> [Ghost] -> GameState
 handleGhostCollisions gs [] = gs
-handleGhostCollisions gs (g : _) = if (lifeState g == Alive) && (mode g == Frightened)
-  then gs {ghosts = map (\x -> if x == g then x {lifeState = Eaten} else x) (ghosts gs)}
+handleGhostCollisions gs (g : _) = if canBeEaten g
+  then eatGhost gs
   else respawnPlayer . reduceLife $ gs
   where
-    eatGhost g = g {lifeState = Eaten}
+    eatGhost gs = gs {ghosts = map (\x -> if x == g then x {lifeState = Eaten} else x) (ghosts gs)}
     reduceLife gs = gs {player = (player gs) {lives = rmLife . lives . player $ gs}}
     respawnPlayer gs
       | isAlive . lives $ player gs = gs {player = (player gs) {position = playerSpawn . level $ gs}}
