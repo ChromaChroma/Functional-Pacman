@@ -6,9 +6,9 @@ import Model.Game (Time)
 import Model.Level (LevelSize)
 import View.Config (tileSize, windowSize)
 
--- |
--- | Render Helper functions
--- |
+-------------------------------------------------------------------------------
+-- Picture transformations
+-------------------------------------------------------------------------------
 
 -- | Translate a picture to the level section of the screen to the center, based on the level size and screen size
 translateToLevelSection :: LevelSize -> Picture -> Picture
@@ -30,6 +30,10 @@ translateToAboveLevelSection (lw, lh) = translate (sw' - lw') (sh' + lh')
 translateByTileSize :: Float -> Float -> Picture -> Picture
 translateByTileSize x y = translate (x * tileSize) (y * tileSize)
 
+-------------------------------------------------------------------------------
+-- Text picture helper functions
+-------------------------------------------------------------------------------
+
 -- | Create a Text Picture with the given text 
 smallTextOnly :: String -> Picture
 smallTextOnly = color white . scale 0.1 0.1 . text
@@ -42,13 +46,13 @@ smallText name a = color white . scale 0.1 0.1 . text $ name ++ show a
 layeredText :: Float -> Float -> Int -> String -> Picture
 layeredText x y n txt = pictures $ map (\i -> translate (x + i) (y -1) . color white $ text txt) [1 .. fromIntegral n]
 
+-------------------------------------------------------------------------------
+-- Picture combining helper functions
+-------------------------------------------------------------------------------
+
 -- | Stacks a list of pictures vertically with the given pixels between each picture
 stack :: Float -> [Picture] -> [Picture]
 stack pxs = stack' 0
   where
     stack' _ [] = []
     stack' y (p : ps) = translate 0 y p : stack' (y + pxs) ps
-
--- | Convert the given milliseconds time to seconds
-msToSec :: Time -> Float
-msToSec t = fromIntegral t / 1000

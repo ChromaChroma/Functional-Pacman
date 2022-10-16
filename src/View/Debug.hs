@@ -10,7 +10,7 @@ import View.Config
 import View.Helpers
 
 renderDebug :: GameState -> Picture
-renderDebug gs = renderIfDebug $pictures [(renderDebugDetails gs)]
+renderDebug gs = renderIfDebug $pictures [renderDebugDetails gs]
 
 -- | Checks if application is in debug mode, if so render the passed Picture else return Blank
 renderIfDebug :: Picture -> Picture
@@ -23,7 +23,7 @@ renderDebugDetails gs =
         reverse
           [ smallText "Status: " . status $ gs,
             smallText "Points: " . points $ gs,
-            smallText "Elapsed time (s): " . msToSec . elapsedTime $ gs,
+            smallText "Elapsed time (s): " $ (fromIntegral . elapsedTime $ gs) / 1000,
             smallText "Tick time (ms): " . tickTimer $ gs,
             smallText "Lives: " . unlives . lives . player $ gs,
             smallText "Direction: " . direction . player $ gs,

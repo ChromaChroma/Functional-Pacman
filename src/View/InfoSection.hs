@@ -6,7 +6,7 @@ import Model.Level (Level (layout), layoutSize)
 import Model.Player (Lives (Lives, unlives), Player (lives))
 import Model.Score (Points, Score)
 import View.Config (tileSize)
-import View.Helpers (msToSec, smallText, smallTextOnly, translateToAboveLevelSection)
+import View.Helpers (smallText, smallTextOnly, translateToAboveLevelSection)
 
 renderInfoSection :: GameState -> Picture
 renderInfoSection gs =
@@ -28,7 +28,7 @@ renderLives (Lives lives)
     life n = translate ((n -1) * tileSize) (tileSize / 5) . color rose . rectangleSolid (tileSize / 2) $ (tileSize / 2)
 
 renderTime :: Time -> Picture
-renderTime = smallText "Elapsed time: " . floor . msToSec
+renderTime t = smallText "Elapsed time: " . floor $ fromIntegral t / 1000
 
 renderScore :: Points -> Picture
 renderScore = smallText "Score: "
