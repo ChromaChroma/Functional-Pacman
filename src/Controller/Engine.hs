@@ -2,7 +2,7 @@ module Controller.Engine where
 
 import Controller.MovementController as MC (makePlayerMove)
 import Model.Game
-  ( GameState (bufDirection, elapsedTime, player, status, tickTimer, level),
+  ( GameState (elapsedTime, player, status, tickTimer, level),
     Status (Active, GameOver, Paused),
     checkCollisions,
     checkGameOver,
@@ -10,7 +10,7 @@ import Model.Game
   )
 import Model.Level (isLevelComplete)
 import Model.Movement (Direction)
-import Model.Player as P (Player (lives), isAlive)
+import Model.Player as P (Player (lives, bufDirection), isAlive)
 import Prelude hiding (Left, Right)
 
 startNewGame :: GameState
@@ -70,7 +70,7 @@ resetTickTimer gs = gs {tickTimer = 0}
 
 -- | Change player's direction / stop
 movePlayer :: Direction -> GameState -> GameState
-movePlayer dir gs = gs {bufDirection = dir}
+movePlayer dir gs = gs {player = (player gs) {bufDirection = dir}}
 
 --  Pause the game
 pause :: GameState -> GameState

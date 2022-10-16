@@ -62,7 +62,7 @@ renderPlayer :: Textures -> GameState -> Picture
 renderPlayer textures gs = renderMovable pl dir ll . pacMan textures $ dir
   where
     pl = player gs
-    dir = Model.Game.direction gs
+    dir = Model.Player.direction . player $ gs
     ll = layout $ level gs
 
 -- | Returns Pictures (Picture consisting of multiple pictures

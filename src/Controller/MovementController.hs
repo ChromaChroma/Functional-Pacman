@@ -2,7 +2,7 @@ module Controller.MovementController where
 
 import Data.Fixed (mod')
 import Data.Maybe (Maybe (..), fromJust, isJust)
-import Model.Game (GameState (bufDirection, direction, level, player))
+import Model.Game (GameState (level, player))
 import Model.Ghosts (Ghost)
 import Model.Level
   ( DoorState (Open),
@@ -17,18 +17,19 @@ import Model.Movement
     Positioned (getPosition, setPosition),
     intPosition,
   )
-import Model.Player (Player)
+import Model.Player (Player(direction, bufDirection))
 import Numeric (showFFloat)
 import Prelude hiding (Down, Left, Right, Up)
 
 makePlayerMove :: GameState -> GameState
 makePlayerMove gs
-  | isJust bufMovedPlayer = gs {player = fromJust bufMovedPlayer, direction = bufDirection gs, bufDirection = Stop}
+  | isJust bufMovedPlayer = gs {player = (fromJust bufMovedPlayer) {direction = bufDir, bufDirection = Stop}}
   | isJust movedPlayer = gs {player = fromJust movedPlayer}
   | otherwise = gs
   where
-    bufMovedPlayer = makeDirectionMove gs (bufDirection gs)
-    movedPlayer = makeDirectionMove gs (direction gs)
+    bufMovedPlayer = makeDirectionMove gs bufDir 
+    bufDir = bufDirection . player $ gs
+    movedPlayer = makeDirectionMove gs (direction . player $ gs)
 
 makeDirectionMove :: GameState -> Direction -> Maybe Player
 makeDirectionMove gs dir

@@ -46,7 +46,9 @@ isAlive = (> 0) . unlives
 data Player = Player
   { position :: Position,
     speed :: Speed,
-    lives :: Lives
+    lives :: Lives,
+    direction :: Direction,
+    bufDirection :: Direction
   }
   deriving (Eq)
 
@@ -60,4 +62,4 @@ instance Movable Player where
   getSpeed = speed
 
 defaultPlayer :: Player
-defaultPlayer = Player (1, 1) 0.1 (Lives 3)
+defaultPlayer = Player (1, 1) 0.1 (Lives 3) Stop Stop

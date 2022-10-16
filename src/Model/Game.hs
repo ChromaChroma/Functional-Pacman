@@ -12,10 +12,9 @@ where
 import Model.Ghosts (Ghost (lifeState, mode), blinky, clyde, inky, pinky, GhostState (Frightened), LifeState (Alive, Eaten), collidesWithMovable, canBeEaten)
 import qualified Model.Items as I
 import Model.Level (Level (items, playerSpawn), defaultLevel)
-import Model.Movement (Collidable (collides), Direction (..), Positioned (setPosition), Movable (getSpeed))
+import Model.Movement (Collidable (collides), Positioned (setPosition), Movable (getSpeed))
 import Model.Player (Player (lives), defaultPlayer, isAlive, position, rmLife)
 import Model.Score (Points)
-import Prelude hiding (Left, Right)
 
 -- | Time the game or the tickTimer has been running in milliseconds
 type Time = Int
@@ -30,8 +29,6 @@ data GameState = GameState
     level :: Level,
     elapsedTime :: Time,
     tickTimer :: Time,
-    direction :: Direction,
-    bufDirection :: Direction,
     ghosts :: [Ghost],
     points :: Points
   }
@@ -42,8 +39,6 @@ loadGame lvl ghosts pl =
     { status = Active,
       elapsedTime = 0,
       tickTimer = 0,
-      direction = Stop,
-      bufDirection = Stop,
       player = pl,
       level = lvl,
       ghosts = ghosts,
