@@ -2,7 +2,7 @@ module Model.Game
   ( GameState (..),
     defaultGame,
     Status (..),
-    GhostState (..),
+    GhostMode (..),
     Time,
     tickDurationIn,
     checkCollisions,
@@ -11,7 +11,7 @@ module Model.Game
   )
 where
 
-import Model.Ghosts (Ghost (lifeState), LifeState (Alive, Eaten), blinky, clyde, collidesWithMovable, inky, pinky)
+import Model.Ghosts (Ghost (eatenState), EatenState (NotEaten, Eaten), blinky, clyde, collidesWithMovable, inky, pinky, isNotEaten)
 import qualified Model.Items as I
 import Model.Level (Level (items, playerSpawn), defaultLevel)
 import Model.Movement (Collidable (collides), Movable (getSpeed), Positioned (setPosition))
@@ -28,11 +28,11 @@ type Time = Int
 -- | Acitivity status of the game
 data Status = Waiting | Active | Paused | GameOver deriving (Eq, Show)
 
--- | States the ghosts can be in
--- | Chasing    : is the state in which ghosts chase the player
--- | Frightened : is the state in which ghosts run away from the player
--- | Scatter    : is the state in which ghosts move to their specific location
-data GhostState = Chasing | Frightened | Scatter deriving (Eq, Show)
+-- | Modes the ghosts can be in
+-- | Chasing    : is the mode in which ghosts chase the player
+-- | Frightened : is the mode in which ghosts run away from the player
+-- | Scatter    : is the mode in which ghosts move to their specific location
+data GhostMode = Chasing | Frightened | Scatter deriving (Eq, Show)
 
 -- | State of the complete game
 data GameState = GameState
@@ -44,7 +44,7 @@ data GameState = GameState
     ghosts :: [Ghost],
     points :: Points,
     frightenedTime :: Time,
-    ghostMode :: GhostState
+    ghostMode :: GhostMode
   }
   deriving (Eq)
 
@@ -97,11 +97,11 @@ checkGhostCollisions gs = handleGhostCollisions gs (filter (`collidesWithMovable
 handleGhostCollisions :: GameState -> [Ghost] -> GameState
 handleGhostCollisions gs [] = gs
 handleGhostCollisions gs (g : _) =
-  if ghostMode gs == Frightened && lifeState g == Alive
+  if ghostMode gs == Frightened && isNotEaten g
     then eatGhost gs
     else respawnPlayer . reduceLife $ gs
   where
-    eatGhost gs = gs {ghosts = map (\x -> if x == g then x {lifeState = Eaten} else x) (ghosts gs)}
+    eatGhost gs = gs {ghosts = map (\x -> if x == g then x {eatenState = Eaten} else x) (ghosts gs)}
     reduceLife gs = gs {player = (player gs) {lives = rmLife . lives . player $ gs}}
     respawnPlayer gs
       | isAlive . lives $ player gs = gs {player = (player gs) {position = playerSpawn . level $ gs}}

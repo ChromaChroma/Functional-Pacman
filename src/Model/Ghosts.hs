@@ -1,12 +1,13 @@
 module Model.Ghosts
   ( Ghost (..),
     Name (..),
-    LifeState (..),
+    EatenState (..),
     blinky,
     pinky,
     inky,
     clyde,
     isEaten,
+    isNotEaten,
     collidesWithMovable,
   )
 where
@@ -18,7 +19,7 @@ import Model.Movement (Collidable (collides), Direction (..), Movable (..), Posi
 -------------------------------------------------------------------------------
 
 -- | State of living of a Ghost
-data LifeState = Alive | Eaten deriving (Eq, Show)
+data EatenState = NotEaten | Eaten deriving (Eq, Show)
 
 -- | Name of a Ghost
 data Name = Blinky | Pinky | Inky | Clyde deriving (Eq, Show)
@@ -28,7 +29,7 @@ data Ghost = Ghost
   { name :: Name,
     position :: Position,
     speed :: Speed,
-    lifeState :: LifeState,
+    eatenState :: EatenState,
     direction :: Direction,
     prevDirection :: Direction
   }
@@ -52,10 +53,13 @@ instance Movable Ghost where
 -------------------------------------------------------------------------------
 
 isEaten :: Ghost -> Bool
-isEaten = (/= Alive) . lifeState
+isEaten = (== Eaten) . eatenState
+
+isNotEaten :: Ghost -> Bool
+isNotEaten = not . isEaten
 
 collidesWithMovable :: (Movable a, Collidable a) => Ghost -> a -> Bool
-collidesWithMovable ghost m = lifeState ghost == Alive && ghost `collides` m
+collidesWithMovable ghost m = isNotEaten ghost && ghost `collides` m
 
 -------------------------------------------------------------------------------
 -- Default value functions
@@ -63,13 +67,13 @@ collidesWithMovable ghost m = lifeState ghost == Alive && ghost `collides` m
 
 -- | Default ghost constructors for each original ghost
 blinky :: Ghost
-blinky = Ghost Blinky (12, 16) 0.1 Alive Stop Stop
+blinky = Ghost Blinky (12, 16) 0.1 NotEaten Stop Stop
 
 pinky :: Ghost
-pinky = Ghost Pinky (13, 16) 0.1 Alive Stop Stop
+pinky = Ghost Pinky (13, 16) 0.1 NotEaten Stop Stop
 
 inky :: Ghost
-inky = Ghost Inky (14, 16) 0.1 Alive Stop Stop
+inky = Ghost Inky (14, 16) 0.1 NotEaten Stop Stop
 
 clyde :: Ghost
-clyde = Ghost Clyde (15, 16) 0.1 Alive Stop Stop
+clyde = Ghost Clyde (15, 16) 0.1 NotEaten Stop Stop

@@ -6,7 +6,7 @@ import Model.Game
     Status (Active, GameOver, Paused),
     checkCollisions,
     checkGameOver,
-    tickDurationIn, frightenedDuration, GhostState (Scatter)
+    tickDurationIn, frightenedDuration, GhostMode (Scatter)
   )
 import Model.Level (isLevelComplete)
 import Model.Movement (Direction)
