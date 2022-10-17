@@ -3,7 +3,7 @@ module View.Animation (Textures (..), loadTextures, pacMan, ghost) where
 import Control.Applicative ((<$>), (<*>))
 import Data.Fixed (mod')
 import Graphics.Gloss (Picture, loadBMP, rotate)
-import Model.Game (GhostMode (Frightened))
+import Model.Game (GhostMode (Frightened), Time, frightenedDuration)
 import Model.Ghosts (EatenState (Eaten, NotEaten), Ghost (direction, name), Name (..), isEaten, isNotEaten)
 import Model.Movement as M (Direction (..))
 import qualified View.Config hiding (fps)
@@ -51,7 +51,7 @@ loadTextures = do
   pacmanLife <- loadBMP "assets/pacman-2.bmp"
   pacmanAnimation <- Animation 9 <$> mapM loadBMP ["assets/pacman-1.bmp", "assets/pacman-2.bmp", "assets/pacman-3.bmp"]
   ghostFrigthenedAnimation <- Animation 6 <$> mapM loadBMP ["assets/ghost-frightened-1.bmp", "assets/ghost-frightened-2.bmp"]
-  ghostFrigthenedFlashingAnimation <- Animation 6 <$> mapM loadBMP ["assets/ghost-frightened-flashing-1.bmp", "assets/ghost-frightened-flashing-2.bmp"]
+  ghostFrigthenedFlashingAnimation <- Animation 6 <$> mapM loadBMP ["assets/ghost-frightened-1.bmp", "assets/ghost-frightened-2.bmp", "assets/ghost-frightened-flashing-1.bmp", "assets/ghost-frightened-flashing-2.bmp"]
   blinkyAnimation <-
     DirectionalAnimation . Animation 6 <$> mapM loadBMP ["assets/blinky-left-1.bmp", "assets/blinky-left-2.bmp"]
       <*> (Animation 6 <$> mapM loadBMP ["assets/blinky-right-1.bmp", "assets/blinky-right-2.bmp"])
@@ -135,11 +135,13 @@ pacMan :: Textures -> Direction -> Picture
 pacMan ts = loadAnimationFrameRotated (pacman ts) (elapsedTime ts)
 
 -- | Function to get the ghost animation frame, based on the ghost name, mode and alive state
-ghost :: Textures -> GhostMode -> Ghost -> Picture
-ghost ts gState g =
-  if isNotEaten g && gState == Frightened
-    then loadAnimationFrame (ghostFrightened ts) (elapsedTime ts)
-    else getGhostAnimation ts g
+ghost :: Textures -> GhostMode -> Time -> Ghost -> Picture
+ghost ts gState frightenedTime g 
+  | isNotEatenAndFrightened && frightenedTime > (frightenedDuration - 2000) = loadAnimationFrame (ghostFrightenedFlashing ts) (elapsedTime ts)
+  | isNotEatenAndFrightened = loadAnimationFrame (ghostFrightened ts) (elapsedTime ts)
+  | otherwise = getGhostAnimation ts g
+  where
+    isNotEatenAndFrightened = isNotEaten g && gState == Frightened
 
 -- | Function to get the ghost animation frame
 getGhostAnimation :: Textures -> Ghost -> Picture
