@@ -21,7 +21,7 @@ import Model.Movement as M (Direction (Down, Left, Right, Up))
 import Model.Player ()
 import Model.Score ()
 import Numeric ()
-import View.Animation ( Textures(elapsedTime) )
+import View.Animation (Textures (elapsedTime))
 import View.Config (framesPerSecond, screen, tileSize, windowSize)
 import View.Debug (renderDebug)
 import View.Helpers ()
@@ -56,7 +56,7 @@ drawingFunc ts = pictures (renders : [renderOverlay gs])
       fromBottomLeft $
         pictures
           [ renderLevelSection t gs,
-            renderInfoSection gs,
+            renderInfoSection t gs,
             renderDebug gs
           ]
     (x, y) = windowSize
@@ -86,6 +86,6 @@ inputHandler _ ts = ts
 tickEngine :: Float -> TotalState -> TotalState
 tickEngine s ts = ts {gameState = newGameState, textures = newTextures}
   where
-    newTextures = (textures ts) { elapsedTime = elapsedTime (textures ts) + s }
+    newTextures = (textures ts) {elapsedTime = elapsedTime (textures ts) + s}
     newGameState = tick ms (gameState ts)
-    ms = round (s * 1000) 
+    ms = round (s * 1000)

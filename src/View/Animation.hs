@@ -4,7 +4,7 @@ import Control.Applicative ((<$>), (<*>))
 import Data.Fixed (mod')
 import Graphics.Gloss (Picture, loadBMP, rotate)
 import Model.Game (GhostMode (Frightened))
-import Model.Ghosts (Ghost (direction, name), EatenState (NotEaten, Eaten), Name (..), isEaten, isNotEaten)
+import Model.Ghosts (EatenState (Eaten, NotEaten), Ghost (direction, name), Name (..), isEaten, isNotEaten)
 import Model.Movement as M (Direction (..))
 import qualified View.Config hiding (fps)
 
@@ -21,6 +21,7 @@ type ElapsedTime = Float
 -- | Data structure that contains all the texture and animation data
 data Textures = Textures
   { elapsedTime :: ElapsedTime,
+    pacmanLife :: Texture,
     pacman :: Animation,
     blinky :: DirectionalAnimation,
     pinky :: DirectionalAnimation,
@@ -30,6 +31,9 @@ data Textures = Textures
     ghostFrightenedFlashing :: Animation,
     ghostEaten :: DirectionalAnimation
   }
+
+-- | Type alias of a static texture
+type Texture = Picture
 
 -- | Data structure that contains the frames of an animation
 data Animation = Animation {fps :: FramesPerSecond, frames :: [Picture]}
@@ -44,6 +48,7 @@ data DirectionalAnimation = DirectionalAnimation {left :: Animation, right :: An
 -- | Function for the initial texture loading. It is called once at the beginning of the game.
 loadTextures :: IO Textures
 loadTextures = do
+  pacmanLife <- loadBMP "assets/pacman-2.bmp"
   pacmanAnimation <- Animation 9 <$> mapM loadBMP ["assets/pacman-1.bmp", "assets/pacman-2.bmp", "assets/pacman-3.bmp"]
   ghostFrigthenedAnimation <- Animation 6 <$> mapM loadBMP ["assets/ghost-frightened-1.bmp", "assets/ghost-frightened-2.bmp"]
   ghostFrigthenedFlashingAnimation <- Animation 6 <$> mapM loadBMP ["assets/ghost-frightened-flashing-1.bmp", "assets/ghost-frightened-flashing-2.bmp"]
@@ -75,6 +80,7 @@ loadTextures = do
   return
     Textures
       { elapsedTime = 0,
+        pacmanLife = pacmanLife,
         pacman = pacmanAnimation,
         blinky = blinkyAnimation,
         pinky = pinkyAnimation,
