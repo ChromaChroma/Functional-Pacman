@@ -110,9 +110,12 @@ tileAtW :: Level -> (Int, Int) -> Tile
 tileAtW level (x, y)
   | x < 0 = tileAtW level (x + x', y)
   | y < 0 = tileAtW level (x, y + y')
+  | x > x' = tileAtW level (x - x', y)
+  | y > y' = tileAtW level (x, y - y')
   | otherwise = layout level !! y !! x
   where
-    (x', y') = layoutSize . layout $ level
+    (w, h) = layoutSize . layout $ level
+    (x', y') = (w -1, h -1)
 
 -- Calculates the floor intersections of the level
 levelIntersections :: Level -> [Intersection]

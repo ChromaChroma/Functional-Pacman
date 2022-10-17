@@ -2,14 +2,16 @@ module Model.Game
   ( GameState (..),
     defaultGame,
     Status (..),
+    GhostState (..),
     Time,
     tickDurationIn,
     checkCollisions,
     checkGameOver,
+    frightenedDuration,
   )
 where
 
-import Model.Ghosts (Ghost (lifeState, mode), GhostState (Frightened), LifeState (Alive, Eaten), blinky, canBeEaten, clyde, collidesWithMovable, inky, pinky)
+import Model.Ghosts (Ghost (lifeState), LifeState (Alive, Eaten), blinky, clyde, collidesWithMovable, inky, pinky)
 import qualified Model.Items as I
 import Model.Level (Level (items, playerSpawn), defaultLevel)
 import Model.Movement (Collidable (collides), Movable (getSpeed), Positioned (setPosition))
@@ -26,6 +28,12 @@ type Time = Int
 -- | Acitivity status of the game
 data Status = Waiting | Active | Paused | GameOver deriving (Eq, Show)
 
+-- | States the ghosts can be in
+-- | Chasing    : is the state in which ghosts chase the player
+-- | Frightened : is the state in which ghosts run away from the player
+-- | Scatter    : is the state in which ghosts move to their specific location
+data GhostState = Chasing | Frightened | Scatter deriving (Eq, Show)
+
 -- | State of the complete game
 data GameState = GameState
   { status :: Status,
@@ -34,7 +42,9 @@ data GameState = GameState
     elapsedTime :: Time,
     tickTimer :: Time,
     ghosts :: [Ghost],
-    points :: Points
+    points :: Points,
+    frightenedTime :: Time,
+    ghostMode :: GhostState
   }
   deriving (Eq)
 
@@ -51,7 +61,9 @@ loadGame lvl ghosts pl =
       player = pl,
       level = lvl,
       ghosts = ghosts,
-      points = 0
+      points = 0,
+      frightenedTime = 0,
+      ghostMode = Scatter
     }
 
 -- | Check if game is over and update it if necessary
@@ -76,7 +88,7 @@ checkItemCollisions gs = foldr (\item -> removeItem item . addItemScore item . h
     removeItem item gs = gs {level = (level gs) {items = filter (/= item) (items . level $ gs)}}
     addItemScore item gs = gs {points = points gs + I.points item}
     handleItemType item gs = case item of
-      I.PowerPellet _ _ -> gs {ghosts = map (\x -> x {mode = Frightened}) (ghosts gs)}
+      I.PowerPellet _ _ -> gs {ghostMode = Frightened, frightenedTime = 0}
       _ -> gs
 
 checkGhostCollisions :: GameState -> GameState
@@ -85,7 +97,7 @@ checkGhostCollisions gs = handleGhostCollisions gs (filter (`collidesWithMovable
 handleGhostCollisions :: GameState -> [Ghost] -> GameState
 handleGhostCollisions gs [] = gs
 handleGhostCollisions gs (g : _) =
-  if canBeEaten g
+  if ghostMode gs == Frightened && lifeState g == Alive
     then eatGhost gs
     else respawnPlayer . reduceLife $ gs
   where
@@ -98,6 +110,9 @@ handleGhostCollisions gs (g : _) =
 -------------------------------------------------------------------------------
 -- Default value functions
 -------------------------------------------------------------------------------
+
+frightenedDuration :: Time
+frightenedDuration = 5000
 
 defaultGame :: GameState
 defaultGame = loadGame lvl ghosts pl

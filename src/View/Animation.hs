@@ -3,8 +3,8 @@ module View.Animation (Textures (..), loadTextures, pacMan, ghost) where
 import Control.Applicative ((<$>), (<*>))
 import Data.Fixed (mod')
 import Graphics.Gloss (Picture, loadBMP, rotate)
-import Model.Game ()
-import Model.Ghosts (Ghost (direction, lifeState, mode, name), GhostState (Frightened), LifeState (Alive, Eaten), Name (..), isEaten)
+import Model.Game (GhostState (Frightened))
+import Model.Ghosts (Ghost (direction, lifeState, name), LifeState (Alive, Eaten), Name (..), isEaten)
 import Model.Movement as M (Direction (..))
 import qualified View.Config hiding (fps)
 
@@ -129,9 +129,9 @@ pacMan :: Textures -> Direction -> Picture
 pacMan ts = loadAnimationFrameRotated (pacman ts) (elapsedTime ts)
 
 -- | Function to get the ghost animation frame, based on the ghost name, mode and alive state
-ghost :: Textures -> Ghost -> Picture
-ghost ts g =
-  if lifeState g == Alive && mode g == Frightened
+ghost :: Textures -> GhostState -> Ghost -> Picture
+ghost ts gState g =
+  if lifeState g == Alive && gState == Frightened
     then loadAnimationFrame (ghostFrightened ts) (elapsedTime ts)
     else getGhostAnimation ts g
 

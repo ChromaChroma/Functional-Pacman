@@ -2,11 +2,11 @@ module Controller.Engine where
 
 import Controller.MovementController as MC (makePlayerMove)
 import Model.Game
-  ( GameState (elapsedTime, player, status, tickTimer, level),
+  ( GameState (elapsedTime, player, status, tickTimer, level, frightenedTime, ghostMode),
     Status (Active, GameOver, Paused),
     checkCollisions,
     checkGameOver,
-    tickDurationIn,
+    tickDurationIn, frightenedDuration, GhostState (Scatter)
   )
 import Model.Level (isLevelComplete)
 import Model.Movement (Direction)
@@ -45,8 +45,17 @@ tick ms gs
       . updateGhosts
       . updatePlayerMovement
       $ gs
-  | status gs == Active = gs {elapsedTime = elapsedTime gs + ms, tickTimer = tickTimer gs + ms}
+  | status gs == Active = checkGhostMode . addElapsedTime $ gs
   | otherwise = gs
+  where
+    addElapsedTime gs = gs {elapsedTime = elapsedTime gs + ms, tickTimer = tickTimer gs + ms}
+    checkGhostMode gs 
+      | frightenedTime gs >= frightenedDuration = gs {ghostMode = Scatter} -- TODO: change to time base ghost mode
+      | frightenedTime gs < frightenedDuration = gs {frightenedTime = frightenedTime gs + ms}
+      | otherwise = gs
+
+
+-- Check ghost state, if frightened + fTime if Frightened and already == ftime, set normal, if nothing do nothing
 
 checkLevelComplete :: GameState -> GameState
 checkLevelComplete gs = if isLevelComplete . level $ gs
