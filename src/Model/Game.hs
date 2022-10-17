@@ -11,7 +11,7 @@ module Model.Game
   )
 where
 
-import Model.Ghosts (Ghost (eatenState), EatenState (NotEaten, Eaten), blinky, clyde, collidesWithMovable, inky, pinky, isNotEaten)
+import Model.Ghosts (EatenState (Eaten, NotEaten), Ghost (eatenState), blinky, clyde, collidesWithMovable, inky, isEaten, isNotEaten, pinky)
 import qualified Model.Items as I
 import Model.Level (Level (items, playerSpawn), defaultLevel)
 import Model.Movement (Collidable (collides), Movable (getSpeed), Positioned (setPosition))
@@ -98,14 +98,23 @@ handleGhostCollisions :: GameState -> [Ghost] -> GameState
 handleGhostCollisions gs [] = gs
 handleGhostCollisions gs (g : _) =
   if ghostMode gs == Frightened && isNotEaten g
-    then eatGhost gs
+    then eatGhost
     else respawnPlayer . reduceLife $ gs
   where
-    eatGhost gs = gs {ghosts = map (\x -> if x == g then x {eatenState = Eaten} else x) (ghosts gs)}
+    eatGhost = gs {points = points gs + calcGhostPoints updatedGhosts, ghosts = updatedGhosts}
+    updatedGhosts = map (\x -> if x == g then x {eatenState = Eaten} else x) (ghosts gs)
+
     reduceLife gs = gs {player = (player gs) {lives = rmLife . lives . player $ gs}}
     respawnPlayer gs
       | isAlive . lives $ player gs = gs {player = (player gs) {position = playerSpawn . level $ gs}}
       | otherwise = gs {status = GameOver}
+
+calcGhostPoints :: [Ghost] -> Points
+calcGhostPoints ghosts
+  | eatenGhosts == 0 = 0
+  | otherwise = 200 * 2 ^ (eatenGhosts - 1)
+  where
+    eatenGhosts = length $ filter isEaten ghosts
 
 -------------------------------------------------------------------------------
 -- Default value functions
