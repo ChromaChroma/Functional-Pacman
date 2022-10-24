@@ -13,12 +13,13 @@ module Model.Game
 where
 
 import Model.Ghosts (EatenState (Eaten, NotEaten), Ghost (eatenState), blinky, clyde, collidesWithMovable, inky, isEaten, isNotEaten, pinky)
+import Model.Items (PointItem (Dot, Fruit), fruitOfLevel)
 import qualified Model.Items as I
-import Model.Level (Level (items, playerSpawn, levelNumber), defaultLevel)
+import Model.Level (Level (items, layout, levelNumber, playerSpawn), LevelSize, defaultLevel, layoutSize, tileAtW, Tile (Floor))
 import Model.Movement (Collidable (collides), Movable (getSpeed), Positioned (setPosition))
 import Model.Player (Player (lives), defaultPlayer, isAlive, position, rmLife)
 import Model.Score (Points)
-import Model.Items (fruitOfLevel, PointItem (Fruit, Dot))
+import System.Random (Random (randomR), StdGen, newStdGen)
 
 -------------------------------------------------------------------------------
 -- Data structures
@@ -38,7 +39,8 @@ data GhostMode = Chasing | Frightened | Scatter deriving (Eq, Show)
 
 -- | State of the complete game
 data GameState = GameState
-  { status :: Status,
+  { ranGen :: StdGen,
+    status :: Status,
     player :: Player,
     level :: Level,
     elapsedTime :: Time,
@@ -54,10 +56,11 @@ data GameState = GameState
 -- Logic
 -------------------------------------------------------------------------------
 
-loadGame :: Level -> [Ghost] -> Player -> GameState
-loadGame lvl ghosts pl =
+loadGame :: StdGen -> Level -> [Ghost] -> Player -> GameState
+loadGame gen lvl ghosts pl =
   GameState
-    { status = Active,
+    { ranGen = gen,
+      status = Active,
       elapsedTime = 0,
       tickTimer = 0,
       player = pl,
@@ -126,14 +129,25 @@ checkFruitSpawning gs
     itms = items . level $ gs
     noFruitSpawned = null ([x | x@Fruit {} <- itms])
     shouldSpawnFruit = amountOfDots `mod` 80 == 0 -- Spawn fruit every 80 dots eaten
-    amountOfDots = length  [x | x@Dot {} <- itms]
+    amountOfDots = length [x | x@Dot {} <- itms]
 
 spawnFruit :: GameState -> GameState
-spawnFruit gs = gs {level = lvl {items = fruit : items lvl}}
+spawnFruit gs = gs {level = lvl {items = fruit : items lvl}, ranGen = g}
   where
     lvl = level gs
-    pos = (1, 1) -- Todo: calc random position, validate, else retry random position
+    (pos, g) = randomPosition (ranGen gs) lvl
     fruit = setPosition (fruitOfLevel . levelNumber $ lvl) pos
+
+-- | Calculate a random position inside the level's size
+-- | Returns a tuple with the position and a the next generation of the random generator
+randomPosition :: StdGen -> Level -> ((Float, Float), StdGen)
+randomPosition g lvl = ((fromIntegral x', fromIntegral y'), g'')
+  where
+    (x, y) = layoutSize . layout $ lvl
+    (x', g') = randomR (0, x - 1) g
+    (y', g'') = randomR (0, y - 1) g'
+
+    -- isValidPosition = tileAtW lvl (x', y') == Floor
 
 -------------------------------------------------------------------------------
 -- Default value functions
@@ -142,9 +156,10 @@ spawnFruit gs = gs {level = lvl {items = fruit : items lvl}}
 frightenedDuration :: Time
 frightenedDuration = 5000
 
-defaultGame :: GameState
-defaultGame = loadGame lvl ghosts pl
-  where
-    lvl = defaultLevel
-    pl = setPosition defaultPlayer (playerSpawn lvl)
-    ghosts = [blinky, pinky, inky, clyde]
+defaultGame :: IO GameState
+defaultGame = do
+  let lvl = defaultLevel
+  let ghosts = [blinky, pinky, inky, clyde]
+  let pl = setPosition defaultPlayer (playerSpawn lvl)
+  generator <- newStdGen
+  return (loadGame generator lvl ghosts pl)

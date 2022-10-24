@@ -21,7 +21,7 @@ import Model.Movement as M (Direction (Down, Left, Right, Up))
 import Model.Player ()
 import Model.Score ()
 import Numeric ()
-import View.Animation (Textures (elapsedTime))
+import View.Animation (Textures (elapsedTime), loadTextures)
 import View.Config (framesPerSecond, screen, tileSize, windowSize)
 import View.Debug (renderDebug)
 import View.Helpers ()
@@ -31,11 +31,12 @@ import View.Overlays (renderOverlay)
 
 startRender :: Textures -> IO ()
 startRender textures = do
+  initialModel <- initModel
   play
     screen
     black
     framesPerSecond
-    (initialModel textures)
+    initialModel
     drawingFunc
     inputHandler
     tickEngine
@@ -43,8 +44,11 @@ startRender textures = do
 data TotalState = TotalState {gameState :: GameState, textures :: Textures}
 
 -- | Initial state of the game at startup
-initialModel :: Textures -> TotalState
-initialModel t = TotalState {gameState = defaultGame, textures = t}
+initModel :: IO TotalState
+initModel = do
+  TotalState 
+    <$> defaultGame 
+    <*> loadTextures
 
 -- | Render game state, aligned from bottom left corner
 drawingFunc :: TotalState -> Picture
