@@ -82,4 +82,4 @@ renderItems = pictures . map renderItem
     toPicture pic = case pic of
       Dot _ _ -> color dotColor . circleSolid $ tileSize / 8
       PowerPellet _ _ -> color dotColor . circleSolid $ tileSize / 3
-      _ -> Blank --Fruit ignored for now
+      Fruit {} -> color red . circleSolid $ tileSize / 3 -- todo: add texture, based on fruit type

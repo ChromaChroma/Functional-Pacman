@@ -6,6 +6,7 @@ module Model.Items
     defaultFruits,
     Positioned (..),
     Position (..),
+    fruitOfLevel,
   )
 where
 
@@ -45,7 +46,7 @@ data PointItem
 
 instance Positioned PointItem where
   getPosition = position
-  setPosition item _ = item -- PointItems By default should nog change position, so setPosition returns the passed data
+  setPosition item newPos = item { position = newPos}
 
 instance Collidable PointItem
 
@@ -59,13 +60,20 @@ mkDot pos = Dot pos 10
 mkPowerPellet :: Position -> PointItem
 mkPowerPellet pos = PowerPellet pos 50
 
+-- | Takes the level number and spawns the corresponding fruit type
+-- | From level 8 and on the fruit type is key
+fruitOfLevel :: Int -> PointItem
+fruitOfLevel n
+  | n < length defaultFruits = defaultFruits !! n
+  | otherwise = last defaultFruits 
+
 -------------------------------------------------------------------------------
 -- Default value functions
 -------------------------------------------------------------------------------
 
 defaultFruits :: [PointItem]
 defaultFruits =
-  [ Fruit (0, 0) Cherry 100,
+  [ Fruit (1, 1) Cherry 100,
     Fruit (0, 0) Strawberry 300,
     Fruit (0, 0) Orange 500,
     Fruit (0, 0) Apple 700,

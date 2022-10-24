@@ -6,7 +6,7 @@ import Model.Game
     Status (Active, GameOver, Paused),
     checkCollisions,
     checkGameOver,
-    tickDurationIn, frightenedDuration, GhostMode (Scatter)
+    tickDurationIn, frightenedDuration, GhostMode (Scatter), checkFruitSpawning
   )
 import Model.Level (isLevelComplete)
 import Model.Movement (Direction)
@@ -41,10 +41,11 @@ tick ms gs
     resetTickTimer
       . checkGameOver
       . checkLevelComplete
+      . checkFruitSpawning
       . checkCollisions
       . updateGhosts
       . updatePlayerMovement
-      $ gs
+      $ gs 
   | status gs == Active = checkGhostMode . addElapsedTime $ gs
   | otherwise = gs
   where

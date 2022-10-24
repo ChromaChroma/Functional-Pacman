@@ -8,6 +8,7 @@ import Model.Movement
 import Model.Player
 import View.Config
 import View.Helpers
+import Model.Items (PointItem(Dot, Fruit))
 
 renderDebug :: GameState -> Picture
 renderDebug gs = renderIfDebug $pictures [renderDebugDetails gs]
@@ -21,7 +22,9 @@ renderDebugDetails gs =
   let (x, y) = getPosition . player $ gs
    in pictures . stack 25 $
         reverse
-          [ smallText "Status: " . status $ gs,
+          [ smallText "Amount of dots: " . length $ [x | x@Dot {} <- items . level $ gs],
+            smallText "No Fruit spawned: " . null $ ([x | x@Fruit {} <- items . level $ gs]),
+            smallText "Status: " . status $ gs,
             smallText "Points: " . points $ gs,
             smallText "Elapsed time (s): " $ (fromIntegral . elapsedTime $ gs) / 1000,
             smallText "Tick time (ms): " . tickTimer $ gs,

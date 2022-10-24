@@ -8,15 +8,17 @@ module Model.Game
     checkCollisions,
     checkGameOver,
     frightenedDuration,
+    checkFruitSpawning,
   )
 where
 
 import Model.Ghosts (EatenState (Eaten, NotEaten), Ghost (eatenState), blinky, clyde, collidesWithMovable, inky, isEaten, isNotEaten, pinky)
 import qualified Model.Items as I
-import Model.Level (Level (items, playerSpawn), defaultLevel)
+import Model.Level (Level (items, playerSpawn, levelNumber), defaultLevel)
 import Model.Movement (Collidable (collides), Movable (getSpeed), Positioned (setPosition))
 import Model.Player (Player (lives), defaultPlayer, isAlive, position, rmLife)
 import Model.Score (Points)
+import Model.Items (fruitOfLevel, PointItem (Fruit, Dot))
 
 -------------------------------------------------------------------------------
 -- Data structures
@@ -115,6 +117,23 @@ calcGhostPoints ghosts
   | otherwise = 200 * 2 ^ (eatenGhosts - 1)
   where
     eatenGhosts = length $ filter isEaten ghosts
+
+checkFruitSpawning :: GameState -> GameState
+checkFruitSpawning gs
+  | noFruitSpawned && shouldSpawnFruit = spawnFruit gs
+  | otherwise = gs
+  where
+    itms = items . level $ gs
+    noFruitSpawned = null ([x | x@Fruit {} <- itms])
+    shouldSpawnFruit = amountOfDots `mod` 80 == 0 -- Spawn fruit every 80 dots eaten
+    amountOfDots = length  [x | x@Dot {} <- itms]
+
+spawnFruit :: GameState -> GameState
+spawnFruit gs = gs {level = lvl {items = fruit : items lvl}}
+  where
+    lvl = level gs
+    pos = (1, 1) -- Todo: calc random position, validate, else retry random position
+    fruit = setPosition (fruitOfLevel . levelNumber $ lvl) pos
 
 -------------------------------------------------------------------------------
 -- Default value functions
