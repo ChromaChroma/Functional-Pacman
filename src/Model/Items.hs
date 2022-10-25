@@ -2,7 +2,7 @@ module Model.Items
   ( PointItem (..),
     mkDot,
     mkPowerPellet,
-    FruitType,
+    FruitType(..),
     defaultFruits,
     Positioned (..),
     Position (..),
@@ -35,8 +35,8 @@ data PointItem
       }
   | Fruit
       { position :: Position,
-        itemType :: FruitType,
-        points :: Points
+        points :: Points,
+        itemType :: FruitType
       }
   deriving (Eq)
 
@@ -73,12 +73,12 @@ fruitOfLevel n
 
 defaultFruits :: [PointItem]
 defaultFruits =
-  [ Fruit (1, 1) Cherry 100,
-    Fruit (0, 0) Strawberry 300,
-    Fruit (0, 0) Orange 500,
-    Fruit (0, 0) Apple 700,
-    Fruit (0, 0) Melon 1000,
-    Fruit (0, 0) Galaxian 2000,
-    Fruit (0, 0) Bell 3000,
-    Fruit (0, 0) Key 5000
+  [ Fruit (0, 0) 100 Cherry,
+    Fruit (0, 0) 300 Strawberry,
+    Fruit (0, 0) 500 Orange,
+    Fruit (0, 0) 700 Apple,
+    Fruit (0, 0) 1000 Melon,
+    Fruit (0, 0) 2000 Galaxian,
+    Fruit (0, 0) 3000 Bell,
+    Fruit (0, 0) 5000 Key
   ]

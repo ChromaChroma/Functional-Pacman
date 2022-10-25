@@ -10,7 +10,7 @@ import Model.Player hiding (position)
 import View.Config
 import View.Debug
 import View.Helpers
-import View.Animation ( Textures, pacMan, ghost )
+import View.Animation ( Textures, pacMan, ghost, fruitTexture )
 import Model.Game
 import Model.Ghosts
 
@@ -20,7 +20,7 @@ renderLevelSection textures gs = translateToLevelSection (layoutSize . layout . 
     fs =
       [ renderLevel . level,
         renderIntersections,
-        renderItems . items . level,
+        renderItems textures . items . level,
         renderGhosts textures,
         renderPlayer textures
       ]
@@ -74,12 +74,13 @@ renderGhosts t gs = pictures . map renderGhost $ ghosts gs
     ll = layout $ level gs
 
 -- | Returns Pictures (Picture consisting of multiple pictures)
-renderItems :: [PointItem] -> Picture
-renderItems = pictures . map renderItem
+renderItems :: Textures -> [PointItem] -> Picture
+renderItems textures = pictures . map renderItem
   where
     dotColor = light . light . light . light $ yellow
     renderItem item = let (x, y) = getPosition item in translateByTileSize x y (toPicture item)
-    toPicture pic = case pic of
+    toPicture item = case item of
       Dot _ _ -> color dotColor . circleSolid $ tileSize / 8
       PowerPellet _ _ -> color dotColor . circleSolid $ tileSize / 3
-      Fruit {} -> color red . circleSolid $ tileSize / 3 -- todo: add texture, based on fruit type
+      Fruit {} -> fruitTexture textures item
+        
