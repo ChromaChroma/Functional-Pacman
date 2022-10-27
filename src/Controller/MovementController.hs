@@ -27,7 +27,7 @@ makePlayerMove gs
   | isJust movedPlayer = gs {player = fromJust movedPlayer}
   | otherwise = gs
   where
-    bufMovedPlayer = makeDirectionMove gs bufDir 
+    bufMovedPlayer = makeDirectionMove gs bufDir
     bufDir = bufDirection . player $ gs
     movedPlayer = makeDirectionMove gs (direction . player $ gs)
 
@@ -84,7 +84,7 @@ moveFull m dir = setPosition m (moveFullUnit m dir)
 isValidPlayerPosition :: Level -> Player -> Bool
 isValidPlayerPosition = isValidMovablePosition (== Floor)
 
--- | Higher order function that hecks if a movable is in a valid position on the level based on a provided Tile predicate
+-- | Higher order function that checks if a movable is in a valid position on the level based on a provided Tile predicate
 isValidMovablePosition :: Movable a => (Tile -> Bool) -> Level -> a -> Bool
 isValidMovablePosition p level m = p . tileAtW level . intPosition $ getPosition m
 
