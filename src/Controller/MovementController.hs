@@ -81,7 +81,7 @@ moveFull m dir = setPosition m (moveFullUnit m dir)
         (x, y) = getPosition m
 
 -- | Checks if the player is in a valid position on the level
-isValidPlayerPosition :: Level -> Player -> Bool
+isValidPlayerPosition :: Movable a => Level -> a -> Bool
 isValidPlayerPosition = isValidMovablePosition (== Floor)
 
 -- | Higher order function that checks if a movable is in a valid position on the level based on a provided Tile predicate
