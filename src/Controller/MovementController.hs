@@ -2,10 +2,10 @@ module Controller.MovementController where
 
 import Data.Fixed (mod')
 import Data.Maybe (Maybe (..), fromJust, isJust)
-import Model.Game (GameState (level, player))
+import Model.Game (GameState (level, player), GhostMode (Frightened))
 import Model.Ghosts (Ghost)
 import Model.Level
-  ( DoorState (Open),
+  ( DoorState (Open, Closed),
     Level (layout),
     Tile (Floor, GhostDoor),
     layoutSize,
@@ -89,5 +89,9 @@ isValidMovablePosition :: Movable a => (Tile -> Bool) -> Level -> a -> Bool
 isValidMovablePosition p level m = p . tileAtW level . intPosition $ getPosition m
 
 -- | Checks if the ghost is in a valid position on the level
-isValidGhostPosition :: Level -> Ghost -> Bool
-isValidGhostPosition = isValidMovablePosition (`elem` [Floor, GhostDoor Open])
+isValidGhostPosition :: GhostMode -> Level -> Ghost -> Bool
+isValidGhostPosition gm = isValidMovablePosition (`elem` validTiles)
+  where
+    validTiles = case gm of
+      Frightened -> [Floor]
+      _ -> [Floor, GhostDoor Open, GhostDoor Closed]
