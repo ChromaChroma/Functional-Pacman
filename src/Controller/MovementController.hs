@@ -89,7 +89,7 @@ isValidMovablePosition :: Movable a => (Tile -> Bool) -> Level -> a -> Bool
 isValidMovablePosition p level m = p . tileAtW level . intPosition $ getPosition m
 
 -- | Checks if the ghost is in a valid position on the level
-isValidGhostPosition :: GhostMode -> Level -> Ghost -> Bool
+isValidGhostPosition :: Movable a => GhostMode -> Level -> a -> Bool
 isValidGhostPosition gm = isValidMovablePosition (`elem` validTiles)
   where
     validTiles = case gm of

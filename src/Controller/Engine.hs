@@ -11,6 +11,7 @@ import Model.Game
 import Model.Level (isLevelComplete)
 import Model.Movement (Direction)
 import Model.Player as P (Player (lives, bufDirection), isAlive)
+import Model.GhostAI (makeGhostsMove)
 import Prelude hiding (Left, Right)
 
 startNewGame :: GameState
@@ -45,12 +46,12 @@ tick ms gs
       . checkCollisions
       . updateGhosts
       . updatePlayerMovement
-      $ gs 
+      $ gs
   | status gs == Active = checkGhostMode . addElapsedTime $ gs
   | otherwise = gs
   where
     addElapsedTime gs = gs {elapsedTime = elapsedTime gs + ms, tickTimer = tickTimer gs + ms}
-    checkGhostMode gs 
+    checkGhostMode gs
       | frightenedTime gs >= frightenedDuration = gs {ghostMode = Scatter} -- TODO: change to time base ghost mode
       | frightenedTime gs < frightenedDuration = gs {frightenedTime = frightenedTime gs + ms}
       | otherwise = gs
@@ -68,7 +69,7 @@ updatePlayerMovement = makePlayerMove
 
 -- | Update ghosts position and state (Chase / Scatter / Frightened)
 updateGhosts :: GameState -> GameState
-updateGhosts gs = gs --todo
+updateGhosts = makeGhostsMove
 
 -- | Reset tick time to 0 for next tick cycle
 resetTickTimer :: GameState -> GameState
