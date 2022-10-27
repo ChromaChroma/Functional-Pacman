@@ -70,7 +70,7 @@ blinky :: Ghost
 blinky = Ghost Blinky (12, 16) 0.1 NotEaten Stop Stop
 
 pinky :: Ghost
-pinky = Ghost Pinky (13, 16) 0.01 NotEaten Up Stop
+pinky = Ghost Pinky (13, 16) 0.1 NotEaten Up Stop
 
 inky :: Ghost
 inky = Ghost Inky (14, 16) 0.1 NotEaten Stop Stop
