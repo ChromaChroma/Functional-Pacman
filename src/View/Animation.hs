@@ -1,10 +1,11 @@
-module View.Animation (Textures (..), loadTextures, pacMan, ghost) where
+module View.Animation (Textures (..), loadTextures, pacMan, ghost, fruitTexture) where
 
 import Control.Applicative ((<$>), (<*>))
 import Data.Fixed (mod')
-import Graphics.Gloss (Picture, loadBMP, rotate)
+import Graphics.Gloss (Picture, loadBMP, rotate, circleSolid, color, red)
 import Model.Game (GhostMode (Frightened), Time, frightenedDuration)
 import Model.Ghosts (EatenState (Eaten, NotEaten), Ghost (direction, name), Name (..), isEaten, isNotEaten)
+import Model.Items (FruitType (..), PointItem (Fruit, itemType))
 import Model.Movement as M (Direction (..))
 import qualified View.Config hiding (fps)
 
@@ -29,9 +30,9 @@ data Textures = Textures
     clyde :: DirectionalAnimation,
     ghostFrightened :: Animation,
     ghostFrightenedFlashing :: Animation,
-    ghostEaten :: DirectionalAnimation
+    ghostEaten :: DirectionalAnimation,
+    fruits :: FruitTextures
   }
-
 -- | Type alias of a static texture
 type Texture = Picture
 
@@ -40,6 +41,18 @@ data Animation = Animation {fps :: FramesPerSecond, frames :: [Picture]}
 
 -- | Data structure that contains animations for each direction
 data DirectionalAnimation = DirectionalAnimation {left :: Animation, right :: Animation, up :: Animation, down :: Animation}
+
+-- | Data structure that contains the current the textures of each fruit
+data FruitTextures = FruitTextures
+  { cherry :: Texture,
+    strawberry :: Texture,
+    orange :: Texture,
+    apple :: Texture,
+    melon :: Texture,
+    galaxian :: Texture,
+    bell :: Texture,
+    key :: Texture
+  }
 
 -------------------------------------------------------------------------------
 -- Impure, initial texture loading function
@@ -77,6 +90,15 @@ loadTextures = do
       <*> (Animation 6 <$> mapM loadBMP ["assets/ghost-eaten-right.bmp"])
       <*> (Animation 6 <$> mapM loadBMP ["assets/ghost-eaten-up.bmp"])
       <*> (Animation 6 <$> mapM loadBMP ["assets/ghost-eaten-down.bmp"])
+  fruits <- FruitTextures
+      <$> loadBMP "assets/cherry.bmp"
+      <*> loadBMP "assets/strawberry.bmp"
+      <*> loadBMP "assets/orange.bmp"
+      <*> loadBMP "assets/apple.bmp"
+      <*> loadBMP "assets/melon.bmp"
+      <*> loadBMP "assets/galaxian.bmp"
+      <*> loadBMP "assets/bell.bmp"
+      <*> loadBMP "assets/key.bmp"
   return
     Textures
       { elapsedTime = 0,
@@ -88,7 +110,8 @@ loadTextures = do
         clyde = clydeAnimation,
         ghostFrightened = ghostFrigthenedAnimation,
         ghostFrightenedFlashing = ghostFrigthenedFlashingAnimation,
-        ghostEaten = ghostEatenAnimation
+        ghostEaten = ghostEatenAnimation,
+        fruits = fruits
       }
 
 -------------------------------------------------------------------------------
@@ -136,7 +159,7 @@ pacMan ts = loadAnimationFrameRotated (pacman ts) (elapsedTime ts)
 
 -- | Function to get the ghost animation frame, based on the ghost name, mode and alive state
 ghost :: Textures -> GhostMode -> Time -> Ghost -> Picture
-ghost ts gState frightenedTime g 
+ghost ts gState frightenedTime g
   | isNotEatenAndFrightened && frightenedTime > (frightenedDuration - 2000) = loadAnimationFrame (ghostFrightenedFlashing ts) (elapsedTime ts)
   | isNotEatenAndFrightened = loadAnimationFrame (ghostFrightened ts) (elapsedTime ts)
   | otherwise = getGhostAnimation ts g
@@ -155,3 +178,15 @@ getGhostAnimation ts g =
       Clyde -> loadAnimationFrameInDirection (clyde ts) (elapsedTime ts) dir
   where
     dir = direction g
+
+fruitTexture :: Textures -> PointItem -> Picture
+fruitTexture ts Fruit {itemType = t} = case t of
+  Cherry -> cherry . fruits $ ts
+  Strawberry -> strawberry . fruits $ ts
+  Orange -> orange . fruits $ ts
+  Apple -> apple . fruits $ ts
+  Melon -> melon . fruits $ ts
+  Galaxian -> galaxian . fruits $ ts
+  Bell -> bell . fruits $ ts
+  Key -> key . fruits $ ts
+fruitTexture _ _ = error "Not a fruit"

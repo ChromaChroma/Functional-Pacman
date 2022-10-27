@@ -46,8 +46,8 @@ data TotalState = TotalState {gameState :: GameState, textures :: Textures}
 -- | Initial state of the game at startup
 initModel :: IO TotalState
 initModel = do
-  TotalState 
-    <$> defaultGame 
+  TotalState
+    <$> defaultGame
     <*> loadTextures
 
 -- | Render game state, aligned from bottom left corner
