@@ -43,7 +43,7 @@ makeDirectionMove gs dir
     pl = player gs
     lvl = level gs
 
-canMakeMoveToDir :: Player -> Direction -> Level -> Bool
+canMakeMoveToDir :: Movable -> Direction -> Level -> Bool
 canMakeMoveToDir player dir lvl
   | isValid = case dir of
     Up -> canMovePerpendicular x
