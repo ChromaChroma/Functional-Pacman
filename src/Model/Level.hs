@@ -11,7 +11,7 @@ module Model.Level
     defaultLevel,
     isLevelComplete,
     LevelSize,
-    levelIntersections,
+    levelIntersections, levelFloorSplits
   )
 where
 
@@ -144,87 +144,49 @@ neighbors level (x, y) = [left, right, up, down]
 levelIntersections :: Level -> [Intersection]
 levelIntersections level = filterFloorOnDirections level 3 ++ filterFloorOnDirections level 4
 
--- Calculates the floor corners of the level
-levelCorners :: Level -> [Intersection]
-levelCorners level = filterFloorOnDirections level 2
-
 -- Calculates the floor deadends of the level
 levelDeadEnds :: Level -> [Intersection]
 levelDeadEnds level = filterFloorOnDirections level 1
+
+
+
+-- -- Calculates the floor corners of the level
+-- levelCorners :: Level -> [Intersection]
+-- levelCorners level = filterFloorOnDirections level 2
+
+-- Calculates the floor intersections of the level
+levelCorners :: Level -> [Intersection]
+levelCorners level =
+  [ (x, y)
+    | x <- [0 .. (width -1)],
+      y <- [0 .. (height -1)],
+      tileAtW level (x, y) == Floor,
+      isCorner (x, y)
+  ]
+  where
+    (width, height) = layoutSize $ layout level
+    -- isIntersection (x', y') = (length . filter (== Floor) $ [left, right, up, down]) >= 3
+    isCorner (x', y') = left && up || left && down || right && up || right && down
+      where
+        left = tileAtW level (x' - 1, y') == Floor 
+        right = tileAtW level (x' + 1, y') == Floor
+        up = tileAtW level (x', y' + 1) == Floor
+        down = tileAtW level (x', y' - 1) == Floor
+
+
+
+
 
 -- Calculates the floor path splits of the level
 levelFloorSplits :: Level -> [Intersection]
 levelFloorSplits level = levelIntersections level ++ levelCorners level ++ levelDeadEnds level
 
-isReachable :: Level -> (Int, Int) -> Position -> Bool
-isReachable lvl pos playerPos = undefined
--- findPath lvl pos playerPos
-  where
-    bridges = levelToBridges lvl
-    -- ... TODO algoritm to find path
-
-{-
-Get neightbores of a tile
-are they target?
-are they floor tiles?
-do they have neighbores? if no, then dont calc neighbors of them
-if yes, then recursive do cal.
-
-Bad part, Infinite recursion if not limmited,
-  Option, btter algo or,
-  use a list of visited tiles or,
-  list of visitable not visited tiles, or set,
-
-  or generate a node (positio) distance map.. Calc distance, if none -1 / nothing
-
-  Note: let op wrapping, dus is nodedistances handig.
--}
-
--- tile = tileAtW lvl (x', y')
--- findPath lvl pos playerPos = undefined
-
--- type Pos = (Int, Int)
-
-type Distance = Int
-
-data Bridge = Bridge Intersection Intersection Distance deriving (Show, Eq)
-
--- Maybe based on intersections/ corners+intersections. get those points and distance....
-levelToBridges :: Level -> [Bridge]
-levelToBridges lvl = undefined
-  where
-    (width, height) = layoutSize $ layout lvl
-    splitPoints = levelFloorSplits lvl
-    -- Convert splitpoints to duos
-    -- Or update splitpoints so that they are duos of points that are reachable to eachother
-
-    pointDuos = [(x, y) | x <- splitPoints, y <- splitPoints, x /= y]
-    
-    filteredPointDuos = filter (uncurry hasDirectPath) pointDuos
-
-    -- Checks if there are only floor tiles in between the two points
-    hasDirectPath :: Intersection -> Intersection -> Bool
-    hasDirectPath (x1, y1) (x2, y2) = any (/= Floor) inBetweenTiles
-      where
-        inBetweenTiles = [] --Problem, does not include wrapping path
-        ts (x1, y1) (x2, y2)
-          | x1 == x2 = [tileAtW lvl (x1, y) | y <- [y1 .. y2]]
-          | y1 == y2 = [tileAtW lvl (x, y1) | x <- [x1 .. x2]]
-          | otherwise = []
-
-
-    bridges = map (\(pos1, pos2)-> Bridge pos1 pos2 (calcDist pos1 pos2)) filteredPointDuos
-
-    calcDist :: Intersection -> Intersection -> Int
-    calcDist (x1, y1) (x2, y2)
-      | x1 == x2 = abs (y1 - y2)
-      | y1 == y2 = abs (x1 - x2)
-      | otherwise = -1
-
--- get all floor tiles
--- get all floor tiles that have a neighbor that is not a floor tile
--- get all floor tiles that have a neighbor that is not a floor tile
--- get all floor tiles that have a neighbor that is not a floor
+-- isReachable :: Level -> (Int, Int) -> Position -> Bool
+-- isReachable lvl pos playerPos = findShortestDistanceOrLevel level pos playerPos /= Infinity
+-- -- findPath lvl pos playerPos
+--   where
+--     -- bridges = levelToBridges lvl
+--     -- ... TODO algoritm to find path
 
 -------------------------------------------------------------------------------
 -- Default value functions
@@ -235,10 +197,18 @@ defaultLevel :: Level
 defaultLevel =
   Level
     { levelNumber = 0,
-      items = defaultDots ++ defaultPowerPellets,
+      items = defaultPowerPellets ++ defaultDots,
       layout = defaultLayout,
       playerSpawn = (14, 7)
     }
+dLayout :: Layout
+dLayout = [
+  [Wall, Wall, Wall, Wall, Wall],
+  [Wall, Floor, Floor, Floor, Wall],
+  [Wall, Floor, Wall, Floor, Wall],
+  [Wall, Floor, Floor, Floor, Wall],
+  [Wall, Wall, Wall, Wall, Wall]
+  ]
 
 -- | Original PacMan layout (28 x 32 maze)
 defaultLayout :: Layout
