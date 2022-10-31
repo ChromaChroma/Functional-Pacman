@@ -6,18 +6,28 @@ import Data.HashSet (HashSet)
 import qualified Data.HashSet as HS
 import Data.Hashable (Hashable)
 import Data.Heap (MinPrioHeap)
-import Data.List (nub)
 import qualified Data.Heap as H
 import Data.Maybe (catMaybes, fromMaybe)
-
 import Model.Level
 import Model.Utils
 
 {-
 
-This module implements Dijkstra's algorithm for finding the shortest path
+This module implements Dijkstra's algorithm for finding the shortest path between 2 points
 
 -}
+
+type Node = (Int, Int)
+
+type Edge = (Node, Int)
+
+type Graph = HashMap Node [Edge]
+
+data DijkstraState = DijkstraState
+  { visitedSet :: HashSet Node,
+    distanceMap :: HashMap Node (Distance Int),
+    nodeQueue :: MinPrioHeap (Distance Int) Node
+  }
 
 data Distance a = Dist a | Infinity deriving (Eq, Show)
 
@@ -34,17 +44,7 @@ addDist _ _ = Infinity
 (!??) :: (Hashable k, Eq k) => HashMap k (Distance d) -> k -> Distance d
 (!??) distanceMap key = fromMaybe Infinity (HM.lookup key distanceMap)
 
-newtype Graph = Graph {edges :: HashMap Intersection [(Intersection, Int)]} deriving (Show)
-
-type Intersection = (Int, Int)
-
-data DijkstraState = DijkstraState
-  { visitedSet :: HashSet Intersection,
-    distanceMap :: HashMap Intersection (Distance Int),
-    nodeQueue :: MinPrioHeap (Distance Int) Intersection
-  }
-
-findShortestDistance :: Graph -> Intersection -> Intersection -> Distance Int
+findShortestDistance :: Graph -> Node -> Node -> Distance Int
 findShortestDistance graph src dest = processQueue initialState !?? dest
   where
     initialVisited = HS.empty
@@ -52,88 +52,58 @@ findShortestDistance graph src dest = processQueue initialState !?? dest
     initialQueue = H.fromList [(Dist 0, src)]
     initialState = DijkstraState initialVisited initialDistances initialQueue
 
-    processQueue :: DijkstraState -> HashMap Intersection (Distance Int)
+    processQueue :: DijkstraState -> HashMap Node (Distance Int)
     processQueue ds@(DijkstraState visited distMap nQueue) = case H.view nQueue of
       Nothing -> distMap
-      Just ((minDist, node), queue') ->
-        if node == dest then distMap
-        else 
-            if HS.member node visited then processQueue (ds {nodeQueue = queue'})
-            else -- Update the visited set
-                let visited' = HS.insert node visited -- Get all unvisited neighbors of our current node
-                    allNeighbors = fromMaybe [] (HM.lookup node (edges graph))
-                    unvisitedNeighbors = filter (\(n, _) -> not (HS.member n visited')) allNeighbors
-                 in -- Fold each neighbor and recursively process the queue
-                    processQueue $ foldl (foldNeighbor node) (DijkstraState visited' distMap queue') unvisitedNeighbors
-    foldNeighbor current ds@(DijkstraState visited' distMap queue') (neighborNode, cost) =
-      let altDistance = addDist (distMap !?? current) (Dist cost)
-       in if altDistance < distMap !?? neighborNode
-            then DijkstraState visited' (HM.insert neighborNode altDistance distMap) (H.insert (altDistance, neighborNode) queue')
-            else ds
+      Just ((_, node), queue') ->
+        let processNode
+              | node == dest = distMap
+              | HS.member node visited = processQueue (ds {nodeQueue = queue'})
+              | otherwise = processQueue $ foldl (foldNeighbor node) (DijkstraState visited' distMap queue') unvisitedNeighbors
+              where
+                visited' = HS.insert node visited
+                allNeighbors = fromMaybe [] (HM.lookup node graph)
+                unvisitedNeighbors = filter (\(n, _) -> not (HS.member n visited')) allNeighbors
+         in processNode
 
+    foldNeighbor current ds@(DijkstraState visited' distMap queue') (neighborNode, cost)
+      | altDistance < distMap !?? neighborNode = DijkstraState visited' (HM.insert neighborNode altDistance distMap) (H.insert (altDistance, neighborNode) queue')
+      | otherwise = ds
+      where 
+        altDistance = addDist (distMap !?? current) (Dist cost)
+    
+    
 
-graph1 :: Graph
-graph1 = Graph $ HM.fromList
-  [ ((1,1), [((1,4), 100), ((1,2), 1), ((1,3), 20)])
-  , ((1,2), [((1,4), 50)])
-  , ((1,3), [((1,4), 20)])
-  , ((1,4), [])
-  ] 
+-------------------------------------------------------------------------------
+-- Level specific functions for finding the shortest path in a Pac-Man level
+-------------------------------------------------------------------------------
 
-findShortestDistanceInLevel :: Level -> Intersection -> Intersection -> Distance Int
-findShortestDistanceInLevel lvl pos pos2
-  | isValidPosition pos && isValidPosition pos = findShortestDistance (Graph $ levelToEdgeMap lvl pos pos2) pos pos2
+-- | Find the shortest path between 2 points in a level
+shortestPath :: Level -> Node -> Node -> Distance Int
+shortestPath lvl pos pos2
+  | isValidPosition pos && isValidPosition pos = findShortestDistance (levelToGraph lvl pos pos2) pos pos2
   | otherwise = Infinity
   where
     isValidPosition p = tileAtW lvl p == Floor
 
-levelToEdgeMap :: Level -> Intersection -> Intersection ->  HashMap Intersection [(Intersection, Int)]
-levelToEdgeMap lvl p p2 = pointsToPointEdgesMap
+-- | Convert a level to a graph
+levelToGraph :: Level -> Node -> Node -> Graph
+levelToGraph lvl p p2 = foldr addPointEdges HM.empty nodes
   where
-    (w, h) = layoutSize $ layout lvl
-    splitPoints = nub (p : p2 : levelFloorSplits lvl )
-  
-    
-    -- Convert splitpoints to duos
-    -- Or update splitpoints so that they are duos of points that are reachable to eachother
-    edgeMap :: HashMap Intersection [(Intersection, Int)]
-    edgeMap = HM.empty
+    nodes = p : p2 : levelFloorSplits lvl
+    addPointEdges pos edges = HM.insert pos (getEdges lvl pos) edges
 
-    -- splitPointsWithEdges = map (\pos -> pos (x, y, getEdges lvl (x, y))) splitPoints
-    pointsToPointEdgesMap = foldr (\pos acc -> addPointEdges pos acc) edgeMap splitPoints
-
-    addPointEdges :: Intersection -> HashMap Intersection [(Intersection, Int)] -> HashMap Intersection [(Intersection, Int)]
-    addPointEdges pos edgeMap = HM.insert pos (getEdges lvl pos) edgeMap
-
-    getEdges :: Level -> Intersection -> [(Intersection, Int)]
-    getEdges lvl pos = map (\p -> (p, calcDist pos p)) (nextNeigbors)
+    getEdges :: Level -> Node -> [Edge]
+    getEdges lvl pos = map (\p -> (p, dist pos p)) (nextNeigbors)
       where
-        r :: Intersection -> Maybe Intersection
-        r (x, y) = trans (x, y) (\(x, y) -> ((x + 1) `intmod'` w, y)) (x, y)
-        
-        l :: Intersection -> Maybe Intersection
-        l (x, y) = trans (x, y) (\(x, y) -> ((x - 1) `intmod'` w, y)) (x, y)
-        
-        u :: Intersection -> Maybe Intersection
-        u (x, y) = trans (x, y) (\(x, y) -> (x, (y + 1) `intmod'` h)) (x, y)
-        
-        d :: Intersection -> Maybe Intersection
-        d (x, y) = trans (x, y) (\(x, y) -> (x, (y - 1) `intmod'` h)) (x, y)
+        nextNeigbors = catMaybes $ map (\translation -> translateNode (\p -> p `add` translation) pos) [(0, 1), (0, -1), (1, 0), (-1, 0)]
+        add (x, y) (x', y') = (x + x', y + y')
 
-        nextNeigbors = catMaybes [r pos, l pos, u pos, d pos]
-        -- map (\(x, y)  -> (x + posx, y + posy)) [(0, 1), (0, -1), (1, 0), (-1, 0)]
-
-        -- | Takes the original position, transformer and node that will be transformed
-        trans :: Intersection -> (Intersection -> Intersection) -> Intersection -> Maybe Intersection
-        trans originalPos f pos
-          | originalPos == nPos = Nothing 
+        translateNode :: (Node -> Node) -> Node -> Maybe Node
+        translateNode f node
+          | pos == nPos = Nothing
           | tileAtW lvl nPos /= Floor = Nothing
-          | nPos `elem` splitPoints = Just nPos
-          | otherwise = trans originalPos f nPos
-          where 
-            nPos = f pos
-
-    calcDist :: Intersection -> Intersection -> Int
-    calcDist (x1, y1) (x2, y2)
-      | x1 == x2 = abs (y1 - y2)
-      | y1 == y2 = abs (x1 - x2)
+          | nPos `elem` nodes = Just nPos
+          | otherwise = translateNode f nPos
+          where
+            nPos = f node
