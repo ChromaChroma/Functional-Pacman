@@ -136,15 +136,18 @@ spawnFruit :: GameState -> GameState
 spawnFruit gs = gs {level = lvl {items = fruit : items lvl}, ranGen = g}
   where
     lvl = level gs
+    (pos, g) = randomPos (ranGen gs) gs
+    fruit = setPosition (fruitOfLevel . levelNumber $ lvl) pos
 
     -- TODO: Infinite loop
     randomPos :: StdGen -> GameState -> ((Float, Float), StdGen)
-    randomPos gen gs = if valid then (pos, g) else randomPos g gs
+    randomPos gen gs 
+      -- = (rPos, g)
+      | valid = (rPos, g)
+      | otherwise = randomPos g gs
       where 
-        ((x, y), g) = randomPosition (ranGen gs) lvl
-        valid = findShortestDistanceOrLevel lvl (round x, round y) (intPosition (getPosition . player $ gs)) /= Infinity
-    (pos, g) = randomPos (ranGen gs) gs
-    fruit = setPosition (fruitOfLevel . levelNumber $ lvl) pos
+        (rPos, g) = randomPosition gen lvl
+        valid = findShortestDistanceInLevel lvl (intPosition rPos) (intPosition (getPosition . player $ gs)) /= Infinity
 
 -- | Calculate a random position inside the level's size
 -- | Returns a tuple with the position and a the next generation of the random generator

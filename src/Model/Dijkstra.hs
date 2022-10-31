@@ -6,6 +6,7 @@ import Data.HashSet (HashSet)
 import qualified Data.HashSet as HS
 import Data.Hashable (Hashable)
 import Data.Heap (MinPrioHeap)
+import Data.List (nub)
 import qualified Data.Heap as H
 import Data.Maybe (catMaybes, fromMaybe)
 
@@ -77,21 +78,20 @@ graph1 = Graph $ HM.fromList
   , ((1,2), [((1,4), 50)])
   , ((1,3), [((1,4), 20)])
   , ((1,4), [])
-  ]
+  ] 
 
-
-
-
- 
-
-findShortestDistanceOrLevel :: Level -> Intersection -> Intersection -> Distance Int
-findShortestDistanceOrLevel lvl pos pos2 = findShortestDistance (Graph $ levelToEdgeMap lvl pos pos2) pos pos2
+findShortestDistanceInLevel :: Level -> Intersection -> Intersection -> Distance Int
+findShortestDistanceInLevel lvl pos pos2
+  | isValidPosition pos && isValidPosition pos = findShortestDistance (Graph $ levelToEdgeMap lvl pos pos2) pos pos2
+  | otherwise = Infinity
+  where
+    isValidPosition p = tileAtW lvl p == Floor
 
 levelToEdgeMap :: Level -> Intersection -> Intersection ->  HashMap Intersection [(Intersection, Int)]
 levelToEdgeMap lvl p p2 = pointsToPointEdgesMap
   where
     (w, h) = layoutSize $ layout lvl
-    splitPoints = p : p2 : levelFloorSplits lvl 
+    splitPoints = nub (p : p2 : levelFloorSplits lvl )
   
     
     -- Convert splitpoints to duos
