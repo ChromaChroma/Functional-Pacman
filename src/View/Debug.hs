@@ -22,7 +22,8 @@ renderDebugDetails gs =
   let (x, y) = getPosition . player $ gs
    in pictures . stack 25 $
         reverse
-          [ smallText "Amount of dots: " . length $ [x | x@Dot {} <- items . level $ gs],
+          [ smallText "Ghost Positions: " . map (getPosition) $ ghosts gs,
+            smallText "Amount of dots: " . length $ [x | x@Dot {} <- items . level $ gs],
             smallText "No Fruit spawned: " . null $ ([x | x@Fruit {} <- items . level $ gs]),
             smallText "Status: " . status $ gs,
             smallText "Points: " . points $ gs,

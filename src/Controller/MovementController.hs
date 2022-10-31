@@ -27,7 +27,7 @@ makePlayerMove gs
   | isJust movedPlayer = gs {player = fromJust movedPlayer}
   | otherwise = gs
   where
-    bufMovedPlayer = makeDirectionMove gs bufDir 
+    bufMovedPlayer = makeDirectionMove gs bufDir
     bufDir = bufDirection . player $ gs
     movedPlayer = makeDirectionMove gs (direction . player $ gs)
 
@@ -43,7 +43,7 @@ makeDirectionMove gs dir
     pl = player gs
     lvl = level gs
 
-canMakeMoveToDir :: Player -> Direction -> Level -> Bool
+canMakeMoveToDir :: Movable a => a -> Direction -> Level -> Bool
 canMakeMoveToDir player dir lvl
   | isValid = case dir of
     Up -> canMovePerpendicular x
@@ -81,15 +81,15 @@ moveFull m dir = setPosition m (moveFullUnit m dir)
         (x, y) = getPosition m
 
 -- | Checks if the player is in a valid position on the level
-isValidPlayerPosition :: Level -> Player -> Bool
+isValidPlayerPosition :: Movable a => Level -> a -> Bool
 isValidPlayerPosition = isValidMovablePosition (== Floor)
 
--- | Higher order function that hecks if a movable is in a valid position on the level based on a provided Tile predicate
+-- | Higher order function that checks if a movable is in a valid position on the level based on a provided Tile predicate
 isValidMovablePosition :: Movable a => (Tile -> Bool) -> Level -> a -> Bool
 isValidMovablePosition p level m = p . tileAtW level . intPosition $ getPosition m
 
 -- | Checks if the ghost is in a valid position on the level
-isValidGhostPosition :: GhostMode -> Level -> Ghost -> Bool
+isValidGhostPosition :: Movable a => GhostMode -> Level -> a -> Bool
 isValidGhostPosition gm = isValidMovablePosition (`elem` validTiles)
   where
     validTiles = case gm of

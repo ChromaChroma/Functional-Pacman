@@ -10,10 +10,10 @@ license:            GPL-3
 license-file:       LICENSE
 copyright:          (c) 2022 Jona Leeflang && Sem Bode
 synopsis: A haskell implementation of Pac-Man
-description: 
-    This project is an implementation of Pac-Man for a school assignment of Functional Programming. 
+description:
+    This project is an implementation of Pac-Man for a school assignment of Functional Programming.
     The main focus of this project is to learn to program in a functional way.
-    
+
 extra-source-files:
     README.md
 
@@ -21,7 +21,7 @@ data-files:
     data/test.txt
 
 executable haskell-game
-    build-depends:    
+    build-depends:
         base ^>=4.14.3.0,
         gloss ^>= 1.13.2.1,
         random ^>= 1.2.0,
@@ -34,10 +34,11 @@ executable haskell-game
     default-language: Haskell2010
     main-is:          Main.hs
     hs-source-dirs:   src
-    other-modules:  
+    other-modules:
         Model.Player
         Model.Game
         Model.Ghosts
+        Model.GhostAI
         Model.Level
         Model.Items
         Model.Movement

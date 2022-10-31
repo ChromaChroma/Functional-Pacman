@@ -12,7 +12,7 @@ import View.Debug
 import View.Helpers
 import View.Animation ( Textures, pacMan, ghost, fruitTexture )
 import Model.Game
-import Model.Ghosts
+import Model.Ghosts as G
 
 renderLevelSection :: Textures -> GameState -> Picture
 renderLevelSection textures gs = translateToLevelSection (layoutSize . layout . level $ gs). pictures $ map ($ gs) fs
@@ -69,8 +69,7 @@ renderPlayer textures gs = renderMovable pl dir ll . pacMan textures $ dir
 renderGhosts :: Textures -> GameState -> Picture
 renderGhosts t gs = pictures . map renderGhost $ ghosts gs
   where
-    -- todo add ghost dir?
-    renderGhost g = renderMovable g Stop ll $ ghost t (ghostMode gs) (frightenedTime gs) g
+    renderGhost g = renderMovable g (G.direction g) ll $ ghost t (ghostMode gs) (frightenedTime gs) g
     ll = layout $ level gs
 
 -- | Returns Pictures (Picture consisting of multiple pictures)
@@ -83,4 +82,3 @@ renderItems textures = pictures . map renderItem
       Dot _ _ -> color dotColor . circleSolid $ tileSize / 8
       PowerPellet _ _ -> color dotColor . circleSolid $ tileSize / 3
       Fruit {} -> fruitTexture textures item
-        
