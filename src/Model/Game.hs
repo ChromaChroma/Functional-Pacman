@@ -16,9 +16,10 @@ import Model.Ghosts (EatenState (Eaten, NotEaten), Ghost (eatenState), blinky, c
 import Model.Items (PointItem (Dot, Fruit), fruitOfLevel)
 import qualified Model.Items as I
 import Model.Level (Level (items, layout, levelNumber, playerSpawn), LevelSize, defaultLevel, layoutSize, tileAtW, Tile (Floor))
-import Model.Movement (Collidable (collides), Movable (getSpeed), Positioned (setPosition))
+import Model.Movement (Collidable (collides), Movable (getSpeed), Positioned (setPosition, getPosition), intPosition)
 import Model.Player (Player (lives), defaultPlayer, isAlive, position, rmLife)
 import Model.Score (Points)
+import Model.Dijkstra
 import System.Random (Random (randomR), StdGen, newStdGen)
 
 -------------------------------------------------------------------------------
@@ -135,8 +136,18 @@ spawnFruit :: GameState -> GameState
 spawnFruit gs = gs {level = lvl {items = fruit : items lvl}, ranGen = g}
   where
     lvl = level gs
-    (pos, g) = randomPosition (ranGen gs) lvl
+    (pos, g) = randomPos (ranGen gs) gs
     fruit = setPosition (fruitOfLevel . levelNumber $ lvl) pos
+
+    -- TODO: Infinite loop
+    randomPos :: StdGen -> GameState -> ((Float, Float), StdGen)
+    randomPos gen gs 
+      -- = (rPos, g)
+      | valid = (rPos, g)
+      | otherwise = randomPos g gs
+      where 
+        (rPos, g) = randomPosition gen lvl
+        valid = findShortestDistanceInLevel lvl (intPosition rPos) (intPosition (getPosition . player $ gs)) /= Infinity
 
 -- | Calculate a random position inside the level's size
 -- | Returns a tuple with the position and a the next generation of the random generator
@@ -146,6 +157,8 @@ randomPosition g lvl = ((fromIntegral x', fromIntegral y'), g'')
     (x, y) = layoutSize . layout $ lvl
     (x', g') = randomR (0, x - 1) g
     (y', g'') = randomR (0, y - 1) g'
+
+
 
     -- isValidPosition = tileAtW lvl (x', y') == Floor
 

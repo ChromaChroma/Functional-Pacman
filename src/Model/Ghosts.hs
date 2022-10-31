@@ -23,7 +23,7 @@ import Prelude hiding (Left, Right, Down, Up)
 data EatenState = NotEaten | Eaten deriving (Eq, Show)
 
 -- | Name of a Ghost
-data Name = Blinky | Pinky | Inky | Clyde deriving (Eq, Show)
+data Name = Blinky | Pinky | Inky | Clyde deriving (Eq, Show, Enum)
 
 -- | The ghost's current state
 data Ghost = Ghost

@@ -9,6 +9,12 @@ import qualified Data.Fixed as DF ( mod' )
 -- |     (1) `mod'` 10 == 1
 mod' :: Float -> Float -> Float
 mod' _ 0 = error "Cannot mod by 0"
-mod' a b 
+mod' a b
   | a < 0 = (a + b) `mod'` b
   | otherwise = a `DF.mod'` b
+
+intmod' :: Int -> Int -> Int
+intmod' _ 0 = error "Cannot mod by 0"
+intmod' a b
+  | fromIntegral a < 0 = round $ (fromIntegral a + fromIntegral b) `mod'` fromIntegral b
+  | otherwise = round $ fromIntegral a `DF.mod'` fromIntegral b
