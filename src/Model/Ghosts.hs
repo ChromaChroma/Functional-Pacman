@@ -9,7 +9,8 @@ module Model.Ghosts
     isEaten,
     isNotEaten,
     collidesWithMovable,
-    opp
+    opp,
+    turnGhostsAround
   )
 where
 
@@ -68,6 +69,11 @@ opp Down = Up
 opp Left = Right
 opp Right = Left
 opp Stop = Stop
+
+--in frightened mode OR when changing to and from scatter mode, the ghosts reverse direction.
+turnGhostsAround :: [Ghost] -> [Ghost]
+turnGhostsAround ghosts = map turn1GhostAround ghosts where
+  turn1GhostAround ghost = ghost {direction = opp (direction ghost), opDirection = opp (opDirection ghost)}
 
 -------------------------------------------------------------------------------
 -- Default value functions

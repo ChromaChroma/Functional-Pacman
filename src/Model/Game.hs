@@ -12,7 +12,7 @@ module Model.Game
   )
 where
 
-import Model.Ghosts (EatenState (Eaten, NotEaten), Ghost (eatenState), blinky, clyde, collidesWithMovable, inky, isEaten, isNotEaten, pinky)
+import Model.Ghosts hiding (position)
 import Model.Items (PointItem (Dot, Fruit), fruitOfLevel)
 import qualified Model.Items as I
 import Model.Level (Level (items, layout, levelNumber, playerSpawn), LevelSize, defaultLevel, layoutSize, tileAtW, Tile (Floor))
@@ -94,7 +94,7 @@ checkItemCollisions gs = foldr (\item -> removeItem item . addItemScore item . h
     removeItem item gs = gs {level = (level gs) {items = filter (/= item) (items . level $ gs)}}
     addItemScore item gs = gs {points = points gs + I.points item}
     handleItemType item gs = case item of
-      I.PowerPellet _ _ -> gs {ghostMode = Frightened, frightenedTime = 0}
+      I.PowerPellet _ _ -> gs {ghostMode = Frightened, frightenedTime = 0, ghosts = turnGhostsAround (ghosts gs)}
       _ -> gs
 
 checkGhostCollisions :: GameState -> GameState
@@ -141,11 +141,11 @@ spawnFruit gs = gs {level = lvl {items = fruit : items lvl}, ranGen = g}
 
     -- TODO: Infinite loop
     randomPos :: StdGen -> GameState -> ((Float, Float), StdGen)
-    randomPos gen gs 
+    randomPos gen gs
       -- = (rPos, g)
       | valid = (rPos, g)
       | otherwise = randomPos g gs
-      where 
+      where
         (rPos, g) = randomPosition gen lvl
         valid = findShortestDistanceInLevel lvl (intPosition rPos) (intPosition (getPosition . player $ gs)) /= Infinity
 

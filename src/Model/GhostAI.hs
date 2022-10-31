@@ -41,7 +41,7 @@ makeGhostsMove gs = gs {ghosts = map (make1GhostMove gs) (ghosts gs)}
 make1GhostMove :: GameState -> Ghost -> Ghost
 make1GhostMove gs ghst
   | isJust movedGhost = fromJust movedGhost
-  | otherwise = next -- case length possibledirections == 1: die kant. anders: ghost AI
+  | otherwise = next --KIEST NU DE EERSTE OPTIE -- case length possibledirections == 1: die kant. anders: ghost AI
   where
     movedGhost = makeDirectionMoveGhost gs ghst (direction ghst)
     next:nexts = checkMoveDirs gs ghst
