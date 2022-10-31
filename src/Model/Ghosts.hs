@@ -9,11 +9,12 @@ module Model.Ghosts
     isEaten,
     isNotEaten,
     collidesWithMovable,
+    opp
   )
 where
 
 import Model.Movement (Collidable (collides), Direction (..), Movable (..), Position, Positioned (..), Speed)
-
+import Prelude hiding (Left, Right, Down, Up)
 -------------------------------------------------------------------------------
 -- Data structures
 -------------------------------------------------------------------------------
@@ -31,7 +32,7 @@ data Ghost = Ghost
     speed :: Speed,
     eatenState :: EatenState,
     direction :: Direction,
-    prevDirection :: Direction
+    opDirection :: Direction
   }
   deriving (Eq)
 
@@ -60,6 +61,13 @@ isNotEaten = not . isEaten
 
 collidesWithMovable :: (Movable a, Collidable a) => Ghost -> a -> Bool
 collidesWithMovable ghost m = isNotEaten ghost && ghost `collides` m
+
+opp :: Direction -> Direction
+opp Up = Down
+opp Down = Up
+opp Left = Right
+opp Right = Left
+opp Stop = Stop
 
 -------------------------------------------------------------------------------
 -- Default value functions
