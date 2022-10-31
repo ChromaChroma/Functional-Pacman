@@ -18,3 +18,7 @@ intmod' _ 0 = error "Cannot mod by 0"
 intmod' a b
   | fromIntegral a < 0 = round $ (fromIntegral a + fromIntegral b) `mod'` fromIntegral b
   | otherwise = round $ fromIntegral a `DF.mod'` fromIntegral b
+
+-- | Calculates the distance between two points
+dist :: Num a => (a, a) -> (a, a) -> a
+dist (x, y) (x', y') = abs (x - x') + abs (y - y')

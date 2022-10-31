@@ -129,28 +129,29 @@ checkFruitSpawning gs
   where
     itms = items . level $ gs
     noFruitSpawned = null ([x | x@Fruit {} <- itms])
-    shouldSpawnFruit = amountOfDots `mod` 82 == 0 -- Spawn fruit every 82 dots eaten
+    shouldSpawnFruit = amountOfDots `mod` 5 == 0 -- Spawn fruit every 82 dots eaten
     amountOfDots = length [x | x@Dot {} <- itms]
 
 spawnFruit :: GameState -> GameState
 spawnFruit gs = gs {level = lvl {items = fruit : items lvl}, ranGen = g}
   where
     lvl = level gs
-    (pos, g) = randomPos (ranGen gs) gs
     fruit = setPosition (fruitOfLevel . levelNumber $ lvl) pos
+    (pos, g) = randomPos (ranGen gs) gs
 
     randomPos :: StdGen -> GameState -> ((Float, Float), StdGen)
-    randomPos gen gs 
+    randomPos gen gs
       | valid = (rPos, g'')
       | otherwise = randomPos g'' gs
-      where 
-        valid = findShortestDistanceInLevel lvl (intPosition rPos) (intPosition (getPosition . player $ gs)) /= Infinity
+      where
+        valid = shortestPath lvl (intPosition rPos) playerPosition /= Infinity
+        playerPosition = intPosition (getPosition . player $ gs)
+
         (x, y) = layoutSize . layout $ lvl
-        
         rPos = (fromIntegral x', fromIntegral y')
-        (x', g') = randomR (0, x - 1) g
+        (x', g') = randomR (0, x - 1) gen
         (y', g'') = randomR (0, y - 1) g'
-        
+
 -------------------------------------------------------------------------------
 -- Default value functions
 -------------------------------------------------------------------------------
