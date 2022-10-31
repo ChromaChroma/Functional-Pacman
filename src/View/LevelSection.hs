@@ -15,12 +15,13 @@ import Model.Game
 import Model.Ghosts as G
 
 renderLevelSection :: Textures -> GameState -> Picture
-renderLevelSection textures gs = translateToLevelSection (layoutSize . layout . level $ gs). pictures $ map ($ gs) fs
+renderLevelSection textures gs = translateToLevelSection (layoutSize . layout . level $ gs) . pictures $ map ($ gs) fs
   where
     fs =
       [ renderLevel . level,
         renderIntersections,
-        renderItems textures . items . level,
+        renderPellets . items . level,
+        renderFruit textures . items . level,
         renderGhosts textures,
         renderPlayer textures
       ]
@@ -73,12 +74,20 @@ renderGhosts t gs = pictures . map renderGhost $ ghosts gs
     ll = layout $ level gs
 
 -- | Returns Pictures (Picture consisting of multiple pictures)
-renderItems :: Textures -> [PointItem] -> Picture
-renderItems textures = pictures . map renderItem
+renderPellets :: [PointItem] -> Picture
+renderPellets = pictures . map renderItem
   where
     dotColor = light . light . light . light $ yellow
     renderItem item = let (x, y) = getPosition item in translateByTileSize x y (toPicture item)
     toPicture item = case item of
       Dot _ _ -> color dotColor . circleSolid $ tileSize / 8
       PowerPellet _ _ -> color dotColor . circleSolid $ tileSize / 3
-      Fruit {} -> fruitTexture textures item
+      _ -> Blank
+
+renderFruit :: Textures -> [PointItem] -> Picture
+renderFruit textures xs = pictures $ [renderItem x | x@Fruit {} <- xs]
+  where
+    renderItem item = 
+      let (x, y) = getPosition item 
+      in translateByTileSize x y (fruitTexture textures item)
+
