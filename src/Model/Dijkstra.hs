@@ -7,14 +7,13 @@ import qualified Data.HashSet as HS
 import Data.Hashable (Hashable)
 import Data.Heap (MinPrioHeap)
 import qualified Data.Heap as H
-import Data.List (nub)
 import Data.Maybe (catMaybes, fromMaybe)
 import Model.Level
 import Model.Utils
 
 {-
 
-This module implements Dijkstra's algorithm for finding the shortest path
+This module implements Dijkstra's algorithm for finding the shortest path between 2 points
 
 -}
 
@@ -22,7 +21,7 @@ type Node = (Int, Int)
 
 type Edge = (Node, Int)
 
-newtype Graph = Graph {edges :: HashMap Node [Edge]} deriving (Show)
+type Graph = HashMap Node [Edge]
 
 data DijkstraState = DijkstraState
   { visitedSet :: HashSet Node,
@@ -56,32 +55,40 @@ findShortestDistance graph src dest = processQueue initialState !?? dest
     processQueue :: DijkstraState -> HashMap Node (Distance Int)
     processQueue ds@(DijkstraState visited distMap nQueue) = case H.view nQueue of
       Nothing -> distMap
-      Just ((_minDist, node), queue') ->
+      Just ((_, node), queue') ->
         let processNode
               | node == dest = distMap
               | HS.member node visited = processQueue (ds {nodeQueue = queue'})
               | otherwise = processQueue $ foldl (foldNeighbor node) (DijkstraState visited' distMap queue') unvisitedNeighbors
               where
-                visited' = HS.insert node visited -- Get all unvisited neighbors of our current node
-                allNeighbors = fromMaybe [] (HM.lookup node (edges graph))
+                visited' = HS.insert node visited
+                allNeighbors = fromMaybe [] (HM.lookup node graph)
                 unvisitedNeighbors = filter (\(n, _) -> not (HS.member n visited')) allNeighbors
          in processNode
 
-    foldNeighbor current ds@(DijkstraState visited' distMap queue') (neighborNode, cost) =
-      let altDistance = addDist (distMap !?? current) (Dist cost)
-       in if altDistance < distMap !?? neighborNode
-            then DijkstraState visited' (HM.insert neighborNode altDistance distMap) (H.insert (altDistance, neighborNode) queue')
-            else ds
+    foldNeighbor current ds@(DijkstraState visited' distMap queue') (neighborNode, cost)
+      | altDistance < distMap !?? neighborNode = DijkstraState visited' (HM.insert neighborNode altDistance distMap) (H.insert (altDistance, neighborNode) queue')
+      | otherwise = ds
+      where 
+        altDistance = addDist (distMap !?? current) (Dist cost)
+    
+    
 
+-------------------------------------------------------------------------------
+-- Level specific functions for finding the shortest path in a Pac-Man level
+-------------------------------------------------------------------------------
+
+-- | Find the shortest path between 2 points in a level
 shortestPath :: Level -> Node -> Node -> Distance Int
 shortestPath lvl pos pos2
-  | isValidPosition pos && isValidPosition pos = findShortestDistance (Graph $ levelToEdgeMap lvl pos pos2) pos pos2
+  | isValidPosition pos && isValidPosition pos = findShortestDistance (levelToGraph lvl pos pos2) pos pos2
   | otherwise = Infinity
   where
     isValidPosition p = tileAtW lvl p == Floor
 
-levelToEdgeMap :: Level -> Node -> Node -> HashMap Node [Edge]
-levelToEdgeMap lvl p p2 = foldr addPointEdges HM.empty nodes
+-- | Convert a level to a graph
+levelToGraph :: Level -> Node -> Node -> Graph
+levelToGraph lvl p p2 = foldr addPointEdges HM.empty nodes
   where
     nodes = p : p2 : levelFloorSplits lvl
     addPointEdges pos edges = HM.insert pos (getEdges lvl pos) edges
