@@ -36,13 +36,25 @@ make1GhostMove gs ghst  -- hierzo een case voor: is de ghost de volgende tile op
     movedGhost = makeDirectionMoveGhost gs ghst (direction ghst)
     (next:_) = checkMoveDirs gs ghst
 
+canMakeMoveToDirGhost :: Movable a => GameState -> a -> Direction -> Level -> Bool
+canMakeMoveToDirGhost gs gh dir lvl
+  | isValid = case dir of
+    Up -> canMovePerpendicular x
+    Down -> canMovePerpendicular x
+    Left -> canMovePerpendicular y
+    Right -> canMovePerpendicular y
+    Stop -> True
+  | otherwise = False
+  where
+    isValid = isValidGhostPosition (ghostMode gs) lvl (moveFull gh dir)
+    (x, y) = getPosition gh
 
 makeDirectionMoveGhost :: GameState -> Ghost -> Direction -> Maybe Ghost
 makeDirectionMoveGhost gs ghst dir
   | canMoveInDir && isValidMovePosition = Just updatedGhost
   | otherwise = Nothing
   where
-    canMoveInDir = canMakeMoveToDir ghst dir lvl
+    canMoveInDir = canMakeMoveToDirGhost gs ghst dir lvl
     isValidMovePosition = isValidGhostPosition (ghostMode gs) lvl movedGhost
 
     updatedGhost = movedGhost {direction = dir, opDirection = opp dir}
