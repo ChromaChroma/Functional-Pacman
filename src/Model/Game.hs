@@ -16,12 +16,12 @@ module Model.Game
 where
 
 import Model.Dijkstra
-import Model.Ghosts hiding (position)
+import Model.Ghosts hiding (direction, position)
 import Model.Items (PointItem (Dot, Fruit), fruitOfLevel)
 import qualified Model.Items as I
 import Model.Level (Level (items, layout, levelNumber, playerSpawn), LevelSize, Tile (Floor), defaultLevel, layoutSize, tileAtW)
-import Model.Movement (Collidable (collides), Movable (getSpeed), Positioned (getPosition, setPosition), intPosition)
-import Model.Player (Player (lives), defaultPlayer, isAlive, position, rmLife)
+import Model.Movement (Collidable (collides), Movable (getSpeed), Positioned (getPosition, setPosition), intPosition, Direction(Stop))
+import Model.Player (Player (bufDirection, direction, lives), defaultPlayer, isAlive, position, rmLife)
 import Model.Score
 import System.Random (Random (randomR), StdGen, newStdGen)
 
@@ -147,7 +147,7 @@ checkGhostCollisions gs = handleCollidingGhosts gs . filter (`collidesWithMovabl
        in gs {points = points gs + calcGhostPoints updatedGhosts, ghosts = updatedGhosts}
 
 respawnPlayer :: Player -> Level -> Player
-respawnPlayer p lvl = p {position = playerSpawn lvl}
+respawnPlayer p lvl = p {position = playerSpawn lvl, direction = Stop, bufDirection = Stop}
 
 calcGhostPoints :: [Ghost] -> Points
 calcGhostPoints ghosts

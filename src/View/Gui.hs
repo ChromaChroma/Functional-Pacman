@@ -91,7 +91,7 @@ scoreInputHandler :: Event -> TotalState -> TotalState
 scoreInputHandler (EventKey (Char keyCharacter) IO.Down _ _) ts = ts {textBuffer = textBuffer ts ++ [keyCharacter]}
 scoreInputHandler (EventKey (SpecialKey KeyDelete) IO.Down _ _) ts = ts {textBuffer = init $ textBuffer ts}
 scoreInputHandler (EventKey (SpecialKey KeyEnter) IO.Down _ _) ts =
-  if length $ textBuffer ts > 0
+  if (length $ textBuffer ts) > 0
     then ts {textBuffer = "", gameState = reset $ submitScore (textBuffer ts) (gameState ts)}
     else ts
 scoreInputHandler _ ts = ts
