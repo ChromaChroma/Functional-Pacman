@@ -155,6 +155,16 @@ spawnFruit gs = gs {level = lvl {items = fruit : items lvl}, ranGen = g}
         (x', g') = randomR (0, x - 1) gen
         (y', g'') = randomR (0, y - 1) g'
 
+-- <<<<<<< HEAD
+--       -- = (rPos, g)
+--       | valid = (rPos, g)
+--       | otherwise = randomPos g gs
+--       where
+--         (rPos, g) = randomPosition gen lvl
+--         valid = findShortestDistanceInLevel lvl (intPosition rPos) (intPosition (getPosition . player $ gs)) /= Infinity
+-- =======
+
+-- >>>>>>> 7ff5f0f4567355be75d0a786ec51f912179c0686
 -------------------------------------------------------------------------------
 -- Default value functions
 -------------------------------------------------------------------------------
