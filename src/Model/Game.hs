@@ -12,14 +12,14 @@ module Model.Game
   )
 where
 
+import Model.Dijkstra
 import Model.Ghosts hiding (position)
 import Model.Items (PointItem (Dot, Fruit), fruitOfLevel)
 import qualified Model.Items as I
-import Model.Level (Level (items, layout, levelNumber, playerSpawn), LevelSize, defaultLevel, layoutSize, tileAtW, Tile (Floor))
-import Model.Movement (Collidable (collides), Movable (getSpeed), Positioned (setPosition, getPosition), intPosition)
+import Model.Level (Level (items, layout, levelNumber, playerSpawn), LevelSize, Tile (Floor), defaultLevel, layoutSize, tileAtW)
+import Model.Movement (Collidable (collides), Movable (getSpeed), Positioned (getPosition, setPosition), intPosition)
 import Model.Player (Player (lives), defaultPlayer, isAlive, position, rmLife)
 import Model.Score (Points)
-import Model.Dijkstra
 import System.Random (Random (randomR), StdGen, newStdGen)
 
 -------------------------------------------------------------------------------
@@ -98,22 +98,25 @@ checkItemCollisions gs = foldr (\item -> removeItem item . addItemScore item . h
       _ -> gs
 
 checkGhostCollisions :: GameState -> GameState
-checkGhostCollisions gs = handleGhostCollisions gs (filter (`collidesWithMovable` player gs) $ ghosts gs)
-
-handleGhostCollisions :: GameState -> [Ghost] -> GameState
-handleGhostCollisions gs [] = gs
-handleGhostCollisions gs (g : _) =
-  if ghostMode gs == Frightened && isNotEaten g
-    then eatGhost
-    else respawnPlayer . reduceLife $ gs
+checkGhostCollisions gs = handleCollidingGhosts gs . filter (`collidesWithMovable` player gs) $ ghosts gs
   where
-    eatGhost = gs {points = points gs + calcGhostPoints updatedGhosts, ghosts = updatedGhosts}
-    updatedGhosts = map (\x -> if x == g then x {eatenState = Eaten} else x) (ghosts gs)
+    handleCollidingGhosts :: GameState -> [Ghost] -> GameState
+    handleCollidingGhosts gs ghosts
+      | ghostMode gs /= Frightened = foldr (\_ gs' -> killPlayer gs') gs ghosts
+      | otherwise = foldr eatGhost gs (filter isNotEaten ghosts)
 
-    reduceLife gs = gs {player = (player gs) {lives = rmLife . lives . player $ gs}}
-    respawnPlayer gs
-      | isAlive . lives $ player gs = gs {player = (player gs) {position = playerSpawn . level $ gs}}
-      | otherwise = gs {status = GameOver}
+    killPlayer :: GameState -> GameState
+    killPlayer gs =
+      let p = player gs
+          pLives = lives p
+          pSpawn = playerSpawn . level $ gs
+          verifyAlive gs = if isAlive pLives then gs else gs {status = GameOver}
+       in verifyAlive $ gs {player = p {position = pSpawn, lives = rmLife pLives}}
+
+    eatGhost :: Ghost -> GameState -> GameState
+    eatGhost g gs =
+      let updatedGhosts = map (\x -> if x == g then x {eatenState = Eaten} else x) (ghosts gs)
+       in gs {points = points gs + calcGhostPoints updatedGhosts, ghosts = updatedGhosts}
 
 calcGhostPoints :: [Ghost] -> Points
 calcGhostPoints ghosts
