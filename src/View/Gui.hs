@@ -1,6 +1,6 @@
 module View.Gui where
 
-import Controller.Engine 
+import Controller.Engine
 import Controller.MovementController (canMovePerpendicular, formatDecimals)
 import Data.List ()
 import Data.List.Index ()
@@ -12,7 +12,7 @@ import Graphics.Gloss.Interface.IO.Game as IO
   ( Event (EventKey),
     Key (Char, SpecialKey),
     KeyState (Down),
-    SpecialKey (KeyDown, KeyEnter, KeyLeft, KeyRight, KeyUp),
+    SpecialKey (KeyDelete, KeyDown, KeyEnter, KeyLeft, KeyRight, KeySpace, KeyUp),
   )
 import Model.Game (GameState (status), Status (..), defaultGame, reset)
 import Model.Items ()
@@ -75,29 +75,38 @@ drawingFunc ts = pictures (renders : [renderOverlay gs (textBuffer ts)])
 -- | Input handling
 inputDelegationHandler :: Event -> TotalState -> TotalState
 inputDelegationHandler event ts
-  | (status $ gameState ts) == GameOver = scoreInputHandler event ts
-  | otherwise = inputHandler event ts
+  | gsStatus == Waiting = waitingInputHandler event ts
+  | gsStatus == GameOver = scoreInputHandler event ts
+  | otherwise = gameInputHandler event ts
+  where
+    gsStatus = status $ gameState ts
+
+-- | Handling input to go from idle to starting the game
+waitingInputHandler :: Event -> TotalState -> TotalState
+waitingInputHandler (EventKey (SpecialKey KeySpace) IO.Down _ _) ts = ts {gameState = (gameState ts) {status = Active}}
+waitingInputHandler _ ts = ts
 
 -- | Handling of typing name for adding score
 scoreInputHandler :: Event -> TotalState -> TotalState
 scoreInputHandler (EventKey (Char keyCharacter) IO.Down _ _) ts = ts {textBuffer = textBuffer ts ++ [keyCharacter]}
-scoreInputHandler (EventKey (SpecialKey KeyEnter) IO.Down _ _) ts = ts {textBuffer = [], gameState = reset $ submitScore (textBuffer ts) (gameState ts) }
+scoreInputHandler (EventKey (SpecialKey KeyEnter) IO.Down _ _) ts = ts {textBuffer = [], gameState = reset $ submitScore (textBuffer ts) (gameState ts)}
+scoreInputHandler (EventKey (SpecialKey KeyDelete) IO.Down _ _) ts = ts { textBuffer = init $ textBuffer ts}
 scoreInputHandler _ ts = ts
 
 -- | Movement with arrow keys
-inputHandler :: Event -> TotalState -> TotalState
-inputHandler (EventKey (SpecialKey KeyUp) IO.Down _ _) ts = ts {gameState = movePlayer M.Up (gameState ts)}
-inputHandler (EventKey (SpecialKey KeyDown) IO.Down _ _) ts = ts {gameState = movePlayer M.Down (gameState ts)}
-inputHandler (EventKey (SpecialKey KeyRight) IO.Down _ _) ts = ts {gameState = movePlayer M.Right (gameState ts)}
-inputHandler (EventKey (SpecialKey KeyLeft) IO.Down _ _) ts = ts {gameState = movePlayer M.Left (gameState ts)}
-inputHandler (EventKey (Char 'w') IO.Down _ _) ts = ts {gameState = movePlayer M.Up (gameState ts)}
-inputHandler (EventKey (Char 's') IO.Down _ _) ts = ts {gameState = movePlayer M.Down (gameState ts)}
-inputHandler (EventKey (Char 'd') IO.Down _ _) ts = ts {gameState = movePlayer M.Right (gameState ts)}
-inputHandler (EventKey (Char 'a') IO.Down _ _) ts = ts {gameState = movePlayer M.Left (gameState ts)}
-inputHandler (EventKey (Char 'p') IO.Down _ _) ts = ts {gameState = pause (gameState ts)}
-inputHandler (EventKey (Char 'r') IO.Down _ _) ts = ts {gameState = resume (gameState ts)}
-inputHandler (EventKey (Char 'q') IO.Down _ _) ts = ts {gameState = quit (gameState ts)}
-inputHandler _ ts = ts
+gameInputHandler :: Event -> TotalState -> TotalState
+gameInputHandler (EventKey (SpecialKey KeyUp) IO.Down _ _) ts = ts {gameState = movePlayer M.Up (gameState ts)}
+gameInputHandler (EventKey (SpecialKey KeyDown) IO.Down _ _) ts = ts {gameState = movePlayer M.Down (gameState ts)}
+gameInputHandler (EventKey (SpecialKey KeyRight) IO.Down _ _) ts = ts {gameState = movePlayer M.Right (gameState ts)}
+gameInputHandler (EventKey (SpecialKey KeyLeft) IO.Down _ _) ts = ts {gameState = movePlayer M.Left (gameState ts)}
+gameInputHandler (EventKey (Char 'w') IO.Down _ _) ts = ts {gameState = movePlayer M.Up (gameState ts)}
+gameInputHandler (EventKey (Char 's') IO.Down _ _) ts = ts {gameState = movePlayer M.Down (gameState ts)}
+gameInputHandler (EventKey (Char 'd') IO.Down _ _) ts = ts {gameState = movePlayer M.Right (gameState ts)}
+gameInputHandler (EventKey (Char 'a') IO.Down _ _) ts = ts {gameState = movePlayer M.Left (gameState ts)}
+gameInputHandler (EventKey (Char 'p') IO.Down _ _) ts = ts {gameState = pause (gameState ts)}
+gameInputHandler (EventKey (Char 'r') IO.Down _ _) ts = ts {gameState = resume (gameState ts)}
+gameInputHandler (EventKey (Char 'q') IO.Down _ _) ts = ts {gameState = quit (gameState ts)}
+gameInputHandler _ ts = ts
 
 -- | Update function ran each iteration
 -- | Takes seconds since last update as Float, converts it to milliseconds and passes it to the engine step function

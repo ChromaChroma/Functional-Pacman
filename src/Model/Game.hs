@@ -70,7 +70,7 @@ loadGame gen highScores =
       pl = setPosition defaultPlayer (playerSpawn lvl)
   in GameState
     { ranGen = gen,
-      status = Active,
+      status = Waiting,
       elapsedTime = 0,
       tickTimer = 0,
       player = pl,
