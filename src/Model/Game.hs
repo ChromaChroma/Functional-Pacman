@@ -20,7 +20,7 @@ import qualified Model.Items as I
 import Model.Level (Level (items, layout, levelNumber, playerSpawn), LevelSize, Tile (Floor), defaultLevel, layoutSize, tileAtW)
 import Model.Movement (Collidable (collides), Movable (getSpeed), Positioned (getPosition, setPosition), intPosition)
 import Model.Player (Player (lives), defaultPlayer, isAlive, position, rmLife)
-import Model.Score (Points)
+import Model.Score
 import System.Random (Random (randomR), StdGen, newStdGen)
 
 -------------------------------------------------------------------------------
@@ -50,7 +50,8 @@ data GameState = GameState
     ghosts :: [Ghost],
     points :: Points,
     frightenedTime :: Time,
-    ghostMode :: GhostMode
+    ghostMode :: GhostMode,
+    highScores :: HighScores
   }
   deriving (Eq)
 
@@ -58,8 +59,8 @@ data GameState = GameState
 -- Logic
 -------------------------------------------------------------------------------
 
-loadGame :: StdGen -> Level -> [Ghost] -> Player -> GameState
-loadGame gen lvl ghosts pl =
+loadGame :: StdGen -> Level -> HighScores -> [Ghost] -> Player -> GameState
+loadGame gen lvl highScores ghosts pl =
   GameState
     { ranGen = gen,
       status = Active,
@@ -70,27 +71,34 @@ loadGame gen lvl ghosts pl =
       ghosts = ghosts,
       points = 0,
       frightenedTime = 0,
-      ghostMode = Scatter
+      ghostMode = Scatter,
+      highScores = highScores
     }
 
 loadNextLevel :: GameState -> GameState
 loadNextLevel gs =
   let lvl = level gs
       p = player gs
-  in gs {
-      level = nextLevel lvl,
-      player = respawnPlayer p lvl,
-      frightenedTime = 0,
-      ghosts = defaultGhosts
-    }
+   in gs
+        { level = nextLevel lvl,
+          player = respawnPlayer p lvl,
+          frightenedTime = 0,
+          ghosts = defaultGhosts
+        }
 
 nextLevel :: Level -> Level
-nextLevel lvl = defaultLevel{levelNumber = levelNumber lvl + 1}
+nextLevel lvl = defaultLevel {levelNumber = levelNumber lvl + 1}
+
+addNewScore :: GameState -> String -> GameState
+addNewScore gs name = case mkScore name $ points gs of
+  Just s -> gs {highScores = addScore s $ highScores gs}
+  Nothing -> error "Invalid score"
+
 -- | Check if game is over and update it if necessary
 checkGameOver :: GameState -> GameState
 checkGameOver gs
   | isAlive' = gs
-  | otherwise = gs {status = GameOver}
+  | otherwise = (addNewScore gs "test") {status = GameOver}
   where
     isAlive' = isAlive . lives . player $ gs
 
@@ -131,7 +139,7 @@ checkGhostCollisions gs = handleCollidingGhosts gs . filter (`collidesWithMovabl
       let updatedGhosts = map (\x -> if x == g then x {eatenState = Eaten} else x) (ghosts gs)
        in gs {points = points gs + calcGhostPoints updatedGhosts, ghosts = updatedGhosts}
 
-respawnPlayer :: Player-> Level -> Player
+respawnPlayer :: Player -> Level -> Player
 respawnPlayer p lvl = p {position = playerSpawn lvl}
 
 calcGhostPoints :: [Ghost] -> Points
@@ -148,7 +156,7 @@ checkFruitSpawning gs
   where
     itms = items . level $ gs
     noFruitSpawned = null ([x | x@Fruit {} <- itms])
-    shouldSpawnFruit = amountOfDots/= 0 && amountOfDots `mod` 82 == 0 -- Spawn fruit every 82 dots eaten
+    shouldSpawnFruit = amountOfDots /= 0 && amountOfDots `mod` 82 == 0 -- Spawn fruit every 82 dots eaten
     amountOfDots = length [x | x@Dot {} <- itms]
 
 spawnFruit :: GameState -> GameState
@@ -183,5 +191,19 @@ defaultGame = do
   let lvl = defaultLevel
   let ghosts = defaultGhosts
   let pl = setPosition defaultPlayer (playerSpawn lvl)
+  let highScores =
+        mkHighScores
+          [ Score "test1" 20,
+            Score "test2" 64,
+            Score "test3" 20,
+            Score "test4" 20,
+            Score "test5" 63,
+            Score "test6" 44,
+            Score "test7" 20,
+            Score "test8" 22,
+            Score "test9" 20,
+            Score "test10" 20,
+            Score "test11" 99
+          ]
   generator <- newStdGen
-  return (loadGame generator lvl ghosts pl)
+  return (loadGame generator lvl highScores ghosts pl)
