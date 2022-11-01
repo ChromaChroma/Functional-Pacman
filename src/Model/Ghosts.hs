@@ -11,6 +11,8 @@ module Model.Ghosts
     collidesWithMovable,
     opp,
     turnGhostsAround,
+    slowGhostsDown,
+    speedGhostsUp,
     defaultGhosts,
   )
 where
