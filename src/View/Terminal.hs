@@ -63,8 +63,8 @@ showGhosts (g:gs) = show (name g) ++ " " ++ showGhosts gs
 --   $ projectItems (items level)
 --   $ (transpose (layoutToStringArray (layout level)))
 
-layoutToStringArray :: [[Tile]] -> [[String]]
-layoutToStringArray = map (map show)
+layoutToStringArray :: Show a => Layout a -> [[String]]
+layoutToStringArray (Layout xss) = map (map show) xss
 -- reversePos :: Position -> Position
 -- reversePos (x, y) = (xLen - x, yLen - y)
 --   where
