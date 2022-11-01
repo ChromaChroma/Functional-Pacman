@@ -94,7 +94,7 @@ checkItemCollisions gs = foldr (\item -> removeItem item . addItemScore item . h
     removeItem item gs = gs {level = (level gs) {items = filter (/= item) (items . level $ gs)}}
     addItemScore item gs = gs {points = points gs + I.points item}
     handleItemType item gs = case item of
-      I.PowerPellet _ _ -> gs {ghostMode = Frightened, frightenedTime = 0, ghosts = turnGhostsAround (ghosts gs)}
+      I.PowerPellet _ _ -> gs {ghostMode = Frightened, frightenedTime = 0, ghosts = slowGhostsDown $ turnGhostsAround (ghosts gs)}
       _ -> gs
 
 checkGhostCollisions :: GameState -> GameState
@@ -129,7 +129,7 @@ checkFruitSpawning gs
   where
     itms = items . level $ gs
     noFruitSpawned = null ([x | x@Fruit {} <- itms])
-    shouldSpawnFruit = amountOfDots `mod` 82 == 0 -- Spawn fruit every 82 dots eaten
+    shouldSpawnFruit = amountOfDots `mod` 5 == 0 -- Spawn fruit every 82 dots eaten
     amountOfDots = length [x | x@Dot {} <- itms]
 
 spawnFruit :: GameState -> GameState

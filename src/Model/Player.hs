@@ -68,4 +68,4 @@ isAlive = (> 0) . unlives
 -------------------------------------------------------------------------------
 
 defaultPlayer :: Player
-defaultPlayer = Player (1, 1) 0.1 (Lives 3) Stop Stop
+defaultPlayer = Player (1, 1) 0.125 (Lives 3) Stop Stop

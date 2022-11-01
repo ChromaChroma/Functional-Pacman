@@ -10,7 +10,9 @@ module Model.Ghosts
     isNotEaten,
     collidesWithMovable,
     opp,
-    turnGhostsAround
+    turnGhostsAround,
+    slowGhostsDown,
+    speedGhostsUp
   )
 where
 
@@ -75,6 +77,14 @@ turnGhostsAround :: [Ghost] -> [Ghost]
 turnGhostsAround ghosts = map turn1GhostAround ghosts where
   turn1GhostAround ghost = ghost {direction = opp (direction ghost), opDirection = opp (opDirection ghost)}
 
+slowGhostsDown :: [Ghost] -> [Ghost]
+slowGhostsDown ghosts = map slow1GhostDown ghosts where
+  slow1GhostDown ghost = ghost {speed = 2/3 * (speed ghost)}
+
+speedGhostsUp :: [Ghost] -> [Ghost]
+speedGhostsUp ghosts = map speed1GhostUp ghosts where
+  speed1GhostUp ghost = ghost {speed = 3/2 * (speed ghost)}
+
 -------------------------------------------------------------------------------
 -- Default value functions
 -------------------------------------------------------------------------------
@@ -84,7 +94,7 @@ blinky :: Ghost
 blinky = Ghost Blinky (12, 16) 0.1 NotEaten Stop Stop
 
 pinky :: Ghost
-pinky = Ghost Pinky (13, 16) 0.1 NotEaten Up Stop
+pinky = Ghost Pinky (13, 16) 0.09375 NotEaten Up Stop --speed is 75%, player's is 80% (0.1)
 
 inky :: Ghost
 inky = Ghost Inky (14, 16) 0.1 NotEaten Stop Stop

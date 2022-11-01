@@ -11,6 +11,8 @@ import Model.Game
 import Model.Level (isLevelComplete)
 import Model.Movement (Direction)
 import Model.Player as P (Player (lives, bufDirection), isAlive)
+import Model.Ghosts
+import Model.Game
 import Model.GhostAI (makeGhostsMove)
 import Prelude hiding (Left, Right)
 
@@ -52,7 +54,8 @@ tick ms gs
   where
     addElapsedTime gs = gs {elapsedTime = elapsedTime gs + ms, tickTimer = tickTimer gs + ms}
     checkGhostMode gs
-      | frightenedTime gs >= frightenedDuration = gs {ghostMode = Scatter} -- TODO: change to time base ghost mode
+      | frightenedTime gs >= frightenedDuration && (ghostMode gs == Frightened) = gs {ghostMode = Chasing, ghosts = speedGhostsUp (ghosts gs)} -- eerste keer als frightenedtime de duration voorbij is
+      | frightenedTime gs >= frightenedDuration && (ghostMode gs /= Frightened) = gs  -- TODO: change to time base ghost mode
       | frightenedTime gs < frightenedDuration = gs {frightenedTime = frightenedTime gs + ms}
       | otherwise = gs
 
