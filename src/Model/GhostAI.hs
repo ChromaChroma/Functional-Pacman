@@ -8,18 +8,7 @@ import Data.Maybe (Maybe (..), fromJust, isJust)
 import Model.Game (GameState (level, ghosts, ghostMode))
 import Model.Ghosts
 import Model.Level
-  ( DoorState (Open, Closed),
-    Level (layout),
-    Tile (Floor, GhostDoor),
-    layoutSize,
-    tileAtW,
-  )
 import Model.Movement
-  ( Direction (..),
-    Movable (move),
-    Positioned (getPosition, setPosition),
-    intPosition,
-  )
 import Numeric (showFFloat)
 import Prelude hiding (Down, Left, Right, Up)
 

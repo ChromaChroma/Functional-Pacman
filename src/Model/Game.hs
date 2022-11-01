@@ -74,7 +74,7 @@ loadGame gen lvl ghosts pl =
     }
 
 loadNextLevel :: GameState -> GameState
-loadNextLevel gs = 
+loadNextLevel gs =
   let lvl = level gs
       p = player gs
   in gs {
@@ -108,7 +108,7 @@ checkItemCollisions gs = foldr (\item -> removeItem item . addItemScore item . h
     removeItem item gs = gs {level = (level gs) {items = filter (/= item) (items . level $ gs)}}
     addItemScore item gs = gs {points = points gs + I.points item}
     handleItemType item gs = case item of
-      I.PowerPellet _ _ -> gs {ghostMode = Frightened, frightenedTime = 0, ghosts = turnGhostsAround (ghosts gs)}
+      I.PowerPellet _ _ -> gs {ghostMode = Frightened, frightenedTime = 0, ghosts = slowGhostsDown $ turnGhostsAround (ghosts gs)}
       _ -> gs
 
 checkGhostCollisions :: GameState -> GameState
@@ -125,7 +125,7 @@ checkGhostCollisions gs = handleCollidingGhosts gs . filter (`collidesWithMovabl
           pLives = lives p
           verifyAlive gs = if isAlive pLives then gs else gs {status = GameOver}
        in verifyAlive $ gs {player = (respawnPlayer p $ level gs) {lives = rmLife pLives}}
-    
+
     eatGhost :: Ghost -> GameState -> GameState
     eatGhost g gs =
       let updatedGhosts = map (\x -> if x == g then x {eatenState = Eaten} else x) (ghosts gs)
