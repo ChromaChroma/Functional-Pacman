@@ -89,8 +89,11 @@ waitingInputHandler _ ts = ts
 -- | Handling of typing name for adding score
 scoreInputHandler :: Event -> TotalState -> TotalState
 scoreInputHandler (EventKey (Char keyCharacter) IO.Down _ _) ts = ts {textBuffer = textBuffer ts ++ [keyCharacter]}
-scoreInputHandler (EventKey (SpecialKey KeyEnter) IO.Down _ _) ts = ts {textBuffer = [], gameState = reset $ submitScore (textBuffer ts) (gameState ts)}
-scoreInputHandler (EventKey (SpecialKey KeyDelete) IO.Down _ _) ts = ts { textBuffer = init $ textBuffer ts}
+scoreInputHandler (EventKey (SpecialKey KeyDelete) IO.Down _ _) ts = ts {textBuffer = init $ textBuffer ts}
+scoreInputHandler (EventKey (SpecialKey KeyEnter) IO.Down _ _) ts =
+  if length $ textBuffer ts > 0
+    then ts {textBuffer = "", gameState = reset $ submitScore (textBuffer ts) (gameState ts)}
+    else ts
 scoreInputHandler _ ts = ts
 
 -- | Movement with arrow keys
