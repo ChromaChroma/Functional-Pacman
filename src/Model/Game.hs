@@ -129,7 +129,7 @@ checkFruitSpawning gs
   where
     itms = items . level $ gs
     noFruitSpawned = null ([x | x@Fruit {} <- itms])
-    shouldSpawnFruit = amountOfDots `mod` 5 == 0 -- Spawn fruit every 82 dots eaten
+    shouldSpawnFruit = amountOfDots `mod` 82 == 0 -- Spawn fruit every 82 dots eaten
     amountOfDots = length [x | x@Dot {} <- itms]
 
 spawnFruit :: GameState -> GameState
