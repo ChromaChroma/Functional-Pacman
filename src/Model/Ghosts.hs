@@ -2,6 +2,7 @@ module Model.Ghosts
   ( Ghost (..),
     Name (..),
     EatenState (..),
+    Direction (..),
     blinky,
     pinky,
     inky,

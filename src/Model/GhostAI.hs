@@ -5,7 +5,7 @@ module Model.GhostAI where
 
 import Data.Fixed (mod')
 import Data.Maybe (Maybe (..), fromJust, isJust)
-import Model.Game (GameState (level, ghosts, ghostMode))
+import Model.Game
 import Model.Ghosts
 import Model.Level
 import Model.Movement
@@ -36,7 +36,7 @@ make1GhostMove gs ghst  -- hierzo een case voor: is de ghost de volgende tile op
     movedGhost = makeDirectionMoveGhost gs ghst (direction ghst)
     (next:_) = checkMoveDirs gs ghst
 
-canMakeMoveToDirGhost :: Movable a => GameState -> a -> Direction -> Level -> Bool
+canMakeMoveToDirGhost :: GameState -> Ghost -> Direction -> Level -> Bool
 canMakeMoveToDirGhost gs gh dir lvl
   | isValid = case dir of
     Up -> canMovePerpendicular x
@@ -72,6 +72,16 @@ checkMoveDirs gs gh
     possiblemoves = map fromJust $ filter (isJust) [makeDirectionMoveGhost gs gh x | x <- u]
     u = filter (/= opDirection gh) [Up,Left,Down,Right]
 
-
+-- | Checks if the ghost is in a valid position on the level
+isValidGhostPosition :: GhostMode -> Level -> Ghost -> Bool
+isValidGhostPosition gm lvl gh = isValidMovablePosition (`elem` validTiles) lvl gh
+  where
+    validTiles = case gm of
+      Frightened -> [Floor]
+      _ -> case isEaten gh of
+            True  -> [Floor, GhostDoor Open, GhostDoor Closed]
+            False -> case direction gh of
+                      Up    -> [Floor, GhostDoor Open, GhostDoor Closed]
+                      _     -> [Floor]
 
 --END

@@ -3,7 +3,7 @@ module Controller.MovementController where
 import Data.Fixed (mod')
 import Data.Maybe (Maybe (..), fromJust, isJust)
 import Model.Game (GameState (level, player), GhostMode (Frightened))
-import Model.Ghosts (Ghost)
+import Model.Ghosts (Ghost, isEaten)
 import Model.Level
   ( DoorState (Open, Closed),
     Level (layout),
@@ -87,11 +87,3 @@ isValidPlayerPosition = isValidMovablePosition (== Floor)
 -- | Higher order function that checks if a movable is in a valid position on the level based on a provided Tile predicate
 isValidMovablePosition :: Movable a => (Tile -> Bool) -> Level -> a -> Bool
 isValidMovablePosition p level m = p . tileAtW level . intPosition $ getPosition m
-
--- | Checks if the ghost is in a valid position on the level
-isValidGhostPosition :: Movable a => GhostMode -> Level -> a -> Bool
-isValidGhostPosition gm = isValidMovablePosition (`elem` validTiles)
-  where
-    validTiles = case gm of
-      Frightened -> [Floor]
-      _ -> [Floor, GhostDoor Open, GhostDoor Closed]
