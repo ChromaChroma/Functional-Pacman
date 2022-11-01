@@ -10,7 +10,8 @@ module Model.Ghosts
     isNotEaten,
     collidesWithMovable,
     opp,
-    turnGhostsAround
+    turnGhostsAround,
+    defaultGhosts,
   )
 where
 
@@ -91,3 +92,6 @@ inky = Ghost Inky (14, 16) 0.1 NotEaten Stop Stop
 
 clyde :: Ghost
 clyde = Ghost Clyde (15, 16) 0.1 NotEaten Stop Stop
+
+defaultGhosts :: [Ghost]
+defaultGhosts = [blinky, pinky, inky, clyde]
