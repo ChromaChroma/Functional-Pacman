@@ -73,3 +73,9 @@ resume gs
 -- | End the game (forfeiting the current game)
 quit :: GameState -> GameState
 quit gs = gs {status = GameOver}
+
+-- | Submit name for score
+submitScore :: String -> GameState -> GameState
+submitScore name gs
+  | status gs == GameOver = addNewScore name gs --submit score, reset game for next
+  | otherwise = gs

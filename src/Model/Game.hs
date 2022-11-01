@@ -10,6 +10,7 @@ module Model.Game
     frightenedDuration,
     checkFruitSpawning,
     loadNextLevel,
+    addNewScore,
   )
 where
 
@@ -89,8 +90,8 @@ loadNextLevel gs =
 nextLevel :: Level -> Level
 nextLevel lvl = defaultLevel {levelNumber = levelNumber lvl + 1}
 
-addNewScore :: GameState -> String -> GameState
-addNewScore gs name = case mkScore name $ points gs of
+addNewScore ::  String -> GameState -> GameState
+addNewScore name gs = case mkScore name $ points gs of
   Just s -> gs {highScores = addScore s $ highScores gs}
   Nothing -> error "Invalid score"
 
@@ -98,7 +99,7 @@ addNewScore gs name = case mkScore name $ points gs of
 checkGameOver :: GameState -> GameState
 checkGameOver gs
   | isAlive' = gs
-  | otherwise = (addNewScore gs "test") {status = GameOver}
+  | otherwise = gs{status = GameOver}
   where
     isAlive' = isAlive . lives . player $ gs
 
@@ -196,14 +197,14 @@ defaultGame = do
           [ Score "test1" 20,
             Score "test2" 64,
             Score "test3" 20,
-            Score "test4" 20,
-            Score "test5" 63,
-            Score "test6" 44,
-            Score "test7" 20,
-            Score "test8" 22,
-            Score "test9" 20,
-            Score "test10" 20,
-            Score "test11" 99
+            Score "test4" 20
+            -- Score "test5" 63,
+            -- Score "test6" 44,
+            -- Score "test7" 20,
+            -- Score "test8" 22,
+            -- Score "test9" 20,
+            -- Score "test10" 20,
+            -- Score "test11" 99
           ]
   generator <- newStdGen
   return (loadGame generator lvl highScores ghosts pl)
