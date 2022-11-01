@@ -62,25 +62,25 @@ data GameState = GameState
 -------------------------------------------------------------------------------
 reset :: GameState -> GameState
 reset gs = loadGame (ranGen gs) (highScores gs)
- 
+
 loadGame :: StdGen -> HighScores -> GameState
 loadGame gen highScores =
   let ghosts = defaultGhosts
       lvl = defaultLevel
       pl = setPosition defaultPlayer (playerSpawn lvl)
-  in GameState
-    { ranGen = gen,
-      status = Waiting,
-      elapsedTime = 0,
-      tickTimer = 0,
-      player = pl,
-      level = lvl,
-      ghosts = ghosts,
-      points = 0,
-      frightenedTime = 0,
-      ghostMode = Scatter,
-      highScores = highScores
-    }
+   in GameState
+        { ranGen = gen,
+          status = Waiting,
+          elapsedTime = 0,
+          tickTimer = 0,
+          player = pl,
+          level = lvl,
+          ghosts = ghosts,
+          points = 0,
+          frightenedTime = 0,
+          ghostMode = Scatter,
+          highScores = highScores
+        }
 
 loadNextLevel :: GameState -> GameState
 loadNextLevel gs =
@@ -96,7 +96,7 @@ loadNextLevel gs =
 nextLevel :: Level -> Level
 nextLevel lvl = defaultLevel {levelNumber = levelNumber lvl + 1}
 
-addNewScore ::  String -> GameState -> GameState
+addNewScore :: String -> GameState -> GameState
 addNewScore name gs = case mkScore name $ points gs of
   Just s -> gs {highScores = addScore s $ highScores gs}
   Nothing -> error "Invalid score"
@@ -105,7 +105,7 @@ addNewScore name gs = case mkScore name $ points gs of
 checkGameOver :: GameState -> GameState
 checkGameOver gs
   | isAlive' = gs
-  | otherwise = gs{status = GameOver}
+  | otherwise = gs {status = GameOver}
   where
     isAlive' = isAlive . lives . player $ gs
 
@@ -195,19 +195,6 @@ frightenedDuration = 5000
 
 defaultGame :: IO GameState
 defaultGame = do
-  let highScores =
-        mkHighScores
-          [ Score "test1" 20,
-            Score "test2" 64,
-            Score "test3" 20,
-            Score "test4" 20
-            -- Score "test5" 63,
-            -- Score "test6" 44,
-            -- Score "test7" 20,
-            -- Score "test8" 22,
-            -- Score "test9" 20,
-            -- Score "test10" 20,
-            -- Score "test11" 99
-          ]
+  let highScores = mkHighScores []
   generator <- newStdGen
   return (loadGame generator highScores)
