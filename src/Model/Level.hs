@@ -11,7 +11,8 @@ module Model.Level
     defaultLevel,
     isLevelComplete,
     LevelSize,
-    levelIntersections, levelFloorSplits
+    levelIntersections, 
+    levelFloorSplits
   )
 where
 
@@ -173,20 +174,9 @@ levelCorners level =
         up = tileAtW level (x', y' + 1) == Floor
         down = tileAtW level (x', y' - 1) == Floor
 
-
-
-
-
 -- Calculates the floor path splits of the level
 levelFloorSplits :: Level -> [Intersection]
 levelFloorSplits level = levelIntersections level ++ levelCorners level ++ levelDeadEnds level
-
--- isReachable :: Level -> (Int, Int) -> Position -> Bool
--- isReachable lvl pos playerPos = findShortestDistanceOrLevel level pos playerPos /= Infinity
--- -- findPath lvl pos playerPos
---   where
---     -- bridges = levelToBridges lvl
---     -- ... TODO algoritm to find path
 
 -------------------------------------------------------------------------------
 -- Default value functions

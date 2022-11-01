@@ -7,15 +7,13 @@ import qualified Data.HashSet as HS
 import Data.Hashable (Hashable)
 import Data.Heap (MinPrioHeap)
 import qualified Data.Heap as H
-import Data.Maybe (catMaybes, fromMaybe)
+import Data.Maybe (mapMaybe, fromMaybe)
 import Model.Level
 import Model.Utils
 
-{-
-
-This module implements Dijkstra's algorithm for finding the shortest path between 2 points
-
--}
+-------------------------------------------------------------------------------
+-- Types and structures for the Dijkstra's algorithm
+-------------------------------------------------------------------------------
 
 type Node = (Int, Int)
 
@@ -37,12 +35,20 @@ instance Ord a => Ord (Distance a) where
   Dist x <= Infinity = True
   Dist x <= Dist y = x <= y
 
+-------------------------------------------------------------------------------
+-- Algorithm helper functions
+-------------------------------------------------------------------------------
+
 addDist :: (Num a) => Distance a -> Distance a -> Distance a
 addDist (Dist x) (Dist y) = Dist (x + y)
 addDist _ _ = Infinity
 
 (!??) :: (Hashable k, Eq k) => HashMap k (Distance d) -> k -> Distance d
 (!??) distanceMap key = fromMaybe Infinity (HM.lookup key distanceMap)
+
+-------------------------------------------------------------------------------
+-- Main algorithm
+-------------------------------------------------------------------------------
 
 findShortestDistance :: Graph -> Node -> Node -> Distance Int
 findShortestDistance graph src dest = processQueue initialState !?? dest
@@ -65,45 +71,47 @@ findShortestDistance graph src dest = processQueue initialState !?? dest
                 allNeighbors = fromMaybe [] (HM.lookup node graph)
                 unvisitedNeighbors = filter (\(n, _) -> not (HS.member n visited')) allNeighbors
          in processNode
-
+         
     foldNeighbor current ds@(DijkstraState visited' distMap queue') (neighborNode, cost)
       | altDistance < distMap !?? neighborNode = DijkstraState visited' (HM.insert neighborNode altDistance distMap) (H.insert (altDistance, neighborNode) queue')
       | otherwise = ds
       where 
         altDistance = addDist (distMap !?? current) (Dist cost)
-    
-    
 
 -------------------------------------------------------------------------------
--- Level specific functions for finding the shortest path in a Pac-Man level
+-- Functions for applying Dijkstra's algorithm to a lLevel
 -------------------------------------------------------------------------------
 
--- | Find the shortest path between 2 points in a level
+-- | Calculates if there is any valid path from node n to n'
+isReachable :: Level -> Node -> Node -> Bool
+isReachable lvl n n' = shortestPath lvl n n' /= Infinity
+
+-- | Find the shortest path between 2 points in a Level
 shortestPath :: Level -> Node -> Node -> Distance Int
-shortestPath lvl pos pos2
-  | isValidPosition pos && isValidPosition pos = findShortestDistance (levelToGraph lvl pos pos2) pos pos2
+shortestPath lvl n n'
+  | isOnValidTile n && isOnValidTile n' = findShortestDistance (levelToGraph lvl n n') n n'
   | otherwise = Infinity
   where
-    isValidPosition p = tileAtW lvl p == Floor
+    isOnValidTile n = tileAtW lvl n == Floor
 
--- | Convert a level to a graph
+-- | Convert a Level to a Graph
 levelToGraph :: Level -> Node -> Node -> Graph
-levelToGraph lvl p p2 = foldr addPointEdges HM.empty nodes
+levelToGraph lvl n n'  = foldr addPointEdges HM.empty nodes
   where
-    nodes = p : p2 : levelFloorSplits lvl
-    addPointEdges pos edges = HM.insert pos (getEdges lvl pos) edges
+    nodes = n : n'  : levelFloorSplits lvl
+    addPointEdges node edges = HM.insert node (getEdges lvl node) edges
 
     getEdges :: Level -> Node -> [Edge]
-    getEdges lvl pos = map (\p -> (p, dist pos p)) (nextNeigbors)
+    getEdges lvl node = map (\n -> (n, dist node n)) (nextNeigbors)
       where
-        nextNeigbors = catMaybes $ map (\translation -> translateNode (\p -> p `add` translation) pos) [(0, 1), (0, -1), (1, 0), (-1, 0)]
+        nextNeigbors = mapMaybe (\translation -> translateNode (translation `add`) node) [(0, 1), (0, -1), (1, 0), (-1, 0)]
         add (x, y) (x', y') = (x + x', y + y')
 
         translateNode :: (Node -> Node) -> Node -> Maybe Node
         translateNode f node
-          | pos == nPos = Nothing
-          | tileAtW lvl nPos /= Floor = Nothing
-          | nPos `elem` nodes = Just nPos
-          | otherwise = translateNode f nPos
+          | node == node' = Nothing
+          | tileAtW lvl node' /= Floor = Nothing
+          | node' `elem` nodes = Just node'
+          | otherwise = translateNode f node'
           where
-            nPos = f node
+            node' = f node
