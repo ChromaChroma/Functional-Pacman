@@ -90,7 +90,7 @@ loadNextLevel gs =
         { level = nextLevel lvl,
           player = respawnPlayer p lvl,
           frightenedTime = 0,
-          ghostMode = Scatter,
+          ghostMode = Scatter, --TODO: GHOSTMODE LATEN VARIEREN
           ghosts = defaultGhosts
         }
 
