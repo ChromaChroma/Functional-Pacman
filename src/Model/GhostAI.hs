@@ -33,7 +33,7 @@ make1GhostMove gs ghst
   | otherwise = next --KIEST NU DE EERSTE OPTIE -- case length possibledirections == 1: die kant. anders: ghost AI
   where
     movedGhost = makeDirectionMoveGhost gs ghst (direction ghst)
-    next:nexts = checkMoveDirs gs ghst
+    (next:_) = checkMoveDirs gs ghst
 
 
 makeDirectionMoveGhost :: GameState -> Ghost -> Direction -> Maybe Ghost
