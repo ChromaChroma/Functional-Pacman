@@ -2,7 +2,7 @@ module View.InfoSection (renderInfoSection) where
 
 import Graphics.Gloss (Picture (Blank), color, pictures, polygon, rectangleSolid, rose, translate)
 import Model.Game (GameState (elapsedTime, level, player, points), Time)
-import Model.Level (Level (layout), layoutSize)
+import Model.Level (Level (layout), layoutSize, levelNumber)
 import Model.Player (Lives (Lives, unlives), Player (lives))
 import Model.Score (Points, Score)
 import View.Animation (Textures (pacmanLife))
@@ -14,6 +14,7 @@ renderInfoSection textures gs =
   translateToAboveLevelSection (layoutSize . layout . level $ gs) $
     pictures
       [ renderLives textures . lives . player $ gs,
+        translate 0 40 . renderLevel . level $ gs,
         translate 150 0 . renderTime . elapsedTime $gs,
         translate 400 0 . renderScore . points $ gs,
         translate 600 0 . renderHighScore $ gs
@@ -27,6 +28,9 @@ renderLives textures (Lives lives)
   where
     lifePictures = pictures . map life $ [1 .. (fromIntegral lives)]
     life n = translate ((n -1) * tileSize) (tileSize / 5) $ pacmanLife textures
+
+renderLevel :: Level -> Picture
+renderLevel = smallText "Level: " . levelNumber 
 
 renderTime :: Time -> Picture
 renderTime t = smallText "Elapsed time: " . floor $ fromIntegral t / 1000
