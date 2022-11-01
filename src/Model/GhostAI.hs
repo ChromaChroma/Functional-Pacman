@@ -28,9 +28,10 @@ makeGhostsMove gs = gs {ghosts = map (make1GhostMove gs) (ghosts gs)}
 
 
 make1GhostMove :: GameState -> Ghost -> Ghost
-make1GhostMove gs ghst
-  | isJust movedGhost = fromJust movedGhost
-  | otherwise = next --KIEST NU DE EERSTE OPTIE -- case length possibledirections == 1: die kant. anders: ghost AI
+make1GhostMove gs ghst  -- hierzo een case voor: is de ghost de volgende tile op een intersection?
+  = case isJust movedGhost of
+      True  -> fromJust movedGhost
+      False -> next --KIEST NU DE EERSTE OPTIE -- case length possibledirections == 1: die kant. anders: ghost AI
   where
     movedGhost = makeDirectionMoveGhost gs ghst (direction ghst)
     (next:_) = checkMoveDirs gs ghst
@@ -52,7 +53,9 @@ makeDirectionMoveGhost gs ghst dir
 
 checkMoveDirs :: GameState -> Ghost -> [Ghost]
 checkMoveDirs gs gh
-  = possiblemoves
+  = case possiblemoves of
+        [] -> [fromJust (makeDirectionMoveGhost gs gh (opDirection gh))] --terug als er niks anders is (deadend)
+        _  -> possiblemoves
   where
     possiblemoves = map fromJust $ filter (isJust) [makeDirectionMoveGhost gs gh x | x <- u]
     u = filter (/= opDirection gh) [Up,Left,Down,Right]
