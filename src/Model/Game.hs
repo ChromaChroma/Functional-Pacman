@@ -1,6 +1,7 @@
 module Model.Game
   ( GameState (..),
     defaultGame,
+    reset,
     Status (..),
     GhostMode (..),
     Time,
@@ -59,10 +60,15 @@ data GameState = GameState
 -------------------------------------------------------------------------------
 -- Logic
 -------------------------------------------------------------------------------
-
-loadGame :: StdGen -> Level -> HighScores -> [Ghost] -> Player -> GameState
-loadGame gen lvl highScores ghosts pl =
-  GameState
+reset :: GameState -> GameState
+reset gs = loadGame (ranGen gs) (highScores gs)
+ 
+loadGame :: StdGen -> HighScores -> GameState
+loadGame gen highScores =
+  let ghosts = defaultGhosts
+      lvl = defaultLevel
+      pl = setPosition defaultPlayer (playerSpawn lvl)
+  in GameState
     { ranGen = gen,
       status = Active,
       elapsedTime = 0,
@@ -189,9 +195,6 @@ frightenedDuration = 5000
 
 defaultGame :: IO GameState
 defaultGame = do
-  let lvl = defaultLevel
-  let ghosts = defaultGhosts
-  let pl = setPosition defaultPlayer (playerSpawn lvl)
   let highScores =
         mkHighScores
           [ Score "test1" 20,
@@ -207,4 +210,4 @@ defaultGame = do
             -- Score "test11" 99
           ]
   generator <- newStdGen
-  return (loadGame generator lvl highScores ghosts pl)
+  return (loadGame generator highScores)

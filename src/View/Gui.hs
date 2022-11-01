@@ -14,7 +14,7 @@ import Graphics.Gloss.Interface.IO.Game as IO
     KeyState (Down),
     SpecialKey (KeyDown, KeyEnter, KeyLeft, KeyRight, KeyUp),
   )
-import Model.Game (GameState (status), Status (..), defaultGame)
+import Model.Game (GameState (status), Status (..), defaultGame, reset)
 import Model.Items ()
 import Model.Level ()
 import Model.Movement as M (Direction (Down, Left, Right, Up))
@@ -81,9 +81,7 @@ inputDelegationHandler event ts
 -- | Handling of typing name for adding score
 scoreInputHandler :: Event -> TotalState -> TotalState
 scoreInputHandler (EventKey (Char keyCharacter) IO.Down _ _) ts = ts {textBuffer = textBuffer ts ++ [keyCharacter]}
-scoreInputHandler (EventKey (SpecialKey KeyEnter) IO.Down _ _) ts = 
-  let newGs = submitScore (textBuffer ts) (gameState ts) 
-  in ts {textBuffer = [], gameState = newGs} --TODO submit name and reset
+scoreInputHandler (EventKey (SpecialKey KeyEnter) IO.Down _ _) ts = ts {textBuffer = [], gameState = reset $ submitScore (textBuffer ts) (gameState ts) }
 scoreInputHandler _ ts = ts
 
 -- | Movement with arrow keys
