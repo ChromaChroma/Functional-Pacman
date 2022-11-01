@@ -9,17 +9,18 @@ module Model.Game
     checkGameOver,
     frightenedDuration,
     checkFruitSpawning,
+    loadNextLevel,
   )
 where
 
+import Model.Dijkstra
 import Model.Ghosts hiding (position)
 import Model.Items (PointItem (Dot, Fruit), fruitOfLevel)
 import qualified Model.Items as I
-import Model.Level (Level (items, layout, levelNumber, playerSpawn), LevelSize, defaultLevel, layoutSize, tileAtW, Tile (Floor))
-import Model.Movement (Collidable (collides), Movable (getSpeed), Positioned (setPosition, getPosition), intPosition)
+import Model.Level (Level (items, layout, levelNumber, playerSpawn), LevelSize, Tile (Floor), defaultLevel, layoutSize, tileAtW)
+import Model.Movement (Collidable (collides), Movable (getSpeed), Positioned (getPosition, setPosition), intPosition)
 import Model.Player (Player (lives), defaultPlayer, isAlive, position, rmLife)
 import Model.Score (Points)
-import Model.Dijkstra
 import System.Random (Random (randomR), StdGen, newStdGen)
 
 -------------------------------------------------------------------------------
@@ -72,6 +73,19 @@ loadGame gen lvl ghosts pl =
       ghostMode = Scatter
     }
 
+loadNextLevel :: GameState -> GameState
+loadNextLevel gs =
+  let lvl = level gs
+      p = player gs
+  in gs {
+      level = nextLevel lvl,
+      player = respawnPlayer p lvl,
+      frightenedTime = 0,
+      ghosts = defaultGhosts
+    }
+
+nextLevel :: Level -> Level
+nextLevel lvl = defaultLevel{levelNumber = levelNumber lvl + 1}
 -- | Check if game is over and update it if necessary
 checkGameOver :: GameState -> GameState
 checkGameOver gs
@@ -98,22 +112,27 @@ checkItemCollisions gs = foldr (\item -> removeItem item . addItemScore item . h
       _ -> gs
 
 checkGhostCollisions :: GameState -> GameState
-checkGhostCollisions gs = handleGhostCollisions gs (filter (`collidesWithMovable` player gs) $ ghosts gs)
-
-handleGhostCollisions :: GameState -> [Ghost] -> GameState
-handleGhostCollisions gs [] = gs
-handleGhostCollisions gs (g : _) =
-  if ghostMode gs == Frightened && isNotEaten g
-    then eatGhost
-    else respawnPlayer . reduceLife $ gs
+checkGhostCollisions gs = handleCollidingGhosts gs . filter (`collidesWithMovable` player gs) $ ghosts gs
   where
-    eatGhost = gs {points = points gs + calcGhostPoints updatedGhosts, ghosts = updatedGhosts}
-    updatedGhosts = map (\x -> if x == g then x {eatenState = Eaten} else x) (ghosts gs)
+    handleCollidingGhosts :: GameState -> [Ghost] -> GameState
+    handleCollidingGhosts gs ghosts
+      | ghostMode gs /= Frightened = foldr (\_ gs' -> killPlayer gs') gs ghosts
+      | otherwise = foldr eatGhost gs (filter isNotEaten ghosts)
 
-    reduceLife gs = gs {player = (player gs) {lives = rmLife . lives . player $ gs}}
-    respawnPlayer gs
-      | isAlive . lives $ player gs = gs {player = (player gs) {position = playerSpawn . level $ gs}}
-      | otherwise = gs {status = GameOver}
+    killPlayer :: GameState -> GameState
+    killPlayer gs =
+      let p = player gs
+          pLives = lives p
+          verifyAlive gs = if isAlive pLives then gs else gs {status = GameOver}
+       in verifyAlive $ gs {player = (respawnPlayer p $ level gs) {lives = rmLife pLives}}
+
+    eatGhost :: Ghost -> GameState -> GameState
+    eatGhost g gs =
+      let updatedGhosts = map (\x -> if x == g then x {eatenState = Eaten} else x) (ghosts gs)
+       in gs {points = points gs + calcGhostPoints updatedGhosts, ghosts = updatedGhosts}
+
+respawnPlayer :: Player-> Level -> Player
+respawnPlayer p lvl = p {position = playerSpawn lvl}
 
 calcGhostPoints :: [Ghost] -> Points
 calcGhostPoints ghosts
@@ -129,7 +148,7 @@ checkFruitSpawning gs
   where
     itms = items . level $ gs
     noFruitSpawned = null ([x | x@Fruit {} <- itms])
-    shouldSpawnFruit = amountOfDots `mod` 5 == 0 -- Spawn fruit every 82 dots eaten
+    shouldSpawnFruit = amountOfDots/= 0 && amountOfDots `mod` 82 == 0 -- Spawn fruit every 82 dots eaten
     amountOfDots = length [x | x@Dot {} <- itms]
 
 spawnFruit :: GameState -> GameState
@@ -152,16 +171,6 @@ spawnFruit gs = gs {level = lvl {items = fruit : items lvl}, ranGen = g}
         (x', g') = randomR (0, x - 1) gen
         (y', g'') = randomR (0, y - 1) g'
 
--- <<<<<<< HEAD
---       -- = (rPos, g)
---       | valid = (rPos, g)
---       | otherwise = randomPos g gs
---       where
---         (rPos, g) = randomPosition gen lvl
---         valid = findShortestDistanceInLevel lvl (intPosition rPos) (intPosition (getPosition . player $ gs)) /= Infinity
--- =======
-
--- >>>>>>> 7ff5f0f4567355be75d0a786ec51f912179c0686
 -------------------------------------------------------------------------------
 -- Default value functions
 -------------------------------------------------------------------------------
@@ -172,7 +181,7 @@ frightenedDuration = 5000
 defaultGame :: IO GameState
 defaultGame = do
   let lvl = defaultLevel
-  let ghosts = [blinky, pinky, inky, clyde]
+  let ghosts = defaultGhosts
   let pl = setPosition defaultPlayer (playerSpawn lvl)
   generator <- newStdGen
   return (loadGame generator lvl ghosts pl)
