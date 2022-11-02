@@ -13,10 +13,12 @@ module Model.Level
     LevelSize,
     levelIntersections,
     levelFloorSplits,
+    rotR, rotL, mirrorH, mirrorV,
   )
 where
 
 import Data.Maybe (fromJust)
+import Data.List
 import qualified Data.Maybe
 import Model.Ghosts (Ghost, blinky, clyde, inky, pinky)
 import Model.Items (PointItem (..), Position, defaultFruits, mkDot, mkPowerPellet)
@@ -72,6 +74,22 @@ instance Functor Layout where
 -------------------------------------------------------------------------------
 -- Logic
 -------------------------------------------------------------------------------
+
+-- | Rotate a kayout 90 degrees clockwise
+rotR :: Layout a -> Layout a
+rotR (Layout xss) = Layout (transpose $ reverse xss)
+
+-- | Rotate a layout 90 degrees counter-clockwise
+rotL :: Layout a -> Layout a
+rotL (Layout xss) = Layout (reverse $ transpose xss)
+
+-- | Mirror a layout horizontally
+mirrorH :: Layout a -> Layout a
+mirrorH (Layout xss) = Layout (map reverse xss)
+
+-- | Mirror a layout vertically
+mirrorV :: Layout a -> Layout a
+mirrorV (Layout xss) = Layout (reverse xss)
 
 -- | Safe constructor for level number
 mkLevelNumber :: Int -> Maybe LevelNumber

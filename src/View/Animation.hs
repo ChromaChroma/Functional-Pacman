@@ -1,8 +1,17 @@
-module View.Animation (Textures (..), loadTextures, pacMan, ghost, fruitTexture) where
+module View.Animation
+  ( Textures (..),
+    Texture,
+    WallTextures (..),
+    loadTextures,
+    pacMan,
+    ghost,
+    fruitTexture,
+  )
+where
 
 import Control.Applicative ((<$>), (<*>))
 import Data.Fixed (mod')
-import Graphics.Gloss (Picture, loadBMP, rotate, circleSolid, color, red)
+import Graphics.Gloss (Picture, circleSolid, color, loadBMP, red, rotate)
 import Model.Game (GhostMode (Frightened), Time, frightenedDuration)
 import Model.Ghosts (EatenState (Eaten, NotEaten), Ghost (direction, name), Name (..), isEaten, isNotEaten)
 import Model.Items (FruitType (..), PointItem (Fruit, itemType))
@@ -31,8 +40,10 @@ data Textures = Textures
     ghostFrightened :: Animation,
     ghostFrightenedFlashing :: Animation,
     ghostEaten :: DirectionalAnimation,
-    fruits :: FruitTextures
+    fruits :: FruitTextures,
+    wallTextures :: WallTextures
   }
+
 -- | Type alias of a static texture
 type Texture = Picture
 
@@ -52,6 +63,11 @@ data FruitTextures = FruitTextures
     galaxian :: Texture,
     bell :: Texture,
     key :: Texture
+  }
+
+data WallTextures = WallTextures
+  { wall :: Texture,
+    corner :: Texture
   }
 
 -------------------------------------------------------------------------------
@@ -90,7 +106,8 @@ loadTextures = do
       <*> (Animation 6 <$> mapM loadBMP ["assets/ghost-eaten-right.bmp"])
       <*> (Animation 6 <$> mapM loadBMP ["assets/ghost-eaten-up.bmp"])
       <*> (Animation 6 <$> mapM loadBMP ["assets/ghost-eaten-down.bmp"])
-  fruits <- FruitTextures
+  fruits <-
+    FruitTextures
       <$> loadBMP "assets/cherry.bmp"
       <*> loadBMP "assets/strawberry.bmp"
       <*> loadBMP "assets/orange.bmp"
@@ -99,6 +116,10 @@ loadTextures = do
       <*> loadBMP "assets/galaxian.bmp"
       <*> loadBMP "assets/bell.bmp"
       <*> loadBMP "assets/key.bmp"
+  wallTextures <-
+    WallTextures
+      <$> loadBMP "assets/wall.bmp"
+      <*> loadBMP "assets/corner.bmp"
   return
     Textures
       { elapsedTime = 0,
@@ -111,7 +132,8 @@ loadTextures = do
         ghostFrightened = ghostFrigthenedAnimation,
         ghostFrightenedFlashing = ghostFrigthenedFlashingAnimation,
         ghostEaten = ghostEatenAnimation,
-        fruits = fruits
+        fruits = fruits,
+        wallTextures = wallTextures
       }
 
 -------------------------------------------------------------------------------

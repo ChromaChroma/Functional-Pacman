@@ -1,24 +1,28 @@
+{-# LANGUAGE MultiWayIf #-}
+
 module View.LevelSection (renderLevelSection) where
 
-import Data.List.Index
+import Data.List.Index (imap)
 import Data.Maybe
 import Graphics.Gloss
+import Model.Game
+import Model.Ghosts as G
 import Model.Items
 import Model.Level
 import Model.Movement as M
 import Model.Player hiding (position)
+import View.Animation
 import View.Config
 import View.Debug
 import View.Helpers
-import View.Animation ( Textures, pacMan, ghost, fruitTexture )
-import Model.Game
-import Model.Ghosts as G
+import View.LevelMap
 
+-- | Returns Pictures, consisting of all tile Pictures
 renderLevelSection :: Textures -> GameState -> Picture
 renderLevelSection textures gs = translateToLevelSection (layoutSize . layout . level $ gs) . pictures $ map ($ gs) fs
   where
     fs =
-      [ renderLevel . level,
+      [ renderLevel textures . level,
         renderIntersections,
         renderPellets . items . level,
         renderFruit textures . items . level,
@@ -26,27 +30,7 @@ renderLevelSection textures gs = translateToLevelSection (layoutSize . layout . 
         renderPlayer textures
       ]
 
--- | Returns Pictures, consisting of all tile Pictures
-renderLevel :: Level -> Picture
-renderLevel level = matrixToTilePitures $ layout level
-  where
-    matrixToTilePitures = pictures . catMaybes . concat . imap rowToTilePictures
-    rowToTilePictures y = imap (`renderTile` y)
-
-renderTile :: Int -> Int -> Tile -> Maybe Picture
-renderTile x y tile = case tile of
-  Wall -> Just $ color blue block
-  GhostDoor Open -> Just $ color green block
-  GhostDoor Closed -> Just $ color green block
-  _ -> Nothing
-  where
-    block = translateByTileSize (fromIntegral x) (fromIntegral y) (rectangleSolid tileSize tileSize) -- Vertical lined walls
-    vLinedBlock = translateByTileSize (fromIntegral x) (fromIntegral y) (rectangleSolid (tileSize / 2) tileSize) -- Vertical lined walls
-    hLinedBlock = translateByTileSize (fromIntegral x) (fromIntegral y) (rectangleSolid tileSize (tileSize / 2)) -- Horizontal lined walls
-    blockyWalls = translateByTileSize (fromIntegral x) (fromIntegral y) (rectangleSolid (tileSize / 2) (tileSize / 2)) -- small block walls
-    -- todo Possibility: Render layout by converting layout to ajacent dots that create figures that can be rendered as a line/polygon pictures.
-
-renderMovable :: Movable a => a -> Direction -> Layout -> Picture -> Picture
+renderMovable :: Movable a => a -> Direction -> Layout Tile -> Picture -> Picture
 renderMovable m dir ll = translateByTileSize x y
   where
     (px, py) = getPosition m
@@ -87,7 +71,34 @@ renderPellets = pictures . map renderItem
 renderFruit :: Textures -> [PointItem] -> Picture
 renderFruit textures xs = pictures $ [renderItem x | x@Fruit {} <- xs]
   where
-    renderItem item = 
-      let (x, y) = getPosition item 
-      in translateByTileSize x y (fruitTexture textures item)
+    renderItem item =
+      let (x, y) = getPosition item
+       in translateByTileSize x y (fruitTexture textures item)
 
+renderLevel :: Textures -> Level -> Picture
+renderLevel textures lvl =
+  pictures
+    . catMaybes
+    . concat
+    $ imap (\y -> imap (imapFunc y)) xss
+  where
+    (Layout xss) = fmap (renderTile textures) $ convertLevel lvl
+
+    imapFunc :: Int -> Int -> Maybe Picture -> Maybe Picture
+    imapFunc y x mt = case mt of
+      Just t -> Just $ translateByTileSize (fromIntegral x) (fromIntegral y) t
+      Nothing -> Nothing
+
+renderTile :: Textures -> TextureTile -> Maybe Picture
+renderTile textures tile = case tile of
+  None -> Nothing
+  Straight -> Just $ color orange $ rectangleSolid tileSize tileSize
+  StraightSingle -> Just $ color blue $ rectangleSolid tileSize tileSize
+  Corner -> Just $ color red $ rectangleSolid tileSize tileSize
+  CornerSingle -> Just $ color cyan $ rectangleSolid tileSize tileSize
+  Tjunction -> Just $ color green $ rectangleSolid tileSize tileSize
+  TjunctionSingle -> Just $ color violet $ rectangleSolid tileSize tileSize
+  CrossSectionSingle -> Just $ color aquamarine $ rectangleSolid tileSize tileSize  
+  SurroundedWall -> Just $ color yellow $ rectangleSolid tileSize tileSize
+  EndingSingle -> Just $ color azure $ rectangleSolid tileSize tileSize
+  Dev -> Just $ color magenta $ rectangleSolid tileSize tileSize
