@@ -90,7 +90,7 @@ loadNextLevel gs =
         { level = nextLevel lvl,
           player = respawnPlayer p lvl,
           frightenedTime = 0,
-          ghostMode = Scatter,
+          ghostMode = Scatter, --TODO: GHOSTMODE LATEN VARIEREN
           ghosts = defaultGhosts
         }
 
@@ -124,7 +124,9 @@ checkItemCollisions gs = foldr (\item -> removeItem item . addItemScore item . h
     removeItem item gs = gs {level = (level gs) {items = filter (/= item) (items . level $ gs)}}
     addItemScore item gs = gs {points = points gs + I.points item}
     handleItemType item gs = case item of
-      I.PowerPellet _ _ -> gs {ghostMode = Frightened, frightenedTime = 0, ghosts = slowGhostsDown $ turnGhostsAround (ghosts gs)}
+      I.PowerPellet _ _ -> case ghostMode gs of
+          Frightened -> gs {frightenedTime = 0}
+          _          -> gs {ghostMode = Frightened, frightenedTime = 0, ghosts = slowGhostsDown $ turnGhostsAround (ghosts gs)}
       _ -> gs
 
 checkGhostCollisions :: GameState -> GameState
