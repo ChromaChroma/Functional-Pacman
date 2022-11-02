@@ -20,6 +20,7 @@ import Model.Level ()
 import Model.Movement as M (Direction (Down, Left, Right, Up))
 import Model.Player ()
 import Model.Score ()
+import Model.Utils (safeInit)
 import Numeric ()
 import View.Animation (Textures (elapsedTime), loadTextures)
 import View.Config (framesPerSecond, screen, tileSize, windowSize)
@@ -89,7 +90,7 @@ waitingInputHandler _ ts = ts
 -- | Handling of typing name for adding score
 scoreInputHandler :: Event -> TotalState -> TotalState
 scoreInputHandler (EventKey (Char keyCharacter) IO.Down _ _) ts = ts {textBuffer = textBuffer ts ++ [keyCharacter]}
-scoreInputHandler (EventKey (SpecialKey KeyDelete) IO.Down _ _) ts = ts {textBuffer = init $ textBuffer ts}
+scoreInputHandler (EventKey (SpecialKey KeyDelete) IO.Down _ _) ts = ts {textBuffer = safeInit (textBuffer ts)}
 scoreInputHandler (EventKey (SpecialKey KeyEnter) IO.Down _ _) ts =
   if (length $ textBuffer ts) > 0
     then ts {textBuffer = "", gameState = reset $ submitScore (textBuffer ts) (gameState ts)}

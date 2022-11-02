@@ -22,3 +22,8 @@ intmod' a b
 -- | Calculates the distance between two points
 dist :: Num a => (a, a) -> (a, a) -> a
 dist (x, y) (x', y') = abs (x - x') + abs (y - y')
+
+-- | Takes init of string or [] if empty string
+safeInit :: String -> String
+safeInit [] = []
+safeInit s = init s
