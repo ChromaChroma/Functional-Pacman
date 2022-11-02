@@ -101,4 +101,6 @@ renderTile textures tile = case tile of
   CrossSectionSingle -> Just $ color aquamarine $ rectangleSolid tileSize tileSize  
   SurroundedWall -> Just $ color yellow $ rectangleSolid tileSize tileSize
   EndingSingle -> Just $ color azure $ rectangleSolid tileSize tileSize
+  SingleToDoubleCorner -> Just $ color chartreuse  $ rectangleSolid tileSize tileSize
+  FishShapeCorner -> Just $ color rose  $ rectangleSolid tileSize tileSize
   Dev -> Just $ color magenta $ rectangleSolid tileSize tileSize

@@ -14,6 +14,8 @@ data TextureTile
   | CrossSectionSingle
   | SurroundedWall
   | EndingSingle
+  | SingleToDoubleCorner
+  | FishShapeCorner
   | Dev --Fallback type
   deriving (Show, Eq)
 
@@ -56,6 +58,8 @@ convertLevel lvl@Level {layout = Layout xss} = Layout (imap (\y -> imap (\x -> c
       | isCrossSectionTextureTile matrix = CrossSectionSingle
       | isSurroundedWallTextureTile matrix = SurroundedWall
       | isEndingSingleTextureTile matrix = EndingSingle
+      | isSingleToDoubleCornerFloorsTextureTile matrix = SingleToDoubleCorner
+      | isFishShapeCornerFloorsTextureTile matrix = FishShapeCorner
       | otherwise = Dev
       where
         matrix = generateWallNeighbors (x, y)
@@ -297,15 +301,10 @@ straightHShapeFloors =
   A W W
   A A W
 
--- TODO make own type
-  singleToDoubleCorner Cases: Rotations (4) Mirrored (2)
-  A W W
-  W W W
-  A A A
 -}
 
 isCornerTextureTile :: WallNeighbors -> Bool
-isCornerTextureTile = (`elem` cornerFloors ++ bigCornerFloors ++ smallCornerFloors ++ lShapedCornerFloors ++ singleToDoubleCornerFloors)
+isCornerTextureTile = (`elem` cornerFloors ++ bigCornerFloors ++ smallCornerFloors ++ lShapedCornerFloors)
 
 cornerFloors =
   let cornerFloor =
@@ -342,16 +341,6 @@ lShapedCornerFloors =
             [FloorTile, FloorTile, WallTile]
           ]
    in (rotRNTimes 4 lShapedCornerFloor) ++ (rotRNTimes 4 $ mirrorH lShapedCornerFloor)
-
--- special case - TODO make own type
-singleToDoubleCornerFloors =
-  let singleToDoubleCornerFloor =
-        Layout
-          [ [FloorTile, WallTile, WallTile],
-            [WallTile, Root, WallTile],
-            [FloorTile, FloorTile, FloorTile]
-          ]
-   in (rotRNTimes 4 singleToDoubleCornerFloor) ++ (rotRNTimes 4 $ mirrorH singleToDoubleCornerFloor)
 
 -----------------------
 -- CornerSingle
@@ -519,6 +508,8 @@ shortEndingSingles =
    in rotRNTimes 4 shortEndingSingle
 
 partialEndingSingles =
+
+
   let partialEndingSingle =
         Layout
           [ [FloorTile, WallTile, WallTile],
@@ -526,3 +517,50 @@ partialEndingSingles =
             [FloorTile, FloorTile, FloorTile]
           ]
    in rotRNTimes 4 partialEndingSingle
+
+   
+-----------------------
+-- SingleToDoubleCorner
+-----------------------
+{-
+  SingleToDoubleCorner Cases: Rotations (4) Mirrored (2)
+  A W W
+  W W W
+  A A A
+-}
+
+isSingleToDoubleCornerFloorsTextureTile :: WallNeighbors -> Bool
+isSingleToDoubleCornerFloorsTextureTile = (`elem` singleToDoubleCornerFloors)
+
+-- singleToDoubleCorner Cases :: Rotations (4) Mirrored (2)
+singleToDoubleCornerFloors =
+  let singleToDoubleCornerFloor =
+        Layout
+          [ [FloorTile, WallTile, WallTile],
+            [WallTile, Root, WallTile],
+            [FloorTile, FloorTile, FloorTile]
+          ]
+   in (rotRNTimes 4 singleToDoubleCornerFloor) ++ (rotRNTimes 4 $ mirrorH singleToDoubleCornerFloor)
+
+-----------------------
+-- FishShapeCorner
+-----------------------
+{-
+  FishShapeCorner Cases: Rotations (4)
+  A W W
+  W W W
+  A W A
+-}
+
+isFishShapeCornerFloorsTextureTile :: WallNeighbors -> Bool
+isFishShapeCornerFloorsTextureTile = (`elem` fishShapeCornerFloors)
+
+-- singleToDoubleCorner Cases :: Rotations (4) Mirrored (2)
+fishShapeCornerFloors =
+  let fishShapeCornerFloor =
+        Layout
+          [ [FloorTile, WallTile, WallTile],
+            [WallTile, Root, WallTile],
+            [FloorTile, WallTile, FloorTile]
+          ]
+   in rotRNTimes 4 fishShapeCornerFloor
