@@ -82,26 +82,46 @@ renderLevel textures lvl =
     . concat
     $ imap (\y -> imap (imapFunc y)) xss
   where
-    (Layout xss) = fmap (renderTile textures) $ convertLevel lvl
-
+    (Layout xss) = fmap (renderTile $ tileTextures textures) $ convertLevel lvl
     imapFunc :: Int -> Int -> Maybe Picture -> Maybe Picture
     imapFunc y x mt = case mt of
       Just t -> Just $ translateByTileSize (fromIntegral x) (fromIntegral y) t
       Nothing -> Nothing
 
-renderTile :: Textures -> TextureTile -> Maybe Picture
-renderTile textures tile = case tile of
+-- -- Dev tile render to visualise different tile types in level
+-- renderTile :: Textures -> TextureTile -> Maybe Picture
+-- renderTile textures tTile = case tTile of
+--   None -> Nothing
+--   Straight -> Just $ color orange $ rectangleSolid tileSize tileSize
+--   StraightSingle -> Just $ color blue $ rectangleSolid tileSize tileSize
+--   Corner -> Just $ color red $ rectangleSolid tileSize tileSize
+--   CornerSingle -> Just $ color cyan $ rectangleSolid tileSize tileSize
+--   CornerSingleToDouble -> Just $ color chartreuse $ rectangleSolid tileSize tileSize
+--   CrossSectionSingle -> Just $ color aquamarine $ rectangleSolid tileSize tileSize
+--   CrossSectionFishShaped -> Just $ color rose $ rectangleSolid tileSize tileSize
+--   SurroundedWall -> Just $ color yellow $ rectangleSolid tileSize tileSize
+--   Tjunction -> Just $ color green $ rectangleSolid tileSize tileSize
+--   TjunctionSingle -> Just $ color violet $ rectangleSolid tileSize tileSize
+--   EndingSingle -> Just $ color azure $ rectangleSolid tileSize tileSize
+--   GhostDoorStraight -> Just $ color green $ rectangleSolid tileSize tileSize
+--   GhostDoorCorner -> Just $ color (bright green) $ rectangleSolid tileSize tileSize
+--   Dev -> Just $ color magenta $ rectangleSolid tileSize tileSize
+
+-- | Actual tile render
+renderTile :: TileTextures -> TextureTile -> Maybe Picture
+renderTile tTextures tTile = case tTile of
   None -> Nothing
-  Straight -> Just $ color orange $ rectangleSolid tileSize tileSize
-  StraightSingle -> Just $ color blue $ rectangleSolid tileSize tileSize
-  Corner -> Just $ color red $ rectangleSolid tileSize tileSize
-  CornerSingle -> Just $ color cyan $ rectangleSolid tileSize tileSize
-  Tjunction -> Just $ color green $ rectangleSolid tileSize tileSize
-  TjunctionSingle -> Just $ color violet $ rectangleSolid tileSize tileSize
-  CrossSectionSingle -> Just $ color aquamarine $ rectangleSolid tileSize tileSize
-  SurroundedWall -> Just $ color yellow $ rectangleSolid tileSize tileSize
-  EndingSingle -> Just $ color azure $ rectangleSolid tileSize tileSize
-  SingleToDoubleCorner -> Just $ color chartreuse  $ rectangleSolid tileSize tileSize
-  FishShapeCorner -> Just $ color rose  $ rectangleSolid tileSize tileSize
-  GhostDoorTexture -> Just $ color green  $ rectangleSolid tileSize tileSize
-  Dev -> Just $ color magenta $ rectangleSolid tileSize tileSize
+  EndingSingle -> Just $ endSingle tTextures
+  Straight -> Just $ straight tTextures
+  StraightSingle -> Just $ straightSingle tTextures
+  Corner -> Just $ corner tTextures
+  CornerSingle -> Just $ cornerSingle tTextures
+  CornerSingleToDouble -> Just $ cornerSingleToDouble tTextures
+  CrossSectionSingle -> Just $ crossSectionSingle tTextures
+  CrossSectionFishShaped -> Just $ crossSectionFishShaped tTextures
+  Tjunction -> Just $ tJunction tTextures
+  TjunctionSingle -> Just $ tJunctionSingle tTextures
+  SurroundedWall -> Just $ surroundedWall tTextures
+  GhostDoorStraight -> Just $ ghostDoorStraight tTextures
+  GhostDoorCorner -> Just $ ghostDoorCorner tTextures
+  Dev -> Just $ missingTexture tTextures

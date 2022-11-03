@@ -10,14 +10,15 @@ data TextureTile
   | StraightSingle
   | Corner
   | CornerSingle
+  | CornerSingleToDouble
+  | CrossSectionSingle
+  | CrossSectionFishShaped
   | Tjunction
   | TjunctionSingle
-  | CrossSectionSingle
   | SurroundedWall
   | EndingSingle
-  | SingleToDoubleCorner
-  | FishShapeCorner
-  | GhostDoorTexture
+  | GhostDoorStraight -- TODO add pattern
+  | GhostDoorCorner -- TODO add pattern
   | Dev --Fallback type
   deriving (Show, Eq)
 
@@ -36,7 +37,7 @@ convertLevel lvl@Level {layout = Layout xss} = Layout (imap (\y -> imap (\x -> c
     convert :: (Int, Int) -> Tile -> TextureTile
     convert pos tile = case tile of
       Wall -> generateTextureTile pos
-      GhostDoor _ -> GhostDoorTexture
+      GhostDoor _ -> GhostDoorStraight
       _ -> None
 
     -- |
@@ -52,8 +53,8 @@ convertLevel lvl@Level {layout = Layout xss} = Layout (imap (\y -> imap (\x -> c
       | isCrossSectionTextureTile matrix = CrossSectionSingle
       | isSurroundedWallTextureTile matrix = SurroundedWall
       | isEndingSingleTextureTile matrix = EndingSingle
-      | isSingleToDoubleCornerFloorsTextureTile matrix = SingleToDoubleCorner
-      | isFishShapeCornerFloorsTextureTile matrix = FishShapeCorner
+      | isCornerSingleToDoubleFloorsTextureTile matrix = CornerSingleToDouble
+      | isCrossSectionFishShapedFloorsTextureTile matrix = CrossSectionFishShaped
       | otherwise = Dev
       where
         matrix = generateWallNeighbors (x, y)
@@ -84,7 +85,7 @@ convertLevel lvl@Level {layout = Layout xss} = Layout (imap (\y -> imap (\x -> c
           | y < 0 = Reachable
           | x >= w = Reachable
           | y >= h = Reachable
-          | elem (tileAtW lvl (x, y)) [Wall, GhostDoor Open, GhostDoor Closed] = Unreachable
+          | tileAtW lvl (x, y) `elem` [Wall, GhostDoor Open, GhostDoor Closed] = Unreachable
           | otherwise = Reachable
           --TODO : (OPTIONAL) : add check if is unreachable tile, if so then unreachable
           --        (so that unrechable floors can act as walls)
@@ -115,9 +116,9 @@ rotRNTimes n matrix
 -- CenterWall
 -----------------------
 isSurroundedWallTextureTile :: WallNeighbors -> Bool
-isSurroundedWallTextureTile = (==) surroundedWall
+isSurroundedWallTextureTile = (==) surroundedWallFloors
 
-surroundedWall =
+surroundedWallFloors =
   Layout
     [ [Unreachable, Unreachable, Unreachable],
       [Unreachable, Unreachable, Unreachable],
@@ -158,7 +159,7 @@ cornerAndSideFloors =
             [Unreachable, Unreachable, Unreachable],
             [Unreachable, Unreachable, Unreachable]
           ]
-   in (rotRNTimes 4 cornerAndSideFloor) ++ (rotRNTimes 4 (mirrorH cornerAndSideFloor))
+   in rotRNTimes 4 cornerAndSideFloor ++ rotRNTimes 4 (mirrorH cornerAndSideFloor)
 
 -----------------------
 -- Straight Single
@@ -228,7 +229,7 @@ opositeCornerAndSideFloors =
             [Reachable, Unreachable, Reachable],
             [Unreachable, Unreachable, Reachable]
           ]
-   in (rotRNTimes 2 opositeCornerAndSideFloor) ++ rotRNTimes 2 (mirrorH opositeCornerAndSideFloor)
+   in rotRNTimes 2 opositeCornerAndSideFloor ++ rotRNTimes 2 (mirrorH opositeCornerAndSideFloor)
 
 sameSideCornerAndSideFloors =
   let sameSideCornerAndSideFloor =
@@ -338,7 +339,7 @@ lShapedCornerFloors =
             [Reachable, Unreachable, Unreachable],
             [Reachable, Reachable, Unreachable]
           ]
-   in (rotRNTimes 4 lShapedCornerFloor) ++ (rotRNTimes 4 $ mirrorH lShapedCornerFloor)
+   in rotRNTimes 4 lShapedCornerFloor ++ rotRNTimes 4 (mirrorH lShapedCornerFloor)
 
 -----------------------
 -- CornerSingle
@@ -516,17 +517,17 @@ partialEndingSingles =
 
 
 -----------------------
--- SingleToDoubleCorner
+-- CornerSingleToDouble
 -----------------------
 {-
-  SingleToDoubleCorner Cases: Rotations (4) Mirrored (2)
+  CornerSingleToDouble Cases: Rotations (4) Mirrored (2)
   ◯▊▊
   ▊▊▊
   ◯◯◯
 -}
 
-isSingleToDoubleCornerFloorsTextureTile :: WallNeighbors -> Bool
-isSingleToDoubleCornerFloorsTextureTile = (`elem` singleToDoubleCornerFloors)
+isCornerSingleToDoubleFloorsTextureTile :: WallNeighbors -> Bool
+isCornerSingleToDoubleFloorsTextureTile = (`elem` singleToDoubleCornerFloors)
 
 singleToDoubleCornerFloors =
   let singleToDoubleCornerFloor =
@@ -535,34 +536,26 @@ singleToDoubleCornerFloors =
             [Unreachable, Unreachable, Unreachable],
             [Reachable, Reachable, Reachable]
           ]
-   in (rotRNTimes 4 singleToDoubleCornerFloor) ++ (rotRNTimes 4 $ mirrorH singleToDoubleCornerFloor)
+   in rotRNTimes 4 singleToDoubleCornerFloor ++ rotRNTimes 4 (mirrorH singleToDoubleCornerFloor)
 
 -----------------------
--- FishShapeCorner
+-- CrossSectionFishShaped
 -----------------------
 {-
-  FishShapeCorner Cases: Rotations (4)
+  CrossSectionFishShaped Cases: Rotations (4)
   ◯▊▊
   ▊▊▊
   ◯▊◯
 -}
 
-isFishShapeCornerFloorsTextureTile :: WallNeighbors -> Bool
-isFishShapeCornerFloorsTextureTile = (`elem` fishShapeCornerFloors)
+isCrossSectionFishShapedFloorsTextureTile :: WallNeighbors -> Bool
+isCrossSectionFishShapedFloorsTextureTile = (`elem` crossSectionFishShapedFloors)
 
-fishShapeCornerFloors =
-  let fishShapeCornerFloor =
+crossSectionFishShapedFloors =
+  let crossSectionFishShapedFloor =
         Layout
           [ [Reachable, Unreachable, Unreachable],
             [Unreachable, Unreachable, Unreachable],
             [Reachable, Unreachable, Reachable]
           ]
-   in rotRNTimes 4 fishShapeCornerFloor
-
-
-
-
-
-
-
---END
+   in rotRNTimes 4 crossSectionFishShapedFloor

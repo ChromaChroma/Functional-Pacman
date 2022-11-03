@@ -1,7 +1,7 @@
 module View.Animation
   ( Textures (..),
     Texture,
-    WallTextures (..),
+    TileTextures (..),
     loadTextures,
     pacMan,
     ghost,
@@ -41,7 +41,7 @@ data Textures = Textures
     ghostFrightenedFlashing :: Animation,
     ghostEaten :: DirectionalAnimation,
     fruits :: FruitTextures,
-    wallTextures :: WallTextures
+    tileTextures :: TileTextures
   }
 
 -- | Type alias of a static texture
@@ -65,9 +65,21 @@ data FruitTextures = FruitTextures
     key :: Texture
   }
 
-data WallTextures = WallTextures
-  { wall :: Texture,
-    corner :: Texture
+data TileTextures = TileTextures
+  { endSingle :: Texture,
+    straight :: Texture,
+    straightSingle :: Texture,
+    corner :: Texture,
+    cornerSingle :: Texture,
+    cornerSingleToDouble :: Texture,
+    crossSectionSingle :: Texture,
+    crossSectionFishShaped :: Texture,
+    tJunction :: Texture,
+    tJunctionSingle :: Texture,
+    surroundedWall :: Texture,
+    ghostDoorStraight :: Texture,
+    ghostDoorCorner :: Texture,
+    missingTexture :: Texture
   }
 
 -------------------------------------------------------------------------------
@@ -116,10 +128,22 @@ loadTextures = do
       <*> loadBMP "assets/galaxian.bmp"
       <*> loadBMP "assets/bell.bmp"
       <*> loadBMP "assets/key.bmp"
-  wallTextures <-
-    WallTextures
-      <$> loadBMP "assets/wall.bmp"
-      <*> loadBMP "assets/corner.bmp"
+  tileTextures <-
+    TileTextures
+      <$> loadBMP "assets/tiles/end-single.bmp"
+      <*> loadBMP "assets/tiles/straight.bmp"
+      <*> loadBMP "assets/tiles/straight-single.bmp"
+      <*> loadBMP "assets/tiles/corner.bmp"
+      <*> loadBMP "assets/tiles/corner-single.bmp"
+      <*> loadBMP "assets/tiles/corner-single-to-double.bmp"
+      <*> loadBMP "assets/tiles/cross-section-single.bmp"
+      <*> loadBMP "assets/tiles/cross-section-fish-shaped.bmp"
+      <*> loadBMP "assets/tiles/t-junction.bmp"
+      <*> loadBMP "assets/tiles/t-junction-single.bmp"
+      <*> loadBMP "assets/tiles/surrounded-wall.bmp"
+      <*> loadBMP "assets/tiles/ghost-door-straight.bmp"
+      <*> loadBMP "assets/tiles/ghost-door-corner.bmp"
+      <*> loadBMP "assets/tiles/dev.bmp"
   return
     Textures
       { elapsedTime = 0,
@@ -133,7 +157,7 @@ loadTextures = do
         ghostFrightenedFlashing = ghostFrigthenedFlashingAnimation,
         ghostEaten = ghostEatenAnimation,
         fruits = fruits,
-        wallTextures = wallTextures
+        tileTextures = tileTextures
       }
 
 -------------------------------------------------------------------------------
