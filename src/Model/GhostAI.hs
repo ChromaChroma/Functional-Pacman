@@ -36,6 +36,10 @@ make1GhostMove gs ghst  -- hierzo een case voor: is de ghost de volgende tile op
     movedGhost = makeDirectionMoveGhost gs ghst (direction ghst)
     (next:_) = checkMoveDirs gs ghst
 
+--TODO: ALS CURRENT TILE HUN SPAWNPOINT (OF DE TILE BOVEN/ONDER) IS:
+--  OP/NEER BEWEGEN (TERUGKAATSEN), NIET NAAR LINKS/RECHTS
+
+
 canMakeMoveToDirGhost :: GameState -> Ghost -> Direction -> Level -> Bool
 canMakeMoveToDirGhost gs gh dir lvl
   | isValid = case dir of
@@ -83,5 +87,23 @@ isValidGhostPosition gm lvl gh = isValidMovablePosition (`elem` validTiles) lvl 
             False -> case direction gh of
                       Up    -> [Floor, GhostDoor Open, GhostDoor Closed]
                       _     -> [Floor]
+
+
+--TODO: ESCAPE-FUNCTIE VOOR EEN GHOST: BEGIN MET NAAR BOVEN BEWEGEN ()
+-- VERDER: ALS GHOST GEGETEN WORDT WEER LATEN TERUGKEREN NAAR SPAWN MET DIRECTION = STOP
+--  EN NA KORTE TIJD WEER DE ESCAPE-FUNCTIE AANROEPEN
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 --END

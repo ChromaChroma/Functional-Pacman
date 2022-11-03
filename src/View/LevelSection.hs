@@ -98,9 +98,10 @@ renderTile textures tile = case tile of
   CornerSingle -> Just $ color cyan $ rectangleSolid tileSize tileSize
   Tjunction -> Just $ color green $ rectangleSolid tileSize tileSize
   TjunctionSingle -> Just $ color violet $ rectangleSolid tileSize tileSize
-  CrossSectionSingle -> Just $ color aquamarine $ rectangleSolid tileSize tileSize  
+  CrossSectionSingle -> Just $ color aquamarine $ rectangleSolid tileSize tileSize
   SurroundedWall -> Just $ color yellow $ rectangleSolid tileSize tileSize
   EndingSingle -> Just $ color azure $ rectangleSolid tileSize tileSize
   SingleToDoubleCorner -> Just $ color chartreuse  $ rectangleSolid tileSize tileSize
   FishShapeCorner -> Just $ color rose  $ rectangleSolid tileSize tileSize
+  GhostDoorTexture -> Just $ color green  $ rectangleSolid tileSize tileSize
   Dev -> Just $ color magenta $ rectangleSolid tileSize tileSize

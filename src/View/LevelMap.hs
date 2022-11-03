@@ -17,6 +17,7 @@ data TextureTile
   | EndingSingle
   | SingleToDoubleCorner
   | FishShapeCorner
+  | GhostDoorTexture
   | Dev --Fallback type
   deriving (Show, Eq)
 
@@ -35,9 +36,11 @@ convertLevel lvl@Level {layout = Layout xss} = Layout (imap (\y -> imap (\x -> c
     convert :: (Int, Int) -> Tile -> TextureTile
     convert pos tile = case tile of
       Wall -> generateTextureTile pos
+      GhostDoor _ -> GhostDoorTexture
       _ -> None
 
-    -- | 
+    -- |
+
     generateTextureTile :: (Int, Int) -> TextureTile
     generateTextureTile (x, y)
       | isStraightTextureTile matrix = Straight
@@ -82,8 +85,8 @@ convertLevel lvl@Level {layout = Layout xss} = Layout (imap (\y -> imap (\x -> c
           | x >= w = Reachable
           | y >= h = Reachable
           | tileAtW lvl (x, y) == Wall = Unreachable
-          | otherwise = Reachable 
-          --TODO : (OPTIONAL) : add check if is unreachable tile, if so then unreachable 
+          | otherwise = Reachable
+          --TODO : (OPTIONAL) : add check if is unreachable tile, if so then unreachable
           --        (so that unrechable floors can act as walls)
 
 ------------------------------------------------------------------------
@@ -511,7 +514,7 @@ partialEndingSingles =
           ]
    in rotRNTimes 4 partialEndingSingle
 
-   
+
 -----------------------
 -- SingleToDoubleCorner
 -----------------------
@@ -555,3 +558,11 @@ fishShapeCornerFloors =
             [Reachable, Unreachable, Reachable]
           ]
    in rotRNTimes 4 fishShapeCornerFloor
+
+
+
+
+
+
+
+--END
