@@ -107,12 +107,15 @@ renderLevel textures lvl =
 --   GhostDoorCorner -> Just $ color (bright green) $ rectangleSolid tileSize tileSize
 --   Dev -> Just $ color magenta $ rectangleSolid tileSize tileSize
 
+rotPicture :: Rotation -> Picture -> Picture
+rotPicture r = rotate ((fromIntegral $ fromEnum r) * 90)
+
 -- | Actual tile render
 renderTile :: TileTextures -> TextureTile -> Maybe Picture
 renderTile tTextures tTile = case tTile of
   None -> Nothing
   EndingSingle -> Just $ endSingle tTextures
-  Straight -> Just $ straight tTextures
+  Straight rot -> Just $ rotPicture rot $ straight tTextures
   StraightSingle -> Just $ straightSingle tTextures
   Corner -> Just $ corner tTextures
   CornerSingle -> Just $ cornerSingle tTextures
