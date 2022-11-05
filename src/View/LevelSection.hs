@@ -82,47 +82,52 @@ renderLevel textures lvl =
     . concat
     $ imap (\y -> imap (imapFunc y)) xss
   where
-    (Layout xss) = fmap (renderTile textures) $ convertLevel lvl
+    (Layout xss) = fmap (renderTile $ tileTextures textures) $ convertLevel lvl
     imapFunc :: Int -> Int -> Maybe Picture -> Maybe Picture
     imapFunc y x mt = case mt of
       Just t -> Just $ translateByTileSize (fromIntegral x) (fromIntegral y) t
       Nothing -> Nothing
 
--- $ tileTextures
 -- -- Dev tile render to visualise different tile types in level
-renderTile :: Textures -> TextureTile -> Maybe Picture
-renderTile textures tTile = case tTile of
-  None -> Nothing
-  Straight -> Just $ color orange $ rectangleSolid tileSize tileSize
-  StraightSingle -> Just $ color blue $ rectangleSolid tileSize tileSize
-  Corner -> Just $ color red $ rectangleSolid tileSize tileSize
-  CornerSingle -> Just $ color cyan $ rectangleSolid tileSize tileSize
-  CornerSingleToDouble -> Just $ color chartreuse $ rectangleSolid tileSize tileSize
-  CrossSectionSingle -> Just $ color aquamarine $ rectangleSolid tileSize tileSize
-  CrossSectionFishShaped -> Just $ color rose $ rectangleSolid tileSize tileSize
-  SurroundedWall -> Just $ color yellow $ rectangleSolid tileSize tileSize
-  Tjunction -> Just $ color green $ rectangleSolid tileSize tileSize
-  TjunctionSingle -> Just $ color violet $ rectangleSolid tileSize tileSize
-  EndingSingle -> Just $ color azure $ rectangleSolid tileSize tileSize
-  GhostDoorStraight -> Just $ color green $ rectangleSolid tileSize tileSize
-  GhostDoorCorner -> Just $ color (bright green) $ rectangleSolid tileSize tileSize
-  Dev -> Just $ color magenta $ rectangleSolid tileSize tileSize
+-- renderTile :: Textures -> TextureTile -> Maybe Picture
+-- renderTile textures tTile = case tTile of
+--   None -> Nothing
+--   Straight -> Just $ color orange $ rectangleSolid tileSize tileSize
+--   StraightSingle -> Just $ color blue $ rectangleSolid tileSize tileSize
+--   Corner -> Just $ color red $ rectangleSolid tileSize tileSize
+--   CornerSingle -> Just $ color cyan $ rectangleSolid tileSize tileSize
+--   CornerSingleToDouble -> Just $ color chartreuse $ rectangleSolid tileSize tileSize
+--   CrossSectionSingle -> Just $ color aquamarine $ rectangleSolid tileSize tileSize
+--   CrossSectionFishShaped -> Just $ color rose $ rectangleSolid tileSize tileSize
+--   SurroundedWall -> Just $ color yellow $ rectangleSolid tileSize tileSize
+--   Tjunction -> Just $ color green $ rectangleSolid tileSize tileSize
+--   TjunctionSingle -> Just $ color violet $ rectangleSolid tileSize tileSize
+--   EndingSingle -> Just $ color azure $ rectangleSolid tileSize tileSize
+--   GhostDoorStraight -> Just $ color green $ rectangleSolid tileSize tileSize
+--   GhostDoorCorner -> Just $ color (bright green) $ rectangleSolid tileSize tileSize
+--   Dev -> Just $ color magenta $ rectangleSolid tileSize tileSize
+
+rotPicture :: Rotation -> Picture -> Picture
+rotPicture r = rotate ((fromIntegral $ fromEnum r) * 90)
 
 -- | Actual tile render
--- renderTile :: TileTextures -> TextureTile -> Maybe Picture
--- renderTile tTextures tTile = case tTile of
---   None -> Nothing
---   EndingSingle -> Just $ endSingle tTextures
---   Straight -> Just $ straight tTextures
---   StraightSingle -> Just $ straightSingle tTextures
---   Corner -> Just $ corner tTextures
---   CornerSingle -> Just $ cornerSingle tTextures
---   CornerSingleToDouble -> Just $ cornerSingleToDouble tTextures
---   CrossSectionSingle -> Just $ crossSectionSingle tTextures
---   CrossSectionFishShaped -> Just $ crossSectionFishShaped tTextures
---   Tjunction -> Just $ tJunction tTextures
---   TjunctionSingle -> Just $ tJunctionSingle tTextures
---   SurroundedWall -> Just $ surroundedWall tTextures
---   GhostDoorStraight -> Just $ ghostDoorStraight tTextures
---   GhostDoorCorner -> Just $ ghostDoorCorner tTextures
---   Dev -> Just $ missingTexture tTextures
+renderTile :: TileTextures -> TextureTile -> Maybe Picture
+renderTile tTextures tTile = case tTile of
+  None -> Nothing
+  SurroundedWall -> Just $ surroundedWall tTextures
+  Straight rot -> Just (rotPicture rot $ straight tTextures)
+  StraightSingle rot -> Just (rotPicture rot $ straightSingle tTextures)
+  Corner rot -> Just (rotPicture rot $ corner tTextures)
+  CornerSingle rot -> Just (rotPicture rot $ cornerSingle tTextures)
+  CornerSingleToDouble rot m -> Just $
+    rotPicture rot $ case m of
+      NotMirrored -> cornerSingleToDouble tTextures
+      Mirrored -> cornerSingleToDoubleMirrored tTextures
+  CrossSectionSingle -> Just (crossSectionSingle tTextures)
+  CrossSectionFishShaped rot -> Just (rotPicture rot $ crossSectionFishShaped tTextures)
+  Tjunction rot -> Just (rotPicture rot $ tJunction tTextures)
+  TjunctionSingle rot -> Just (rotPicture rot $ tJunctionSingle tTextures)
+  EndingSingle rot -> Just (rotPicture rot $ endSingle tTextures)
+  GhostDoorStraight rot -> Just (rotPicture rot $ ghostDoorStraight tTextures)
+  GhostDoorCorner rot -> Just (rotPicture rot $ ghostDoorCorner tTextures)
+  Dev -> Just $ missingTexture tTextures
