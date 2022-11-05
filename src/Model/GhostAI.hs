@@ -29,16 +29,34 @@ makeGhostsMove gs = gs {ghosts = map (make1GhostMove gs) (ghosts gs)}
 
 make1GhostMove :: GameState -> Ghost -> Ghost
 make1GhostMove gs ghst  -- hierzo een case voor: is de ghost de volgende tile op een intersection?
-  = case isJust movedGhost of
-      True  -> fromJust movedGhost
-      False -> next --KIEST NU DE EERSTE OPTIE -- case length possibledirections == 1: die kant. anders: ghost AI
-  where
-    movedGhost = makeDirectionMoveGhost gs ghst (direction ghst)
-    (next:_) = checkMoveDirs gs ghst
+  | isJust nextintersect == True = fromJust movedGhostOpp
+  | otherwise = case isJust movedGhost of
+                  True  ->  fromJust movedGhost
+                  False ->  case length movedirs of
+                              1 -> head movedirs --KIEST NU DE EERSTE OPTIE -- case length possibledirections == 1: die kant. anders: ghost AI
+                              _ -> head movedirs --als de ghost 2 kanten op kan: GHOST AI
+    where
+      movedGhost = makeDirectionMoveGhost gs ghst (direction ghst)
+      movedGhostOpp = makeDirectionMoveGhost gs ghst (opDirection ghst)
+      movedirs = checkMoveDirs gs ghst
+
+      nextintersect = checkMoveToIntersection gs ghst
 
 --TODO: ALS CURRENT TILE HUN SPAWNPOINT (OF DE TILE BOVEN/ONDER) IS:
 --  OP/NEER BEWEGEN (TERUGKAATSEN), NIET NAAR LINKS/RECHTS
+-- (11,15)   - (16 17)
+makeDirectionMoveGhost :: GameState -> Ghost -> Direction -> Maybe Ghost
+makeDirectionMoveGhost gs ghst dir
+  | canMoveInDir && isValidMovePosition = Just updatedGhost
+  | otherwise = Nothing
+  where
+    canMoveInDir = canMakeMoveToDirGhost gs ghst dir lvl
+    isValidMovePosition = isValidGhostPosition (ghostMode gs) lvl movedGhost
 
+    updatedGhost = movedGhost {direction = dir, opDirection = opp dir}
+
+    movedGhost = move ghst dir (layoutSize . layout $ lvl)
+    lvl = level gs
 
 canMakeMoveToDirGhost :: GameState -> Ghost -> Direction -> Level -> Bool
 canMakeMoveToDirGhost gs gh dir lvl
@@ -53,19 +71,6 @@ canMakeMoveToDirGhost gs gh dir lvl
     isValid = isValidGhostPosition (ghostMode gs) lvl (moveFull gh dir)
     (x, y) = getPosition gh
 
-makeDirectionMoveGhost :: GameState -> Ghost -> Direction -> Maybe Ghost
-makeDirectionMoveGhost gs ghst dir
-  | canMoveInDir && isValidMovePosition = Just updatedGhost
-  | otherwise = Nothing
-  where
-    canMoveInDir = canMakeMoveToDirGhost gs ghst dir lvl
-    isValidMovePosition = isValidGhostPosition (ghostMode gs) lvl movedGhost
-
-    updatedGhost = movedGhost {direction = dir, opDirection = opp dir}
-
-    movedGhost = move ghst dir (layoutSize . layout $ lvl)
-    lvl = level gs
-
 
 checkMoveDirs :: GameState -> Ghost -> [Ghost]
 checkMoveDirs gs gh
@@ -75,6 +80,24 @@ checkMoveDirs gs gh
   where
     possiblemoves = map fromJust $ filter (isJust) [makeDirectionMoveGhost gs gh x | x <- u]
     u = filter (/= opDirection gh) [Up,Left,Down,Right]
+
+checkMoveToIntersection :: GameState -> Ghost -> Maybe (Int, Int)
+checkMoveToIntersection gs gh
+  | elem nextpoint intersections = Just nextpoint
+  | otherwise                    = Nothing
+  where
+    (x,y)     = getPosition gh
+    (x',y')   = (round x, round y) --de tile waar de ghost op staat
+    nextpoint = case direction gh of
+                  Up    -> (x', y' + 1)
+                  Down  -> (x', y' - 1)
+                  Left  -> (x' - 1, y')
+                  Right -> (x' + 1, y')
+                  Stop -> (x', y')
+    intersections = [ (a,b) | (a,b) <- (levelIntersections . level $ gs),
+                              elem (a,b) [(c,d) | c <- [11..16], d <- [15..17]] == False,
+                              elem (a,b) [(12,7), (15,7), (12,19), (15,19)] == False ]
+
 
 -- | Checks if the ghost is in a valid position on the level
 isValidGhostPosition :: GhostMode -> Level -> Ghost -> Bool
