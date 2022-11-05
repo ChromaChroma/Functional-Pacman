@@ -114,17 +114,17 @@ rotPicture r = rotate ((fromIntegral $ fromEnum r) * 90)
 renderTile :: TileTextures -> TextureTile -> Maybe Picture
 renderTile tTextures tTile = case tTile of
   None -> Nothing
-  EndingSingle -> Just $ endSingle tTextures
-  Straight rot -> Just $ rotPicture rot $ straight tTextures
-  StraightSingle -> Just $ straightSingle tTextures
-  Corner -> Just $ corner tTextures
-  CornerSingle -> Just $ cornerSingle tTextures
-  CornerSingleToDouble -> Just $ cornerSingleToDouble tTextures
-  CrossSectionSingle -> Just $ crossSectionSingle tTextures
-  CrossSectionFishShaped -> Just $ crossSectionFishShaped tTextures
-  Tjunction -> Just $ tJunction tTextures
-  TjunctionSingle -> Just $ tJunctionSingle tTextures
   SurroundedWall -> Just $ surroundedWall tTextures
+  Straight rot -> Just (rotPicture rot $ straight tTextures)
+  StraightSingle rot  -> Just (rotPicture rot $ straightSingle tTextures)
+  Corner rot -> Just (rotPicture rot $ corner tTextures)
+  CornerSingle rot -> Just (rotPicture rot $ cornerSingle tTextures)
+  CornerSingleToDouble rot m -> Just ({-mirPicture rot $-} rotPicture rot $ cornerSingleToDouble tTextures)
+  CrossSectionSingle -> Just (crossSectionSingle tTextures)
+  CrossSectionFishShaped rot -> Just (rotPicture rot $ crossSectionFishShaped tTextures)
+  Tjunction rot -> Just (rotPicture rot $ tJunction tTextures)
+  TjunctionSingle rot -> Just (rotPicture rot $ tJunctionSingle tTextures)
+  EndingSingle rot  -> Just (rotPicture rot $ endSingle tTextures)
   GhostDoorStraight -> Just $ ghostDoorStraight tTextures
   GhostDoorCorner -> Just $ ghostDoorCorner tTextures
   Dev -> Just $ missingTexture tTextures
