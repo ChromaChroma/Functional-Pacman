@@ -72,6 +72,7 @@ data TileTextures = TileTextures
     corner :: Texture,
     cornerSingle :: Texture,
     cornerSingleToDouble :: Texture,
+    cornerSingleToDoubleMirrored :: Texture,
     crossSectionSingle :: Texture,
     crossSectionFishShaped :: Texture,
     tJunction :: Texture,
@@ -136,6 +137,7 @@ loadTextures = do
       <*> loadBMP "assets/tiles/corner.bmp"
       <*> loadBMP "assets/tiles/corner-single.bmp"
       <*> loadBMP "assets/tiles/corner-single-to-double.bmp"
+      <*> loadBMP "assets/tiles/corner-single-to-double-mirrored.bmp"
       <*> loadBMP "assets/tiles/cross-section-single.bmp"
       <*> loadBMP "assets/tiles/cross-section-fish-shaped.bmp"
       <*> loadBMP "assets/tiles/t-junction.bmp"
