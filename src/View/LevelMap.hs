@@ -126,11 +126,7 @@ convertLevel lvl@Level {layout = Layout xss} = Layout (imap (\y -> imap (\x -> c
           | x >= w = Reachable
           | y >= h = Reachable
           | tileAtW lvl (x, y) `elem` [Wall, GhostDoor Open, GhostDoor Closed] = Unreachable
-          -- | isReachable lvl (intPosition $ playerSpawn lvl) (x, y) = Reachable
           | otherwise = Reachable
-
---TODO : (OPTIONAL) : add check if is unreachable tile, if so then unreachable
---        (so that unrechable floors can act as walls)
 
 -------------------------------------------------------------------------------
 -- Pattern helper functions
