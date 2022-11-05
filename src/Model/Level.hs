@@ -77,11 +77,11 @@ instance Functor Layout where
 
 -- | Rotate a kayout 90 degrees clockwise
 rotR :: Layout a -> Layout a
-rotR (Layout xss) = Layout (transpose $ reverse xss)
+rotR (Layout xss) = Layout (reverse $ transpose xss)
 
 -- | Rotate a layout 90 degrees counter-clockwise
 rotL :: Layout a -> Layout a
-rotL (Layout xss) = Layout (reverse $ transpose xss)
+rotL (Layout xss) = Layout (transpose $ reverse xss)
 
 -- | Mirror a layout horizontally
 mirrorH :: Layout a -> Layout a
