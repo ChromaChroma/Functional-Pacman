@@ -128,6 +128,6 @@ renderTile tTextures tTile = case tTile of
   Tjunction rot -> Just (rotPicture rot $ tJunction tTextures)
   TjunctionSingle rot -> Just (rotPicture rot $ tJunctionSingle tTextures)
   EndingSingle rot -> Just (rotPicture rot $ endSingle tTextures)
-  GhostDoorStraight -> Just $ ghostDoorStraight tTextures
-  GhostDoorCorner -> Just $ ghostDoorCorner tTextures
+  GhostDoorStraight rot -> Just (rotPicture rot $ ghostDoorStraight tTextures)
+  GhostDoorCorner rot -> Just (rotPicture rot $ ghostDoorCorner tTextures)
   Dev -> Just $ missingTexture tTextures

@@ -4,6 +4,8 @@ import Data.List (elemIndex, find)
 import Data.List.Index (imap)
 import Data.Maybe (fromJust, isJust)
 import Model.Level
+import Model.Dijkstra
+import Model.Movement
 
 -------------------------------------------------------------------------------
 -- Data structures
@@ -29,16 +31,16 @@ data TextureTile
   | TjunctionSingle Rotation
   | SurroundedWall
   | EndingSingle Rotation
-  | GhostDoorStraight -- Rotation-- TODO add pattern
-  | GhostDoorCorner -- Rotation-- TODO add pattern
+  | GhostDoorStraight Rotation
+  | GhostDoorCorner Rotation
   | Dev --Fallback type
   deriving (Show, Eq)
 
 -- | Type alias for a Layout with the reachability of a tile and its surrounding tiles
-type WallNeighbors = Layout Rachability
+type WallNeighbors = Layout Reachability
 
 -- | Data type defining if a tile is reachable by a player
-data Rachability = Reachable | Unreachable deriving (Show, Eq)
+data Reachability = Reachable | Unreachable | Door deriving (Show, Eq)
 
 data Pattern = Pattern
   { pattern :: WallNeighbors,
@@ -58,9 +60,8 @@ convertLevel lvl@Level {layout = Layout xss} = Layout (imap (\y -> imap (\x -> c
   where
     convert :: (Int, Int) -> Tile -> TextureTile
     convert pos tile = case tile of
-      Wall -> generateTextureTile pos
-      GhostDoor _ -> GhostDoorStraight
-      _ -> None
+      Floor -> None
+      _ -> generateTextureTile pos
 
     generateTextureTile :: (Int, Int) -> TextureTile
     generateTextureTile (x, y)
@@ -75,9 +76,13 @@ convertLevel lvl@Level {layout = Layout xss} = Layout (imap (\y -> imap (\x -> c
       | isJust mTJunctionSingle = TjunctionSingle (rotation $ fromJust mTJunctionSingle)
       | isJust mCenter = SurroundedWall
       | isJust mEnd = EndingSingle (rotation $ fromJust mEnd)
+      | isJust mStraightDoor = GhostDoorStraight (rotation $ fromJust mStraightDoor)
+      | isJust mCornerDoor = GhostDoorCorner (rotation $ fromJust mCornerDoor)
       | otherwise = Dev
       where
         matrix = generateWallNeighbors (x, y)
+
+        mCenter = isSurroundedWallTextureTile matrix
         mStraight = isStraightTextureTile matrix
         mStraightSingle = isStraightSingleTextureTile matrix
         mCorner = isCornerTextureTile matrix
@@ -88,27 +93,22 @@ convertLevel lvl@Level {layout = Layout xss} = Layout (imap (\y -> imap (\x -> c
         mCrossection = isCrossSectionTextureTile matrix
         mFishCrosSection = isCrossSectionFishShapedFloorsTextureTile matrix
         mEnd = isEndingSingleTextureTile matrix
-
-        mCenter = isSurroundedWallTextureTile matrix
-
-    -- TODO find a way to check on NonOp if is Res then take value n from res, else ignore
-    -- MAAybe een data type die handled if res else do next NonOp Calculation (andere pattern set met andere result handling?)
-    -- handleIfRes isStraightRes (\n Straight toEnum n) (\nextpattern....)
-    -- isStraightRes = isStraightTextureTile matrix
-
-    -- isResult :: NonOp a b -> Bool
-    -- isResult Res a = True
-    -- isResult _ = False
+        mStraightDoor = isStraightDoorTextureTile matrix
+        mCornerDoor = isCornerSingleDoorTextureTile matrix
 
     generateWallNeighbors :: (Int, Int) -> WallNeighbors
     generateWallNeighbors (x, y) =
       Layout
         [ [ul, u, ur],
-          [l, Unreachable, r],
+          [l, getReachability $ tileAtW lvl (x, y), r],
           [dl, d, dr]
         ]
       where
         (w, h) = layoutSize . layout $ lvl
+
+        getReachability :: Tile -> Reachability
+        getReachability (GhostDoor _) = Door
+        getReachability _ = Unreachable
 
         u = isUnreachable (x, y + 1)
         d = isUnreachable (x, y - 1)
@@ -126,6 +126,7 @@ convertLevel lvl@Level {layout = Layout xss} = Layout (imap (\y -> imap (\x -> c
           | x >= w = Reachable
           | y >= h = Reachable
           | tileAtW lvl (x, y) `elem` [Wall, GhostDoor Open, GhostDoor Closed] = Unreachable
+          -- | isReachable lvl (intPosition $ playerSpawn lvl) (x, y) = Reachable
           | otherwise = Reachable
 
 --TODO : (OPTIONAL) : add check if is unreachable tile, if so then unreachable
@@ -191,6 +192,7 @@ rotRNTimes n matrix
 {-
   ◯ == Reachable
   ▊ == Unreachable
+  ■  == Ghoost Door
 -}
 -----------------------
 -- CenterWall
@@ -623,11 +625,164 @@ partialEndingSingles = rotatedSet $ Layout
   GhostDoorStraight Cases:
   ◯▊
 -}
+{-
+  StraightSingleDoor  Cases:  (Bothsides A's) Rotations (2)
+  ◯◯◯
+  ▊■▊
+  ◯◯◯
+
+  StraightSingleDoor case Oposite Beside Corner Cases: Rotations (2) Mirrored (2)
+  ◯◯▊
+  ▊■▊
+  ▊◯◯
+
+  StraightSingleDoor Case Same Side CornerAndSide Cases: Rotations (4)
+  ▊◯▊
+  ▊■▊
+  ▊◯◯
+
+ StraightSingleDoor Case L-Shape Cases: Rotations (4) Mirrored (2)
+  ◯◯▊
+  ▊■▊
+  ◯◯◯
+
+  StraightSingleDoor Case Helmet Shape Middle Cases: Rotations (4)
+  ◯◯◯
+  ▊■▊
+  ▊◯▊
+
+  StraightSingleDoor Case h-Shape Cases: Rotations (4) Mirrored (2)
+  ◯◯▊
+  ▊■▊
+  ▊◯▊
+
+  StraightSingleDoor Case H-Shape Cases: Rotations (4)
+  ▊◯▊
+  ▊■▊
+  ▊◯▊
+
+-}
+
+isStraightDoorTextureTile :: WallNeighbors -> Maybe Pattern
+isStraightDoorTextureTile wn =
+  match wn $
+    fullBothSidesDoorFloors
+      ++ opositeCornerAndSideDoorFloors
+      ++ sameSideCornerAndSideDoorFloors
+      ++ straightLShapeDoorFloors
+      ++ straightHelmetShapeDoorFloors
+      ++ straighthShapeDoorFloors
+      ++ straightHShapeDoorFloors
+
+fullBothSidesDoorFloors =
+  halfRotatedSet $
+    Layout
+      [ [Reachable, Reachable, Reachable],
+        [Unreachable, Door, Unreachable],
+        [Reachable, Reachable, Reachable]
+      ]
+
+opositeCornerAndSideDoorFloors =
+  completeHalfSet $
+    Layout
+      [ [Reachable, Unreachable, Unreachable],
+        [Reachable, Door, Reachable],
+        [Unreachable, Unreachable, Reachable]
+      ]
+
+sameSideCornerAndSideDoorFloors =
+  rotatedSet $
+    Layout
+      [ [Unreachable, Reachable, Unreachable],
+        [Unreachable, Door, Unreachable],
+        [Unreachable, Reachable, Reachable]
+      ]
+
+straightLShapeDoorFloors =
+  completeSet $
+    Layout
+      [ [Reachable, Reachable, Unreachable],
+        [Unreachable, Door, Unreachable],
+        [Reachable, Reachable, Reachable]
+      ]
+
+straightHelmetShapeDoorFloors =
+  rotatedSet $
+    Layout
+      [ [Reachable, Reachable, Reachable],
+        [Unreachable, Door, Unreachable],
+        [Unreachable, Reachable, Unreachable]
+      ]
+
+straighthShapeDoorFloors =
+  completeSet $
+    Layout
+      [ [Reachable, Reachable, Unreachable],
+        [Unreachable, Door, Unreachable],
+        [Unreachable, Reachable, Unreachable]
+      ]
+
+straightHShapeDoorFloors =
+  rotatedSet $
+    Layout
+      [ [Unreachable, Reachable, Unreachable],
+        [Unreachable, Door, Unreachable],
+        [Unreachable, Reachable, Unreachable]
+      ]
 
 -----------------------
 -- GhostDoorCorner
 -----------------------
 {-
-  GhostDoorStraight Cases:
-  ◯▊
+  CornerSingleDoor Cases: Rotations (4)
+  ◯▊◯
+  ◯■ ▊
+  ◯◯◯
+
+  CornerTwoSeparateDoorFloors Cases: Rotations (4) (Special case for single corner that closes diaonally)
+  ◯▊◯
+  ◯■▊
+  ▊◯◯
+
+  CornerAndOpositeSmallCornerDoor Cases: Rotations (4) (Special case of single to maybe multiple corners)
+  ▊▊▊
+  ◯■▊
+  ◯◯▊
+
+  -- CornerDoor But has underconnection to single Cases: Rotations (4)
+  --   ◯▊▊
+  --   ◯■▊
+  --   ▊▊◯
 -}
+
+isCornerSingleDoorTextureTile :: WallNeighbors -> Maybe Pattern
+isCornerSingleDoorTextureTile wn =
+  match wn $
+    cornerSingleDoorFloors
+      ++ cornerSingleAndDiagonalDoorFloors
+      ++ cornerSingleDiagonalDoorFloors
+
+cornerSingleDoorFloors =
+  rotatedSet $
+    Layout
+      [ [Reachable, Unreachable, Reachable],
+        [Reachable, Door, Unreachable],
+        [Reachable, Reachable, Reachable]
+      ]
+
+cornerSingleAndDiagonalDoorFloors =
+  rotatedSet $
+    Layout
+      [ [Reachable, Unreachable, Reachable],
+        [Reachable, Door, Unreachable],
+        [Unreachable, Reachable, Reachable]
+      ]
+
+-- Special Case :: CornerSingle With diagonal Connection
+cornerSingleDiagonalDoorFloors =
+  rotatedSet $
+    Layout
+      [ [Unreachable, Unreachable, Unreachable],
+        [Reachable, Door, Unreachable],
+        [Reachable, Reachable, Unreachable]
+      ]
