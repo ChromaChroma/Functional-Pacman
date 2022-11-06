@@ -78,7 +78,7 @@ loadGame gen highScores =
           ghosts = ghosts,
           points = 0,
           frightenedTime = 0,
-          ghostMode = Scatter,
+          ghostMode = Chasing,
           highScores = highScores
         }
 
