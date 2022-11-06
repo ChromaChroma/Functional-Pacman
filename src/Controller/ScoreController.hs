@@ -1,21 +1,43 @@
 module Controller.ScoreController where
 
-import qualified Data.ByteString.Lazy as B
+import Data.String
+import System.IO.Error
+import Control.Exception
 import Data.Aeson
+import qualified Data.ByteString.Lazy as B
 import Model.Score
+import System.Directory (createDirectoryIfMissing, doesFileExist)
+
+-------------------------------------------------------------------------------
+-- File locations
+-------------------------------------------------------------------------------
+
+highScoresFile :: FilePath
+highScoresFile = "data/highscores.json"
 
 -------------------------------------------------------------------------------
 -- Helper functions
 -------------------------------------------------------------------------------
 
-jsonFile :: FilePath
-jsonFile = "data/highscores.json"
-
-loadJSON :: IO B.ByteString
-loadJSON = B.readFile jsonFile
-
 writeJSON :: ToJSON a => a -> IO ()
-writeJSON obj = encodeFile jsonFile obj
+writeJSON obj = do
+  createDirectoryIfMissing True highScoresFile
+  encodeFile highScoresFile obj
+  
+loadJSON :: FilePath -> IO B.ByteString
+loadJSON jsonFilePath= do
+  res <- safeRead jsonFilePath
+  case res of
+    Just x -> return $ fromString x
+    Nothing -> return $ B.empty
+
+safeRead :: FilePath -> IO (Maybe String)
+safeRead path = (fmap Just $ readFile path) `catch` handleExists
+  where
+    handleExists :: IOException -> IO (Maybe String)
+    handleExists e
+      | isDoesNotExistError e = return Nothing
+      | otherwise = throwIO e
 
 -------------------------------------------------------------------------------
 -- Logic
@@ -26,7 +48,7 @@ updateScores hs = writeJSON hs
 
 loadHighScores :: IO HighScores
 loadHighScores = do
-  d <- (eitherDecode <$> loadJSON)
-  case d of
-    Left err -> error err
-    Right hs -> return $ hs
+  d <- (eitherDecode <$> loadJSON highScoresFile)
+  return $ case d of
+    Right hs -> hs
+    Left err -> mkHighScores []
