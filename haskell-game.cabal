@@ -59,7 +59,6 @@ executable haskell-game
         View.Terminal
         View.LevelMap
         Controller.Engine
-        Controller.LevelController
         Controller.MovementController
         Controller.ScoreController
 
