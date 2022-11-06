@@ -21,7 +21,6 @@ highScoresFile = "data/highscores.json"
 
 writeJSON :: ToJSON a => a -> IO ()
 writeJSON obj = do
-  createDirectoryIfMissing True highScoresFile
   encodeFile highScoresFile obj
   
 loadJSON :: FilePath -> IO B.ByteString
