@@ -77,7 +77,10 @@ opp Stop = Stop
 --in frightened mode OR when changing to and from scatter mode, the ghosts reverse direction.
 turnGhostsAround :: [Ghost] -> [Ghost]
 turnGhostsAround ghosts = map turn1GhostAround ghosts where
-  turn1GhostAround ghost = ghost {direction = opp (direction ghost), opDirection = opp (opDirection ghost)}
+  turn1GhostAround ghost = case isEaten ghost of
+    False -> ghost {direction = opp (direction ghost), opDirection = opp (opDirection ghost)}
+    True -> ghost --isEaten state: ghost doesn't turn around if eaten
+
 
 slowGhostsDown :: [Ghost] -> [Ghost]
 slowGhostsDown ghosts = map slow1GhostDown ghosts where

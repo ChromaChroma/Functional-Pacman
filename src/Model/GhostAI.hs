@@ -95,8 +95,10 @@ checkMoveToIntersection gs gh
                   Right -> (x' + 1, y')
                   Stop -> (x', y')
     intersections = [ (a,b) | (a,b) <- (levelIntersections . level $ gs),
-                              elem (a,b) [(c,d) | c <- [11..16], d <- [15..17]] == False,
-                              elem (a,b) [(12,7), (15,7), (12,19), (15,19)] == False ]
+                              not (elem (a,b) [(c,d) | c <- [11..16], d <- [15..17]] ),
+                              not (elem (a,b) [(12,7), (15,7), (12,19), (15,19)] && direction gh /= Down ) ]
+                              -- above: if the ghost happens to be going to one of the non-intersection tiles (4 of them)
+                              -- while moving up left or right, it will not see it as an intersection (moving down, it will)
 
 
 -- | Checks if the ghost is in a valid position on the level
