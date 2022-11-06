@@ -1,5 +1,5 @@
 module View.Config where
-  
+
 import Graphics.Gloss
 
 screen :: Display

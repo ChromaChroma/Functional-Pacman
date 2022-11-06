@@ -20,7 +20,7 @@ import Prelude hiding (Down, Left, Right, Up)
 type Position = (Float, Float)
 
 -- | Directions a movement can be in, including Stop for an idle in movement
-data Direction = Up | Down | Left | Right | Stop deriving (Eq, Show)
+data Direction = Up | Left | Down | Right | Stop deriving (Eq, Ord, Show)
 
 -- | A movable's Speed in Ints unit
 type Speed = Float

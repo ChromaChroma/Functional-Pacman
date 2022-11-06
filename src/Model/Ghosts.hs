@@ -37,7 +37,9 @@ data Ghost = Ghost
     speed :: Speed,
     eatenState :: EatenState,
     direction :: Direction,
-    opDirection :: Direction
+    opDirection :: Direction,
+    nextDirection :: Direction,
+    checkedAtTile :: (Int, Int)
   }
   deriving (Eq)
 
@@ -81,7 +83,6 @@ turnGhostsAround ghosts = map turn1GhostAround ghosts where
     False -> ghost {direction = opp (direction ghost), opDirection = opp (opDirection ghost)}
     True -> ghost --isEaten state: ghost doesn't turn around if eaten
 
-
 slowGhostsDown :: [Ghost] -> [Ghost]
 slowGhostsDown ghosts = map slow1GhostDown ghosts where
   slow1GhostDown ghost = ghost {speed = 2/3 * (speed ghost)}
@@ -90,22 +91,29 @@ speedGhostsUp :: [Ghost] -> [Ghost]
 speedGhostsUp ghosts = map speed1GhostUp ghosts where
   speed1GhostUp ghost = ghost {speed = 3/2 * (speed ghost)}
 
+slowGhostsDownTunnel :: [Ghost] -> [Ghost]
+slowGhostsDownTunnel ghosts = map slow1GhostDown ghosts where
+  slow1GhostDown ghost = ghost {speed = 1/2 * (speed ghost)}
+
+speedGhostsUpTunnel :: [Ghost] -> [Ghost]
+speedGhostsUpTunnel ghosts = map speed1GhostUp ghosts where
+  speed1GhostUp ghost = ghost {speed = 2 * (speed ghost)}
 -------------------------------------------------------------------------------
 -- Default value functions
 -------------------------------------------------------------------------------
 
 -- | Default ghost constructors for each original ghost
 blinky :: Ghost
-blinky = Ghost Blinky (12, 16) 0.1 NotEaten Stop Stop
+blinky = Ghost Blinky (12, 16) 0.125 NotEaten Up Stop Right (0, 0) --speed is 75%, player's is 80% (0.125)
 
 pinky :: Ghost
-pinky = Ghost Pinky (13, 16) 0.09375 NotEaten Up Stop --speed is 75%, player's is 80% (0.1)
+pinky = Ghost Pinky (13, 16) 0.125 NotEaten Up Stop Left (0, 0)
 
 inky :: Ghost
-inky = Ghost Inky (14, 16) 0.1 NotEaten Stop Stop
+inky = Ghost Inky (14, 16) 0.125 NotEaten Up Stop Right (0, 0)
 
 clyde :: Ghost
-clyde = Ghost Clyde (15, 16) 0.1 NotEaten Stop Stop
+clyde = Ghost Clyde (15, 16) 0.125 NotEaten Up Stop Left (0, 0)
 
 defaultGhosts :: [Ghost]
 defaultGhosts = [blinky, pinky, inky, clyde]
