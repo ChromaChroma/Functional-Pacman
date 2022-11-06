@@ -5,9 +5,9 @@ import Controller.MovementController (canMovePerpendicular, formatDecimals)
 import Data.List ()
 import Data.List.Index ()
 import Data.Maybe ()
-import Graphics.Gloss (Picture, black, pictures, play, translate)
+import Graphics.Gloss (Picture, black, pictures, translate)
 import Graphics.Gloss.Data.ViewPort ()
-import Graphics.Gloss.Interface.IO.Game (Key (SpecialKey), SpecialKey (KeyEsc))
+import Graphics.Gloss.Interface.IO.Game (playIO, Key (SpecialKey), SpecialKey (KeyEsc))
 import Graphics.Gloss.Interface.IO.Game as IO
   ( Event (EventKey),
     Key (Char, SpecialKey),
@@ -33,7 +33,7 @@ import View.Overlays (renderOverlay)
 startRender :: Textures -> IO ()
 startRender textures = do
   initialModel <- initModel
-  play
+  playIO
     screen
     black
     framesPerSecond
@@ -56,8 +56,8 @@ initModel = do
   return $ TotalState game textures ""
 
 -- | Render game state, aligned from bottom left corner
-drawingFunc :: TotalState -> Picture
-drawingFunc ts = pictures (renders : [renderOverlay gs (textBuffer ts)])
+drawingFunc :: TotalState -> IO Picture
+drawingFunc ts = return $ pictures (renders : [renderOverlay gs (textBuffer ts)])
   where
     gs = gameState ts
     t = textures ts
@@ -74,11 +74,11 @@ drawingFunc ts = pictures (renders : [renderOverlay gs (textBuffer ts)])
     fromBottomLeft = translate x' y'
 
 -- | Input handling
-inputDelegationHandler :: Event -> TotalState -> TotalState
+inputDelegationHandler :: Event -> TotalState -> IO TotalState
 inputDelegationHandler event ts
-  | gsStatus == Waiting = waitingInputHandler event ts
+  | gsStatus == Waiting = return $ waitingInputHandler event ts
   | gsStatus == GameOver = scoreInputHandler event ts
-  | otherwise = gameInputHandler event ts
+  | otherwise = return $ gameInputHandler event ts
   where
     gsStatus = status $ gameState ts
 
@@ -88,14 +88,16 @@ waitingInputHandler (EventKey (SpecialKey KeySpace) IO.Down _ _) ts = ts {gameSt
 waitingInputHandler _ ts = ts
 
 -- | Handling of typing name for adding score
-scoreInputHandler :: Event -> TotalState -> TotalState
-scoreInputHandler (EventKey (Char keyCharacter) IO.Down _ _) ts = ts {textBuffer = textBuffer ts ++ [keyCharacter]}
-scoreInputHandler (EventKey (SpecialKey KeyDelete) IO.Down _ _) ts = ts {textBuffer = safeInit (textBuffer ts)}
+scoreInputHandler :: Event -> TotalState -> IO TotalState
+scoreInputHandler (EventKey (Char keyCharacter) IO.Down _ _) ts = return $ ts {textBuffer = textBuffer ts ++ [keyCharacter]}
+scoreInputHandler (EventKey (SpecialKey KeyDelete) IO.Down _ _) ts = return $ ts {textBuffer = safeInit (textBuffer ts)}
 scoreInputHandler (EventKey (SpecialKey KeyEnter) IO.Down _ _) ts =
   if (length $ textBuffer ts) > 0
-    then ts {textBuffer = "", gameState = reset $ submitScore (textBuffer ts) (gameState ts)}
-    else ts
-scoreInputHandler _ ts = ts
+    then do
+      newGs <- submitScore (textBuffer ts) (gameState ts)
+      return $ ts {textBuffer = "", gameState = reset newGs}
+    else return $ ts
+scoreInputHandler _ ts = return $ ts
 
 -- | Movement with arrow keys
 gameInputHandler :: Event -> TotalState -> TotalState
@@ -114,8 +116,8 @@ gameInputHandler _ ts = ts
 
 -- | Update function ran each iteration
 -- | Takes seconds since last update as Float, converts it to milliseconds and passes it to the engine step function
-tickEngine :: Float -> TotalState -> TotalState
-tickEngine s ts = ts {gameState = newGameState, textures = newTextures}
+tickEngine :: Float -> TotalState -> IO TotalState
+tickEngine s ts = return $ ts {gameState = newGameState, textures = newTextures}
   where
     newTextures = (textures ts) {elapsedTime = elapsedTime (textures ts) + s}
     newGameState = tick ms (gameState ts)

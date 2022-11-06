@@ -1,5 +1,6 @@
 module Controller.Engine where
 
+import Controller.ScoreController
 import Controller.MovementController as MC (makePlayerMove)
 import Model.Game
 import Model.Level (isLevelComplete)
@@ -75,7 +76,10 @@ quit :: GameState -> GameState
 quit gs = gs {status = GameOver}
 
 -- | Submit name for score
-submitScore :: String -> GameState -> GameState
+submitScore :: String -> GameState -> IO GameState
 submitScore name gs
-  | status gs == GameOver = addNewScore name gs --submit score, reset game for next
-  | otherwise = gs
+  | status gs /= GameOver = return $ gs 
+  | otherwise = do 
+      let newGs = addNewScore name gs 
+      updateScores $ highScores newGs
+      return $ newGs

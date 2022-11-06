@@ -25,9 +25,10 @@ executable haskell-game
         base ^>=4.14.3.0,
         gloss ^>= 1.13.2.1,
         random ^>= 1.2.0,
+        aeson ^>= 2.1.1.0,
+        bytestring ^>= 0.11.3.1,
         ilist ^>= 0.4.0.1,
         heap ^>= 1.0.4,
-        pcg-random ^>= 0.1.3.7,
         containers ^>= 0.6.6,
         unordered-containers ^>= 0.2.19.1,
         hashable ^>= 1.4.1.0
@@ -58,6 +59,7 @@ executable haskell-game
         Controller.Engine
         Controller.LevelController
         Controller.MovementController
+        Controller.ScoreController
 
     -- LANGUAGE extensions used by modules in this package.
     other-extensions:
