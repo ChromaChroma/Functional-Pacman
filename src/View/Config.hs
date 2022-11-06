@@ -13,7 +13,7 @@ windowOffsetPosition :: (Int, Int)
 windowOffsetPosition = (0, 0)
 
 framesPerSecond :: Int
-framesPerSecond = 120
+framesPerSecond = 60
 
 tileSize :: Float
 tileSize = 24
