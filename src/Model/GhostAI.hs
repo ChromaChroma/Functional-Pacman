@@ -74,10 +74,15 @@ canMakeMoveToDirGhost gs gh dir lvl
 
 checkMoveDirs :: GameState -> Ghost -> [Ghost]
 checkMoveDirs gs gh
-  = case possiblemoves of
-        [] -> [fromJust (makeDirectionMoveGhost gs gh (opDirection gh))] --terug als er niks anders is (deadend)
-        _  -> possiblemoves
+  = case elem (tileX, tileY) [(u,15) | u <- [13..16]] of
+      True -> [fromJust (makeDirectionMoveGhost gs gh (opDirection gh))]
+      False -> case possiblemoves of
+                [] -> [fromJust (makeDirectionMoveGhost gs gh (opDirection gh))] --terug als er niks anders is (deadend)
+                _  -> possiblemoves
   where
+    (x, y) = getPosition gh
+    (tileX, tileY) = (round x, round y)
+
     possiblemoves = map fromJust $ filter (isJust) [makeDirectionMoveGhost gs gh x | x <- u]
     u = filter (/= opDirection gh) [Up,Left,Down,Right]
 

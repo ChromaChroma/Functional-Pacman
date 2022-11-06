@@ -81,7 +81,6 @@ turnGhostsAround ghosts = map turn1GhostAround ghosts where
     False -> ghost {direction = opp (direction ghost), opDirection = opp (opDirection ghost)}
     True -> ghost --isEaten state: ghost doesn't turn around if eaten
 
-
 slowGhostsDown :: [Ghost] -> [Ghost]
 slowGhostsDown ghosts = map slow1GhostDown ghosts where
   slow1GhostDown ghost = ghost {speed = 2/3 * (speed ghost)}
@@ -99,7 +98,7 @@ blinky :: Ghost
 blinky = Ghost Blinky (12, 16) 0.1 NotEaten Stop Stop
 
 pinky :: Ghost
-pinky = Ghost Pinky (13, 16) 0.09375 NotEaten Up Stop --speed is 75%, player's is 80% (0.1)
+pinky = Ghost Pinky (13, 16) 0.09375 NotEaten Down Stop --speed is 75%, player's is 80% (0.1)
 
 inky :: Ghost
 inky = Ghost Inky (14, 16) 0.1 NotEaten Stop Stop
