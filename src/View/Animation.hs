@@ -90,45 +90,45 @@ data TileTextures = TileTextures
 -- | Function for the initial texture loading. It is called once at the beginning of the game.
 loadTextures :: IO Textures
 loadTextures = do
-  pacmanLife <- loadBMP "assets/pacman-2.bmp"
-  pacmanAnimation <- Animation 9 <$> mapM loadBMP ["assets/pacman-1.bmp", "assets/pacman-2.bmp", "assets/pacman-3.bmp"]
-  ghostFrigthenedAnimation <- Animation 6 <$> mapM loadBMP ["assets/ghost-frightened-1.bmp", "assets/ghost-frightened-2.bmp"]
-  ghostFrigthenedFlashingAnimation <- Animation 6 <$> mapM loadBMP ["assets/ghost-frightened-1.bmp", "assets/ghost-frightened-2.bmp", "assets/ghost-frightened-flashing-1.bmp", "assets/ghost-frightened-flashing-2.bmp"]
+  pacmanLife <- loadBMP "assets/player/pacman-2.bmp"
+  pacmanAnimation <- Animation 9 <$> mapM loadBMP ["assets/player/pacman-1.bmp", "assets/player/pacman-2.bmp", "assets/player/pacman-3.bmp"]
+  ghostFrigthenedAnimation <- Animation 6 <$> mapM loadBMP ["assets/ghosts/ghost-frightened-1.bmp", "assets/ghosts/ghost-frightened-2.bmp"]
+  ghostFrigthenedFlashingAnimation <- Animation 6 <$> mapM loadBMP ["assets/ghosts/ghost-frightened-1.bmp", "assets/ghosts/ghost-frightened-2.bmp", "assets/ghosts/ghost-frightened-flashing-1.bmp", "assets/ghosts/ghost-frightened-flashing-2.bmp"]
   blinkyAnimation <-
-    DirectionalAnimation . Animation 6 <$> mapM loadBMP ["assets/blinky-left-1.bmp", "assets/blinky-left-2.bmp"]
-      <*> (Animation 6 <$> mapM loadBMP ["assets/blinky-right-1.bmp", "assets/blinky-right-2.bmp"])
-      <*> (Animation 6 <$> mapM loadBMP ["assets/blinky-up-1.bmp", "assets/blinky-up-2.bmp"])
-      <*> (Animation 6 <$> mapM loadBMP ["assets/blinky-down-1.bmp", "assets/blinky-down-2.bmp"])
+    DirectionalAnimation . Animation 6 <$> mapM loadBMP ["assets/ghosts/blinky-left-1.bmp", "assets/ghosts/blinky-left-2.bmp"]
+      <*> (Animation 6 <$> mapM loadBMP ["assets/ghosts/blinky-right-1.bmp", "assets/ghosts/blinky-right-2.bmp"])
+      <*> (Animation 6 <$> mapM loadBMP ["assets/ghosts/blinky-up-1.bmp", "assets/ghosts/blinky-up-2.bmp"])
+      <*> (Animation 6 <$> mapM loadBMP ["assets/ghosts/blinky-down-1.bmp", "assets/ghosts/blinky-down-2.bmp"])
   pinkyAnimation <-
-    DirectionalAnimation . Animation 6 <$> mapM loadBMP ["assets/pinky-left-1.bmp", "assets/pinky-left-2.bmp"]
-      <*> (Animation 6 <$> mapM loadBMP ["assets/pinky-right-1.bmp", "assets/pinky-right-2.bmp"])
-      <*> (Animation 6 <$> mapM loadBMP ["assets/pinky-up-1.bmp", "assets/pinky-up-2.bmp"])
-      <*> (Animation 6 <$> mapM loadBMP ["assets/pinky-down-1.bmp", "assets/pinky-down-2.bmp"])
+    DirectionalAnimation . Animation 6 <$> mapM loadBMP ["assets/ghosts/pinky-left-1.bmp", "assets/ghosts/pinky-left-2.bmp"]
+      <*> (Animation 6 <$> mapM loadBMP ["assets/ghosts/pinky-right-1.bmp", "assets/ghosts/pinky-right-2.bmp"])
+      <*> (Animation 6 <$> mapM loadBMP ["assets/ghosts/pinky-up-1.bmp", "assets/ghosts/pinky-up-2.bmp"])
+      <*> (Animation 6 <$> mapM loadBMP ["assets/ghosts/pinky-down-1.bmp", "assets/ghosts/pinky-down-2.bmp"])
   inkyAnimation <-
-    DirectionalAnimation . Animation 6 <$> mapM loadBMP ["assets/inky-left-1.bmp", "assets/inky-left-2.bmp"]
-      <*> (Animation 6 <$> mapM loadBMP ["assets/inky-right-1.bmp", "assets/inky-right-2.bmp"])
-      <*> (Animation 6 <$> mapM loadBMP ["assets/inky-up-1.bmp", "assets/inky-up-2.bmp"])
-      <*> (Animation 6 <$> mapM loadBMP ["assets/inky-down-1.bmp", "assets/inky-down-2.bmp"])
+    DirectionalAnimation . Animation 6 <$> mapM loadBMP ["assets/ghosts/inky-left-1.bmp", "assets/ghosts/inky-left-2.bmp"]
+      <*> (Animation 6 <$> mapM loadBMP ["assets/ghosts/inky-right-1.bmp", "assets/ghosts/inky-right-2.bmp"])
+      <*> (Animation 6 <$> mapM loadBMP ["assets/ghosts/inky-up-1.bmp", "assets/ghosts/inky-up-2.bmp"])
+      <*> (Animation 6 <$> mapM loadBMP ["assets/ghosts/inky-down-1.bmp", "assets/ghosts/inky-down-2.bmp"])
   clydeAnimation <-
-    DirectionalAnimation . Animation 6 <$> mapM loadBMP ["assets/clyde-left-1.bmp", "assets/clyde-left-2.bmp"]
-      <*> (Animation 6 <$> mapM loadBMP ["assets/clyde-right-1.bmp", "assets/clyde-right-2.bmp"])
-      <*> (Animation 6 <$> mapM loadBMP ["assets/clyde-up-1.bmp", "assets/clyde-up-2.bmp"])
-      <*> (Animation 6 <$> mapM loadBMP ["assets/clyde-down-1.bmp", "assets/clyde-down-2.bmp"])
+    DirectionalAnimation . Animation 6 <$> mapM loadBMP ["assets/ghosts/clyde-left-1.bmp", "assets/ghosts/clyde-left-2.bmp"]
+      <*> (Animation 6 <$> mapM loadBMP ["assets/ghosts/clyde-right-1.bmp", "assets/ghosts/clyde-right-2.bmp"])
+      <*> (Animation 6 <$> mapM loadBMP ["assets/ghosts/clyde-up-1.bmp", "assets/ghosts/clyde-up-2.bmp"])
+      <*> (Animation 6 <$> mapM loadBMP ["assets/ghosts/clyde-down-1.bmp", "assets/ghosts/clyde-down-2.bmp"])
   ghostEatenAnimation <-
-    DirectionalAnimation . Animation 6 <$> mapM loadBMP ["assets/ghost-eaten-left.bmp"]
-      <*> (Animation 6 <$> mapM loadBMP ["assets/ghost-eaten-right.bmp"])
-      <*> (Animation 6 <$> mapM loadBMP ["assets/ghost-eaten-up.bmp"])
-      <*> (Animation 6 <$> mapM loadBMP ["assets/ghost-eaten-down.bmp"])
+    DirectionalAnimation . Animation 6 <$> mapM loadBMP ["assets/ghosts/ghost-eaten-left.bmp"]
+      <*> (Animation 6 <$> mapM loadBMP ["assets/ghosts/ghost-eaten-right.bmp"])
+      <*> (Animation 6 <$> mapM loadBMP ["assets/ghosts/ghost-eaten-up.bmp"])
+      <*> (Animation 6 <$> mapM loadBMP ["assets/ghosts/ghost-eaten-down.bmp"])
   fruits <-
     FruitTextures
-      <$> loadBMP "assets/cherry.bmp"
-      <*> loadBMP "assets/strawberry.bmp"
-      <*> loadBMP "assets/orange.bmp"
-      <*> loadBMP "assets/apple.bmp"
-      <*> loadBMP "assets/melon.bmp"
-      <*> loadBMP "assets/galaxian.bmp"
-      <*> loadBMP "assets/bell.bmp"
-      <*> loadBMP "assets/key.bmp"
+      <$> loadBMP "assets/fruits/cherry.bmp"
+      <*> loadBMP "assets/fruits/strawberry.bmp"
+      <*> loadBMP "assets/fruits/orange.bmp"
+      <*> loadBMP "assets/fruits/apple.bmp"
+      <*> loadBMP "assets/fruits/melon.bmp"
+      <*> loadBMP "assets/fruits/galaxian.bmp"
+      <*> loadBMP "assets/fruits/bell.bmp"
+      <*> loadBMP "assets/fruits/key.bmp"
   tileTextures <-
     TileTextures
       <$> loadBMP "assets/tiles/end-single.bmp"
