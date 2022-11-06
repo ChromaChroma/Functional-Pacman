@@ -37,7 +37,9 @@ data Ghost = Ghost
     speed :: Speed,
     eatenState :: EatenState,
     direction :: Direction,
-    opDirection :: Direction
+    opDirection :: Direction,
+    nextDirection :: Direction,
+    checkedAtTile :: (Int, Int)
   }
   deriving (Eq)
 
@@ -95,16 +97,16 @@ speedGhostsUp ghosts = map speed1GhostUp ghosts where
 
 -- | Default ghost constructors for each original ghost
 blinky :: Ghost
-blinky = Ghost Blinky (12, 16) 0.1 NotEaten Stop Stop
+blinky = Ghost Blinky (12, 16) 0.1 NotEaten Up Stop Left (0, 0)
 
 pinky :: Ghost
-pinky = Ghost Pinky (13, 16) 0.09375 NotEaten Down Stop --speed is 75%, player's is 80% (0.1)
+pinky = Ghost Pinky (13, 16) 0.09375 NotEaten Up Stop Left (0, 0) --speed is 75%, player's is 80% (0.1)
 
 inky :: Ghost
-inky = Ghost Inky (14, 16) 0.1 NotEaten Stop Stop
+inky = Ghost Inky (14, 16) 0.1 NotEaten Up Stop Right (0, 0)
 
 clyde :: Ghost
-clyde = Ghost Clyde (15, 16) 0.1 NotEaten Stop Stop
+clyde = Ghost Clyde (15, 16) 0.1 NotEaten Up Stop Right (0, 0)
 
 defaultGhosts :: [Ghost]
 defaultGhosts = [blinky, pinky, inky, clyde]

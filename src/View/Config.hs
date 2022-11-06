@@ -1,5 +1,5 @@
 module View.Config where
-  
+
 import Graphics.Gloss
 
 screen :: Display
@@ -13,7 +13,7 @@ windowOffsetPosition :: (Int, Int)
 windowOffsetPosition = (0, 0)
 
 framesPerSecond :: Int
-framesPerSecond = 60
+framesPerSecond = 120
 
 tileSize :: Float
 tileSize = 24
