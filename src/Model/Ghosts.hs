@@ -18,7 +18,7 @@ module Model.Ghosts
   )
 where
 
-import Model.Movement (Collidable (collides), Direction (..), Movable (..), Position, Positioned (..), Speed)
+import Model.Movement 
 import Prelude hiding (Left, Right, Down, Up)
 -------------------------------------------------------------------------------
 -- Data structures
@@ -69,12 +69,6 @@ isNotEaten = not . isEaten
 collidesWithMovable :: (Movable a, Collidable a) => Ghost -> a -> Bool
 collidesWithMovable ghost m = isNotEaten ghost && ghost `collides` m
 
-opp :: Direction -> Direction
-opp Up = Down
-opp Down = Up
-opp Left = Right
-opp Right = Left
-opp Stop = Stop
 
 --in frightened mode OR when changing to and from scatter mode, the ghosts reverse direction.
 turnGhostsAround :: [Ghost] -> [Ghost]
