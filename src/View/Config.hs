@@ -17,6 +17,3 @@ framesPerSecond = 60
 
 tileSize :: Float
 tileSize = 24
-
-debug :: Bool
-debug = True
