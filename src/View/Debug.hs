@@ -3,20 +3,21 @@ module View.Debug where
 import Controller.MovementController
 import Graphics.Gloss
 import Model.Game
+import Model.Ghosts hiding (direction)
+import Model.Items (PointItem (Dot, Fruit))
 import Model.Level
 import Model.Movement
 import Model.Player
-import Model.Ghosts hiding (direction)
 import View.Config
 import View.Helpers
-import Model.Items (PointItem(Dot, Fruit))
 
-renderDebug :: GameState -> Picture
-renderDebug gs = renderIfDebug $pictures [renderDebugDetails gs]
+renderDebug :: Bool -> GameState -> Picture
+renderDebug isDebug gs = renderIfDebug isDebug $ pictures [renderDebugDetails gs]
 
 -- | Checks if application is in debug mode, if so render the passed Picture else return Blank
-renderIfDebug :: Picture -> Picture
-renderIfDebug f = if debug then f else blank
+renderIfDebug :: Bool -> Picture -> Picture
+renderIfDebug True p = p
+renderIfDebug False _ = blank
 
 renderDebugDetails :: GameState -> Picture
 renderDebugDetails gs =
@@ -44,10 +45,9 @@ renderDebugDetails gs =
     isCollidingWithGhost gs = any (player gs `collides`) $ ghosts gs
     isCollidingWithItem gs = any (player gs `collides`) (items . level $ gs)
 
-
 -- | Renders the intersections calculated by the game based on the level layout
-renderIntersections :: GameState -> Picture
-renderIntersections gs = renderIfDebug $ pictures [block (x, y) | (x, y) <- levelIntersections . level $ gs]
+renderIntersections :: Bool -> GameState -> Picture
+renderIntersections isDebug gs = renderIfDebug isDebug $ pictures [block (x, y) | (x, y) <- levelIntersections . level $ gs]
   where
     block (x, y) = color (dim green) . translateByTileSize (fromIntegral x) (fromIntegral y) $ rectangleSolid renderSize renderSize
     renderSize = tileSize / 2

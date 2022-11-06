@@ -38,7 +38,7 @@ instance Show (Button a) where
 -------------------------------------------------------------------------------
 
 click :: Button a -> a -> IO a
-click Button{action = a} = a
+click Button {action = a} = a
 
 updateLabel :: String -> Button a -> Button a
 updateLabel newLabel button = button {label = newLabel}
@@ -64,9 +64,8 @@ drawButton :: Button a -> Picture
 drawButton b =
   let (x, y) = position b
       (w, h) = size b
-      lbl = color red . scale 0.1 0.1 $ text $ label b
    in translate x y $
         pictures
           [ translate ((w / 2) - 12) ((h / 2) - 13) . color white $ rectangleSolid w h,
-            lbl
+            translate (2 * (w / 9)) 2 . color black . scale 0.1 0.1 . text $ label b
           ]

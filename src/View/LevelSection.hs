@@ -18,12 +18,12 @@ import View.Helpers
 import View.LevelMap
 
 -- | Returns Pictures, consisting of all tile Pictures
-renderLevelSection :: Textures -> GameState -> Picture
-renderLevelSection textures gs = translateToLevelSection (layoutSize . layout . level $ gs) . pictures $ map ($ gs) fs
+renderLevelSection :: Bool -> Textures -> GameState -> Picture
+renderLevelSection isDebug textures gs = translateToLevelSection (layoutSize . layout . level $ gs) . pictures $ map ($ gs) fs
   where
     fs =
       [ renderLevel textures . level,
-        renderIntersections,
+        renderIntersections isDebug,
         renderPellets . items . level,
         renderFruit textures . items . level,
         renderGhosts textures,

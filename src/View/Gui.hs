@@ -76,11 +76,10 @@ drawingFunc ts = return $ pictures (renders : [renderOverlay gs (textBuffer ts)]
       pictures
         [ fromBottomLeft $
             pictures
-              [ renderLevelSection t gs,
+              [ renderLevelSection (isDebug ts) t gs ,
                 renderInfoSection t gs,
-                renderDebug gs,
-                drawButton (head $ buttons ts),
-                translate 0 800 . smallText "IsButtonClicked, Textbuffer: " . isDebug $ ts
+                renderDebug (isDebug ts) gs ,
+                drawButton (head $ buttons ts)
               ]
         ]
     (x, y) = windowSize
@@ -168,4 +167,4 @@ checkButtonClick pos ts = foldActions ts (buttons ts)
     foldActions ts (btn : btns) =
       if not $ isClicked btn pos
         then return $ ts
-        else click btn ts >>= flip foldActions btns 
+        else click btn ts >>= flip foldActions btns
