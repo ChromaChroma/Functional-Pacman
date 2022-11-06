@@ -48,6 +48,7 @@ executable haskell-game
         Model.Utils
         Model.Dijkstra
         View.Animation
+        View.Buttons
         View.Config
         View.Debug
         View.Gui
