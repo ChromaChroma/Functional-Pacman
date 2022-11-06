@@ -22,7 +22,7 @@ renderLevelSection :: Bool -> Textures -> GameState -> Picture
 renderLevelSection isDebug textures gs = translateToLevelSection (layoutSize . layout . level $ gs) . pictures $ map ($ gs) fs
   where
     fs =
-      [ renderLevel textures . level,
+      [ renderLevel isDebug textures . level,
         renderIntersections isDebug,
         renderPellets . items . level,
         renderFruit textures . items . level,
@@ -75,37 +75,44 @@ renderFruit textures xs = pictures $ [renderItem x | x@Fruit {} <- xs]
       let (x, y) = getPosition item
        in translateByTileSize x y (fruitTexture textures item)
 
-renderLevel :: Textures -> Level -> Picture
-renderLevel textures lvl =
+renderLevel :: Bool -> Textures -> Level -> Picture
+renderLevel isDebug textures lvl =
   pictures
     . catMaybes
     . concat
     $ imap (\y -> imap (imapFunc y)) xss
   where
-    (Layout xss) = fmap (renderTile $ tileTextures textures) $ convertLevel lvl
+    renderFunction = if isDebug 
+      then devRenderTile
+      else renderTile
+    (Layout xss) = fmap (renderFunction $ tileTextures textures) $ convertLevel lvl
     imapFunc :: Int -> Int -> Maybe Picture -> Maybe Picture
     imapFunc y x mt = case mt of
       Just t -> Just $ translateByTileSize (fromIntegral x) (fromIntegral y) t
       Nothing -> Nothing
 
--- -- Dev tile render to visualise different tile types in level
--- renderTile :: Textures -> TextureTile -> Maybe Picture
--- renderTile textures tTile = case tTile of
---   None -> Nothing
---   Straight -> Just $ color orange $ rectangleSolid tileSize tileSize
---   StraightSingle -> Just $ color blue $ rectangleSolid tileSize tileSize
---   Corner -> Just $ color red $ rectangleSolid tileSize tileSize
---   CornerSingle -> Just $ color cyan $ rectangleSolid tileSize tileSize
---   CornerSingleToDouble -> Just $ color chartreuse $ rectangleSolid tileSize tileSize
---   CrossSectionSingle -> Just $ color aquamarine $ rectangleSolid tileSize tileSize
---   CrossSectionFishShaped -> Just $ color rose $ rectangleSolid tileSize tileSize
---   SurroundedWall -> Just $ color yellow $ rectangleSolid tileSize tileSize
---   Tjunction -> Just $ color green $ rectangleSolid tileSize tileSize
---   TjunctionSingle -> Just $ color violet $ rectangleSolid tileSize tileSize
---   EndingSingle -> Just $ color azure $ rectangleSolid tileSize tileSize
---   GhostDoorStraight -> Just $ color green $ rectangleSolid tileSize tileSize
---   GhostDoorCorner -> Just $ color (bright green) $ rectangleSolid tileSize tileSize
---   Dev -> Just $ color magenta $ rectangleSolid tileSize tileSize
+-- -- | Renders tile textures
+-- renderTile :: TileTextures -> TextureTile -> Maybe Picture
+-- renderTile tTextures tTile =
+
+-- Dev tile render to visualise different tile types in level
+devRenderTile :: TileTextures -> TextureTile -> Maybe Picture
+devRenderTile _ tTile = case tTile of
+  None -> Nothing
+  Straight _ -> Just $ color orange $ rectangleSolid tileSize tileSize
+  StraightSingle _ -> Just $ color blue $ rectangleSolid tileSize tileSize
+  Corner _ -> Just $ color red $ rectangleSolid tileSize tileSize
+  CornerSingle _ -> Just $ color cyan $ rectangleSolid tileSize tileSize
+  CornerSingleToDouble _ _ -> Just $ color chartreuse $ rectangleSolid tileSize tileSize
+  CrossSectionSingle -> Just $ color aquamarine $ rectangleSolid tileSize tileSize
+  CrossSectionFishShaped _ -> Just $ color rose $ rectangleSolid tileSize tileSize
+  SurroundedWall -> Just $ color yellow $ rectangleSolid tileSize tileSize
+  Tjunction _ -> Just $ color green $ rectangleSolid tileSize tileSize
+  TjunctionSingle _ -> Just $ color violet $ rectangleSolid tileSize tileSize
+  EndingSingle _ -> Just $ color azure $ rectangleSolid tileSize tileSize
+  GhostDoorStraight _ -> Just $ color green $ rectangleSolid tileSize tileSize
+  GhostDoorCorner _ -> Just $ color (bright green) $ rectangleSolid tileSize tileSize
+  Dev -> Just $ color magenta $ rectangleSolid tileSize tileSize
 
 rotPicture :: Rotation -> Picture -> Picture
 rotPicture r = rotate ((fromIntegral $ fromEnum r) * 90)
