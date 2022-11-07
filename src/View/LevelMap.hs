@@ -2,8 +2,8 @@ module View.LevelMap where
 
 import Data.List (elemIndex, find)
 import Data.Maybe (fromJust, isJust)
-import Model.Level
 import Model.Dijkstra
+import Model.Level
 import Model.Movement
 import Model.Utils (imap)
 
@@ -43,7 +43,7 @@ type WallNeighbors = Layout Reachability
 data Reachability = Reachable | Unreachable | Door deriving (Show, Eq)
 
 data Pattern = Pattern
-  { pattern :: WallNeighbors,
+  { wallNeighbors :: WallNeighbors,
     rotation :: Rotation,
     mirrored :: Mirrored
   }
@@ -139,8 +139,7 @@ mkPatternSet :: WallNeighbors -> Int -> Mirrored -> [Pattern]
 mkPatternSet wn amntRotations m
   | amntRotations > 4 = error "amntRotations cannot be larger than 4"
   | amntRotations < 0 = error "amntRotations cannot be smaller than 0"
-  | otherwise =
-    let func = (\n (nextPattern, acc) -> ((rotR nextPattern), Pattern nextPattern (toEnum n) m : acc))
+  | otherwise = let func n (nextPattern, acc) = (rotR nextPattern, Pattern nextPattern (toEnum n) m : acc)
      in snd $ foldr func (wn, []) [0 .. amntRotations]
 
 --------------------
@@ -165,7 +164,7 @@ completeHalfSet wn = halfRotatedSet wn ++ halfRotatedMirroredSet wn
 
 --------------------
 match :: WallNeighbors -> [Pattern] -> Maybe Pattern
-match wn = find (\p -> pattern p == wn)
+match wn = find (\p -> wallNeighbors p == wn)
 
 ------------------------------------------------------------------------
 -- Helper functions
@@ -591,27 +590,35 @@ crossSectionFishShapedFloors =
 -}
 
 isEndingSingleTextureTile :: WallNeighbors -> Maybe Pattern
-isEndingSingleTextureTile wn = match wn $ fullEndingSingles
-  ++ shortEndingSingles
-  ++ partialEndingSingles
+isEndingSingleTextureTile wn =
+  match wn $
+    fullEndingSingles
+      ++ shortEndingSingles
+      ++ partialEndingSingles
 
-fullEndingSingles = rotatedSet $ Layout
-  [ [Reachable, Unreachable, Reachable],
-    [Reachable, Unreachable, Reachable],
-    [Reachable, Reachable, Reachable]
-  ]
+fullEndingSingles =
+  rotatedSet $
+    Layout
+      [ [Reachable, Unreachable, Reachable],
+        [Reachable, Unreachable, Reachable],
+        [Reachable, Reachable, Reachable]
+      ]
 
-shortEndingSingles =rotatedSet $ Layout
-  [ [Unreachable, Unreachable, Unreachable],
-    [Reachable, Unreachable, Reachable],
-    [Reachable, Reachable, Reachable]
-  ]
+shortEndingSingles =
+  rotatedSet $
+    Layout
+      [ [Unreachable, Unreachable, Unreachable],
+        [Reachable, Unreachable, Reachable],
+        [Reachable, Reachable, Reachable]
+      ]
 
-partialEndingSingles = rotatedSet $ Layout
-  [ [Reachable, Unreachable, Unreachable],
-    [Reachable, Unreachable, Reachable],
-    [Reachable, Reachable, Reachable]
-  ]
+partialEndingSingles =
+  rotatedSet $
+    Layout
+      [ [Reachable, Unreachable, Unreachable],
+        [Reachable, Unreachable, Reachable],
+        [Reachable, Reachable, Reachable]
+      ]
 
 -- TODO
 -----------------------
