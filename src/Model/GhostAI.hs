@@ -28,7 +28,7 @@ make1GhostMoveEv gs ghst
   True -> case (goesBack ghst == False) of
     True -> (make1GhostMove gs ghst) {G.position = gTilePos, G.speed = (1/6), goesBack = True} --start to bring ghost back to spawn
     False -> case (gTile == spawnpoint) of
-      True -> (make1GhostMove gs ghst) {G.position = gTilePos, eatenState = NotEaten, G.speed = 0.125, G.direction = Up, opDirection = Down, nextDirection = Right, goesBack = False, wellPositionedTarget = False}
+      True -> (make1GhostMove gs ghst) {G.position = gTilePos, eatenState = NotEaten, G.speed = 0.125, G.direction = Up, opDirection = Down, nextDirection = nextDir, goesBack = False, wellPositionedTarget = False}
       False -> case (gTile == targetpoint) && (wellPositionedTarget ghst == False) of
         True -> (make1GhostMove gs ghst) {G.position = gTilePos, G.direction = Down, opDirection = Up, wellPositionedTarget = True}
         False -> make1GhostMove gs ghst --gaat op target tile vlakbij spawn af.
@@ -53,7 +53,7 @@ make1GhostMoveEv gs ghst
       Clyde  -> Right
 
 
-    gTilePos = (fromIntegral gtX, fromIntegral gtY)
+    gTilePos = ghostTilePosition ghst
     gTile@(gtX, gtY) = posToTile gPos
     gPos  = getPosition ghst
 
@@ -69,7 +69,9 @@ make1GhostMove gs ghst
   = case onIntersectionTile gs ghst of --hiervoor: check case ghostMode (frightened : fMovedGhost ofzo; otherwise: check on intersection tile + rest)
         True -> case isJust bufMovedGhost of
             True -> fromJust bufMovedGhost
-            False -> fromJust movedGhost
+            False -> case isJust movedGhost of
+              True  -> fromJust movedGhost
+              False -> movedir
         False -> case (isJust nextintersect) of -- voor snelheid: (checkedAtTile ghst /= gTile) &&  -- if we didn't check the next tile already, only then we check intersection
             True  -> movedGhostWithNextDir -- {checkedAtTile = gTile} -- here we create a ghost that knows its next direction
             False -> case isJust movedGhost of
@@ -90,7 +92,7 @@ make1GhostMove gs ghst
     --nextdir returns next direction of ghost at the following intersection:
     nextdir = chooseAtIntersection gs ghst (fromJust nextintersect)
 
-    gTilePos = (fromIntegral gtX, fromIntegral gtY)
+    gTilePos = ghostTilePosition ghst
     gTile@(gtX, gtY) = posToTile gPos
     gPos  = getPosition ghst
 
@@ -103,8 +105,7 @@ checkMoveDirs gs gh
       True -> fromJust (makeDirectionMoveGhost gs gh (opDirection gh))
       False -> case length possiblemoves of
                 0  -> fromJust (makeDirectionMoveGhost gs gh (opDirection gh)) --goes back if there's nothing else (dead end)
-                1  -> head possiblemoves
-                _  -> fromJust (makeDirectionMoveGhost gs gh (nextDirection gh))
+                _  -> head possiblemoves
   where
     gPos = getPosition gh
     gTile = posToTile gPos
@@ -327,11 +328,6 @@ targetTileClyde gh pt
     cTile = posToTile cPos --clyde tile
     cPos = getPosition gh --clyde position
 
-
---Convert float coordinate to tile (int) coordinate
-posToTile :: Position -> (Int, Int)
-posToTile (x, y) = (round x, round y)
-
 --Compute squared tile distance between two tiles
 sqTileDist :: (Int, Int) -> (Int, Int) -> Int
 sqTileDist (p1X, p1Y) (p2X, p2Y)
@@ -346,8 +342,9 @@ sqTileDist (p1X, p1Y) (p2X, p2Y)
 --  EN NA KORTE TIJD WEER DE ESCAPE-FUNCTIE AANROEPEN
 
 
-
---TODO: GHOSTS IF EATEN TERUG NAAR SPAWN
+--TODO: ghosts om de beurt naar buiten laten lopen
+--TODO: alle functies die de snelheid van de ghosts doen veranderen -> ghost in het midden van de tile neerzetten
+--TODO: GHOSTS IF EATEN TERUG NAAR SPAWN (check half)
 --TODO: GHOST RANDOM RONDLOPEN BIJ FRIGHTENED
 --TODO: AFWISSELING SCATTER/CHASING MODE
 
