@@ -53,10 +53,10 @@ data GameState = GameState
     level :: Level,
     elapsedTime :: Time,
     tickTimer :: Time,
-    ghosts :: [Ghost],
     points :: Points,
     frightenedTime :: Time,
     scatterTime :: Time,
+    ghosts :: [Ghost],
     ghostMode :: GhostMode,
     prevGM :: GhostMode,
     highScores :: HighScores
