@@ -24,7 +24,7 @@ makeGhostMoveEv gs ghst
   | not $ isEaten ghst = makeGhostMove gs ghst
   | not $ goesBack ghst = (makeGhostMove gs ghst) {G.position = gTilePos, G.speed = 1 / 2, goesBack = True} --start to bring ghost back to spawn
   | gTile == spawnpoint = (makeGhostMove gs ghst) {G.position = gTilePos, eatenState = NotEaten, G.speed = 0.125, G.direction = Up, opDirection = Down, nextDirection = nextDir, goesBack = False, wellPositionedTarget = False}
-  | gTile /= targetpoint && wellPositionedTarget ghst = makeGhostMove gs ghst --gaat op target tile vlakbij spawn af.
+  | gTile /= targetpoint || wellPositionedTarget ghst = makeGhostMove gs ghst --gaat op target tile vlakbij spawn af.
   | otherwise = (makeGhostMove gs ghst) {G.position = gTilePos, G.direction = Down, opDirection = Up, wellPositionedTarget = True}
   where
     nextDir = case name ghst of
