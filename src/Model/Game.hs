@@ -223,7 +223,7 @@ frightGen gs = gs {ranGen = g}
 randomTile :: StdGen -> GameState -> ((Int, Int), StdGen)
 randomTile gen gs = (rTile, g'')
   where
-    rTile = posToTile rPos
+    rTile = intPosition rPos
     rPos = (fromIntegral x', fromIntegral y')
     (x', g') = randomR (0, x - 1) gen
     (y', g'') = randomR (0, y - 1) g'
