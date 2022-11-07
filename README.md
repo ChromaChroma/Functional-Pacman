@@ -1,6 +1,8 @@
 # Haskell-game
 Game coded in Haskell made for a project of the Utrecht University. 
-[Github Projects](https://docs.github.com/en/issues/planning-and-tracking-with-projects) is used during the development of this project to keep an overview on the progression and backlog of the project.
+[Github Projects](https://docs.github.com/en/issues/planning-and-tracking-with-projects) is used during the development of this project to keep an overview on the progression and backlog of the project. 
+
+[![CI](https://github.com/ChromaChroma/haskell-game/actions/workflows/ci.yml/badge.svg)](https://github.com/ChromaChroma/haskell-game/actions/workflows/ci.yml)
 
 ## Team
 [Jona Leeflang](https://github.com/ChromaChroma)  

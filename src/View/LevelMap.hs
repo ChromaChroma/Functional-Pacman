@@ -1,11 +1,11 @@
 module View.LevelMap where
 
 import Data.List (elemIndex, find)
-import Data.List.Index (imap)
 import Data.Maybe (fromJust, isJust)
-import Model.Level
 import Model.Dijkstra
+import Model.Level
 import Model.Movement
+import Model.Utils (imap)
 
 -------------------------------------------------------------------------------
 -- Data structures
@@ -43,7 +43,7 @@ type WallNeighbors = Layout Reachability
 data Reachability = Reachable | Unreachable | Door deriving (Show, Eq)
 
 data Pattern = Pattern
-  { pattern :: WallNeighbors,
+  { wallNeighbors :: WallNeighbors,
     rotation :: Rotation,
     mirrored :: Mirrored
   }
@@ -140,7 +140,7 @@ mkPatternSet wn amntRotations m
   | amntRotations > 4 = error "amntRotations cannot be larger than 4"
   | amntRotations < 0 = error "amntRotations cannot be smaller than 0"
   | otherwise =
-    let func = (\n (nextPattern, acc) -> ((rotR nextPattern), Pattern nextPattern (toEnum n) m : acc))
+    let func n (nextPattern, acc) = (rotR nextPattern, Pattern nextPattern (toEnum n) m : acc)
      in snd $ foldr func (wn, []) [0 .. amntRotations]
 
 --------------------
@@ -165,7 +165,7 @@ completeHalfSet wn = halfRotatedSet wn ++ halfRotatedMirroredSet wn
 
 --------------------
 match :: WallNeighbors -> [Pattern] -> Maybe Pattern
-match wn = find (\p -> pattern p == wn)
+match wn = find (\p -> wallNeighbors p == wn)
 
 ------------------------------------------------------------------------
 -- Helper functions
@@ -217,10 +217,15 @@ surroundedWallFloors =
   ▊◯◯
   ▊▊▊
   ▊▊▊
+
+  Straight ending path Cases: Rotations (4)
+  ▊◯▊
+  ▊▊▊
+  ▊▊▊
 -}
 
 isStraightTextureTile :: WallNeighbors -> Maybe Pattern
-isStraightTextureTile wn = match wn (fullSideFloors ++ cornerAndSideFloors)
+isStraightTextureTile wn = match wn (fullSideFloors ++ cornerAndSideFloors ++ straightEndingPathFloors)
 
 fullSideFloors =
   rotatedSet $
@@ -234,6 +239,14 @@ cornerAndSideFloors =
   completeSet $
     Layout
       [ [Unreachable, Reachable, Reachable],
+        [Unreachable, Unreachable, Unreachable],
+        [Unreachable, Unreachable, Unreachable]
+      ]
+
+straightEndingPathFloors =
+  rotatedSet $
+    Layout
+      [ [Unreachable, Reachable, Unreachable],
         [Unreachable, Unreachable, Unreachable],
         [Unreachable, Unreachable, Unreachable]
       ]
@@ -301,9 +314,9 @@ fullBothSidesFloors =
 opositeCornerAndSideFloors =
   completeHalfSet $
     Layout
-      [ [Reachable, Unreachable, Unreachable],
-        [Reachable, Unreachable, Reachable],
-        [Unreachable, Unreachable, Reachable]
+      [ [Unreachable, Reachable, Reachable],
+        [Unreachable, Unreachable, Unreachable],
+        [Reachable, Reachable, Unreachable]
       ]
 
 sameSideCornerAndSideFloors =
@@ -591,27 +604,35 @@ crossSectionFishShapedFloors =
 -}
 
 isEndingSingleTextureTile :: WallNeighbors -> Maybe Pattern
-isEndingSingleTextureTile wn = match wn $ fullEndingSingles
-  ++ shortEndingSingles
-  ++ partialEndingSingles
+isEndingSingleTextureTile wn =
+  match wn $
+    fullEndingSingles
+      ++ shortEndingSingles
+      ++ partialEndingSingles
 
-fullEndingSingles = rotatedSet $ Layout
-  [ [Reachable, Unreachable, Reachable],
-    [Reachable, Unreachable, Reachable],
-    [Reachable, Reachable, Reachable]
-  ]
+fullEndingSingles =
+  rotatedSet $
+    Layout
+      [ [Reachable, Unreachable, Reachable],
+        [Reachable, Unreachable, Reachable],
+        [Reachable, Reachable, Reachable]
+      ]
 
-shortEndingSingles =rotatedSet $ Layout
-  [ [Unreachable, Unreachable, Unreachable],
-    [Reachable, Unreachable, Reachable],
-    [Reachable, Reachable, Reachable]
-  ]
+shortEndingSingles =
+  rotatedSet $
+    Layout
+      [ [Unreachable, Unreachable, Unreachable],
+        [Reachable, Unreachable, Reachable],
+        [Reachable, Reachable, Reachable]
+      ]
 
-partialEndingSingles = rotatedSet $ Layout
-  [ [Reachable, Unreachable, Unreachable],
-    [Reachable, Unreachable, Reachable],
-    [Reachable, Reachable, Reachable]
-  ]
+partialEndingSingles =
+  rotatedSet $
+    Layout
+      [ [Reachable, Unreachable, Unreachable],
+        [Reachable, Unreachable, Reachable],
+        [Reachable, Reachable, Reachable]
+      ]
 
 -- TODO
 -----------------------
