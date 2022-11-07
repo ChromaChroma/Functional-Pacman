@@ -14,18 +14,19 @@ module Model.Game
     loadNextLevel,
     addNewScore,
     frightGen,
-    randomTile
+    randomTile,
   )
 where
 
 import Controller.ScoreController
+import Model.Defaults
 import Model.Dijkstra
 import Model.Ghosts hiding (direction, position)
-import Model.Items (PointItem (Dot, Fruit), fruitOfLevel)
+import Model.Items (PointItem (Dot, Fruit))
 import qualified Model.Items as I
-import Model.Level (Level (items, layout, levelNumber, playerSpawn), LevelSize, Tile (Floor), defaultLevel, layoutSize, tileAtW)
+import Model.Level (Level (items, layout, levelNumber, playerSpawn), LevelSize, Tile (Floor), layoutSize, tileAtW)
 import Model.Movement (Collidable (collides), Direction (Stop), Movable (getSpeed), Positioned (getPosition, setPosition), intPosition)
-import Model.Player (Player (bufDirection, direction, lives), defaultPlayer, isAlive, position, rmLife)
+import Model.Player (Player (bufDirection, direction, lives), isAlive, position, rmLife)
 import Model.Score
 import System.Random (Random (randomR), StdGen, newStdGen)
 
@@ -135,8 +136,8 @@ checkItemCollisions gs = foldr (\item -> removeItem item . addItemScore item . h
     addItemScore item gs = gs {points = points gs + I.points item}
     handleItemType item gs = case item of
       I.PowerPellet _ _ -> case ghostMode gs of
-          Frightened -> gs {frightenedTime = 0, ghosts = turnGhostsAround (ghosts gs)} --ghosts don't need to be slowed down again
-          _          -> gs {ghostMode = Frightened, prevGM = ghostMode gs, frightenedTime = 0, ghosts = startFrightened (ghosts gs)}
+        Frightened -> gs {frightenedTime = 0, ghosts = turnGhostsAround (ghosts gs)} --ghosts don't need to be slowed down again
+        _ -> gs {ghostMode = Frightened, prevGM = ghostMode gs, frightenedTime = 0, ghosts = startFrightened (ghosts gs)}
       _ -> gs
 
 checkGhostCollisions :: GameState -> GameState
@@ -163,10 +164,9 @@ checkGhostCollisions gs = handleCollidingGhosts gs . filter (`collidesWithMovabl
 --check if a new ghost should spawn
 checkGhostSpawn :: GameState -> GameState
 checkGhostSpawn gs = gs {ghosts = moveGhostsOutSpawn amountOfDots (ghosts gs)}
- where
-   amountOfDots = length [x | x@Dot {} <- itms]
-   itms = items . level $ gs
-
+  where
+    amountOfDots = length [x | x@Dot {} <- itms]
+    itms = items . level $ gs
 
 --------------------------------------------------------------------------------
 
@@ -209,6 +209,7 @@ spawnFruit gs = gs {level = lvl {items = fruit : items lvl}, ranGen = g}
         rPos = (fromIntegral x', fromIntegral y')
         (x', g') = randomR (0, x - 1) gen
         (y', g'') = randomR (0, y - 1) g'
+
 --------------------------------------------------------------------------------
 --functions to make the ghosts walk randomly when frightened:
 
@@ -227,6 +228,7 @@ randomTile gen gs = (rTile, g'')
 
     (x, y) = layoutSize . layout $ lvl
     lvl = level gs
+
 -------------------------------------------------------------------------------
 -- Default value functions
 -------------------------------------------------------------------------------

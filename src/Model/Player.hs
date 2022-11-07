@@ -2,7 +2,6 @@ module Model.Player
   ( Speed,
     Movable (..),
     Player (..),
-    defaultPlayer,
     Lives (..),
     mkLives,
     rmLife,
@@ -62,10 +61,3 @@ rmLife lives
 
 isAlive :: Lives -> Bool
 isAlive = (> 0) . unlives
-
--------------------------------------------------------------------------------
--- Default value functions
--------------------------------------------------------------------------------
-
-defaultPlayer :: Player
-defaultPlayer = Player (1, 1) (1/7) (Lives 3) Stop Stop

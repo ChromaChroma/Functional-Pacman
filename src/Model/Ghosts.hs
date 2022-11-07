@@ -3,10 +3,6 @@ module Model.Ghosts
     Name (..),
     EatenState (..),
     Direction (..),
-    blinky,
-    pinky,
-    inky,
-    clyde,
     isEaten,
     isNotEaten,
     collidesWithMovable,
@@ -15,7 +11,6 @@ module Model.Ghosts
     startFrightened,
     -- slowGhostsDown,
     speedGhostsUp,
-    defaultGhosts,
     slowGhostDownTunnel,
     speedGhostUpTunnel,
     posToTile,
@@ -27,6 +22,7 @@ where
 
 import Model.Movement
 import Prelude hiding (Left, Right, Down, Up)
+
 -------------------------------------------------------------------------------
 -- Data structures
 -------------------------------------------------------------------------------
@@ -166,22 +162,3 @@ ghostTilePosition gh = gT
     gT = (fromIntegral gX, fromIntegral gY)
     (gX, gY) = posToTile (getPosition gh)
 
--------------------------------------------------------------------------------
--- Default value functions
--------------------------------------------------------------------------------
-
--- | Default ghost constructors for each original ghost
-blinky :: Ghost
-blinky = Ghost Blinky (12, 16) 0.125 NotEaten Stop Stop Right False False False--speed is 75%, player's is 80% (0.125)
-
-pinky :: Ghost
-pinky = Ghost Pinky (13, 16) 0.125 NotEaten Stop Stop Left False False False
-
-inky :: Ghost
-inky = Ghost Inky (14, 16) 0.125 NotEaten Stop Stop Left False False False
-
-clyde :: Ghost
-clyde = Ghost Clyde (15, 16) 0.125 NotEaten Stop Stop Right False False False
-
-defaultGhosts :: [Ghost]
-defaultGhosts = [blinky, pinky, inky, clyde]

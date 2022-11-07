@@ -39,6 +39,7 @@ executable haskell-game
         Model.Ghosts
         Model.GhostAI
         Model.Level
+        Model.Defaults
         Model.Items
         Model.Movement
         Model.Score
