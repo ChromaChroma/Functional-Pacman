@@ -5,16 +5,16 @@ module Model.Game
     Status (..),
     GhostMode (..),
     Time,
-    tickDurationIn,
     checkCollisions,
     checkGhostSpawn,
     checkGameOver,
     frightenedDuration,
     checkFruitSpawning,
     loadNextLevel,
-    addNewScore,
+    addScore,
     frightGen,
     randomTile,
+    checkLevelComplete,
   )
 where
 
@@ -24,8 +24,8 @@ import Model.Dijkstra
 import Model.Ghosts hiding (direction, position)
 import Model.Items (PointItem (Dot, Fruit))
 import qualified Model.Items as I
-import Model.Level (Level (items, layout, levelNumber, playerSpawn), LevelSize, Tile (Floor), layoutSize, tileAtW)
-import Model.Movement (Collidable (collides), Direction (Stop), Movable (getSpeed), Positioned (getPosition, setPosition), intPosition)
+import Model.Level
+import Model.Movement
 import Model.Player (Player (bufDirection, direction, lives), isAlive, position, rmLife)
 import Model.Score
 import System.Random (Random (randomR), StdGen, newStdGen)
@@ -34,16 +34,16 @@ import System.Random (Random (randomR), StdGen, newStdGen)
 -- Data structures
 -------------------------------------------------------------------------------
 
--- | Time the game or the tickTimer has been running in milliseconds
+-- | Time in milliseconds
 type Time = Int
 
--- | Acitivity status of the game
+-- | Activity status of the game
 data Status = Waiting | Active | Paused | GameOver deriving (Eq, Show)
 
 -- | Modes the ghosts can be in
 -- | Chasing    : is the mode in which ghosts chase the player
 -- | Frightened : is the mode in which ghosts run away from the player
--- | Scatter    : is the mode in which ghosts move to their specific location
+-- | Scatter    : is the mode in which ghosts move to a specific location
 data GhostMode = Chasing | Frightened | Scatter deriving (Eq, Show)
 
 -- | State of the complete game
@@ -67,8 +67,6 @@ data GameState = GameState
 -------------------------------------------------------------------------------
 -- Logic
 -------------------------------------------------------------------------------
-reset :: GameState -> GameState
-reset gs = loadGame (ranGen gs) (highScores gs)
 
 loadGame :: StdGen -> HighScores -> GameState
 loadGame gen highScores =
@@ -105,11 +103,14 @@ loadNextLevel gs =
           ghosts = defaultGhosts
         }
 
+reset :: GameState -> GameState
+reset gs = loadGame (ranGen gs) (highScores gs)
+
 nextLevel :: Level -> Level
 nextLevel lvl = defaultLevel {levelNumber = levelNumber lvl + 1}
 
-addNewScore :: String -> GameState -> GameState
-addNewScore name gs = case mkScore name $ points gs of
+addScore :: String -> GameState -> GameState
+addScore name gs = case mkScore name $ points gs of
   Just s -> gs {highScores = add s $ highScores gs}
   Nothing -> error "Invalid score"
 
@@ -121,9 +122,10 @@ checkGameOver gs
   where
     isAlive' = isAlive . lives . player $ gs
 
--- | The specified minimal duration between each game tick
-tickDurationIn :: Time
-tickDurationIn = 30
+checkLevelComplete :: GameState -> GameState
+checkLevelComplete gs
+  | isLevelComplete . level $ gs = loadNextLevel gs
+  | otherwise = gs
 
 -- | Logic for collisions
 checkCollisions :: GameState -> GameState

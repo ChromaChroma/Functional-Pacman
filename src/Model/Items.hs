@@ -2,7 +2,7 @@ module Model.Items
   ( PointItem (..),
     mkDot,
     mkPowerPellet,
-    FruitType(..),
+    FruitType (..),
     Positioned (..),
     Position (..),
   )
@@ -23,19 +23,9 @@ data FruitType = Cherry | Strawberry | Orange | Apple | Melon | Galaxian | Bell 
 -- | PowerPellet  : is a special item that gives the player the ability to eat ghosts
 -- | Fruit        : is a special item that gives the player a large amount of points
 data PointItem
-  = Dot
-      { position :: Position,
-        points :: Points
-      }
-  | PowerPellet
-      { position :: Position,
-        points :: Points
-      }
-  | Fruit
-      { position :: Position,
-        points :: Points,
-        itemType :: FruitType
-      }
+  = Dot {position :: Position, points :: Points}
+  | PowerPellet {position :: Position, points :: Points}
+  | Fruit {position :: Position, points :: Points, itemType :: FruitType}
   deriving (Eq)
 
 -------------------------------------------------------------------------------
@@ -44,7 +34,7 @@ data PointItem
 
 instance Positioned PointItem where
   getPosition = position
-  setPosition item newPos = item { position = newPos}
+  setPosition item newPos = item {position = newPos}
 
 instance Collidable PointItem
 
