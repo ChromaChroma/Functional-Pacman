@@ -38,7 +38,7 @@ renderGameOver gs textBuffer =
       translate (-100) 0 $ layeredText (-250) (-45) 5 "Game Over",
       translate (50) (-10) . scale 0.3 0.3 $ layeredText (-500) (-300) 5 "Enter Name: ", 
       translate (fromIntegral $ 170 - (length textBuffer * 10)) (-70) . scale 0.3 0.3 $ layeredText (-500) (-300) 12 textBuffer,
-      translate (-200) (-150) . scale 0.2 0.2 . layeredText (-500) (-300) 5 $ "DEL = remove last character - ENTER = submit"
+      translate (-235) (-150) . scale 0.2 0.2 . layeredText (-500) (-300) 5 $ "DEL = remove last character     ENTER = submit"
     ]
 
 overlayBackdrop :: GameState -> Picture

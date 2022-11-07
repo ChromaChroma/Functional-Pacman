@@ -15,12 +15,13 @@ module Model.Game
   )
 where
 
+import Controller.ScoreController
 import Model.Dijkstra
 import Model.Ghosts hiding (direction, position)
 import Model.Items (PointItem (Dot, Fruit), fruitOfLevel)
 import qualified Model.Items as I
 import Model.Level (Level (items, layout, levelNumber, playerSpawn), LevelSize, Tile (Floor), defaultLevel, layoutSize, tileAtW)
-import Model.Movement (Collidable (collides), Movable (getSpeed), Positioned (getPosition, setPosition), intPosition, Direction(Stop))
+import Model.Movement (Collidable (collides), Direction (Stop), Movable (getSpeed), Positioned (getPosition, setPosition), intPosition)
 import Model.Player (Player (bufDirection, direction, lives), defaultPlayer, isAlive, position, rmLife)
 import Model.Score
 import System.Random (Random (randomR), StdGen, newStdGen)
@@ -198,6 +199,6 @@ frightenedDuration = 5000
 
 defaultGame :: IO GameState
 defaultGame = do
-  let highScores = mkHighScores []
+  highScores <- loadHighScores
   generator <- newStdGen
   return (loadGame generator highScores)

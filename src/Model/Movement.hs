@@ -1,11 +1,12 @@
 module Model.Movement
   ( Positioned (..),
     Position,
-    intPosition,
     Collidable(..),
     Movable (..),
     Direction (..),
     Speed,
+    intPosition,
+    opp
   )
 where
 
@@ -66,3 +67,10 @@ class (Positioned a) => Movable a where
 
 intPosition :: Position -> (Int, Int)
 intPosition (x, y) = (round x, round y)
+
+opp :: Direction -> Direction
+opp Up = Down
+opp Down = Up
+opp Left = Right
+opp Right = Left
+opp Stop = Stop
