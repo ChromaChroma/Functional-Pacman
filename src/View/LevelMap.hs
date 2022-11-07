@@ -1,11 +1,11 @@
 module View.LevelMap where
 
 import Data.List (elemIndex, find)
-import Data.List.Index (imap)
 import Data.Maybe (fromJust, isJust)
 import Model.Level
 import Model.Dijkstra
 import Model.Movement
+import Model.Utils (imap)
 
 -------------------------------------------------------------------------------
 -- Data structures

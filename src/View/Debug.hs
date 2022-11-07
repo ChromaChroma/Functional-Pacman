@@ -8,6 +8,7 @@ import Model.Items (PointItem (Dot, Fruit))
 import Model.Level
 import Model.Movement
 import Model.Player
+import Model.Utils
 import View.Config
 import View.Helpers
 

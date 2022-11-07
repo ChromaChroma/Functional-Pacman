@@ -2,7 +2,6 @@
 
 module View.LevelSection (renderLevelSection) where
 
-import Data.List.Index (imap)
 import Data.Maybe
 import Graphics.Gloss
 import Model.Game
@@ -11,6 +10,7 @@ import Model.Items
 import Model.Level
 import Model.Movement as M
 import Model.Player hiding (position)
+import Model.Utils (imap)
 import View.Animation
 import View.Config
 import View.Debug
@@ -82,9 +82,10 @@ renderLevel isDebug textures lvl =
     . concat
     $ imap (\y -> imap (imapFunc y)) xss
   where
-    renderFunction = if isDebug 
-      then devRenderTile
-      else renderTile
+    renderFunction =
+      if isDebug
+        then devRenderTile
+        else renderTile
     (Layout xss) = fmap (renderFunction $ tileTextures textures) $ convertLevel lvl
     imapFunc :: Int -> Int -> Maybe Picture -> Maybe Picture
     imapFunc y x mt = case mt of

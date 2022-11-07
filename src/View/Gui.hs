@@ -3,9 +3,8 @@ module View.Gui where
 import Control.Arrow ((***))
 import Control.Monad (foldM, join)
 import Controller.Engine
-import Controller.MovementController (canMovePerpendicular, formatDecimals)
+import Controller.MovementController (canMovePerpendicular)
 import Data.List ()
-import Data.List.Index ()
 import Data.Maybe ()
 import Graphics.Gloss (Picture, black, pictures, translate)
 import Graphics.Gloss.Data.ViewPort ()

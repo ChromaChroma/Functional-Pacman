@@ -1,11 +1,10 @@
 module Controller.MovementController where
 
-import Data.Fixed (mod')
 import Data.Maybe (Maybe (..), fromJust, isJust)
 import Model.Game (GameState (level, player), GhostMode (Frightened))
 import Model.Ghosts (Ghost, isEaten)
 import Model.Level
-  ( DoorState (Open, Closed),
+  ( DoorState (Closed, Open),
     Level (layout),
     Tile (Floor, GhostDoor),
     layoutSize,
@@ -17,8 +16,8 @@ import Model.Movement
     Positioned (getPosition, setPosition),
     intPosition,
   )
-import Model.Player (Player(direction, bufDirection))
-import Numeric (showFFloat)
+import Model.Player (Player (bufDirection, direction))
+import Model.Utils
 import Prelude hiding (Down, Left, Right, Up)
 
 makePlayerMove :: GameState -> GameState
@@ -60,11 +59,6 @@ canMakeMoveToDir player dir lvl
 -- | i.e. If you want move vertically, you pass the current x axis coordinate
 canMovePerpendicular :: RealFloat a => a -> Bool
 canMovePerpendicular n = let nFormat = formatDecimals n 1 in nFormat == 0.0 || nFormat == 1.0
-
--- | Takes float `n` and returns a float of the decimal places rounded to `j` decimals
--- | i.e formatDecimals 9.005 1 = 0.0, formatDecimals 9.05 1 = 0.1
-formatDecimals :: RealFloat a => a -> Int -> Float
-formatDecimals n j = read (showFFloat (Just j) (n `mod'` 1) "") :: Float
 
 -- | Moves player in direction by the valiadtionOffset to check if Movable can 'stand on' the tile at coordinate
 moveFull :: Movable a => a -> Direction -> a

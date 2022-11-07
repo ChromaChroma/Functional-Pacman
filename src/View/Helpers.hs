@@ -1,6 +1,5 @@
 module View.Helpers where
 
-import Data.List.Index (imap)
 import Graphics.Gloss (Picture, blank, color, pictures, scale, text, translate, white)
 import Model.Game (Time)
 import Model.Level (LevelSize)
