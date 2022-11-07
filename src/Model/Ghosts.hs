@@ -46,6 +46,7 @@ data Ghost = Ghost
     nextDirection :: Direction,
     isInTunnel :: Bool,
     goesBack :: Bool,
+    wellPositioned :: Bool,
     wellPositionedTarget :: Bool
   }
   deriving (Eq)
@@ -92,7 +93,7 @@ startFrightened ghosts = map start1Frightened ghosts where
   start1Frightened ghost = case isEaten ghost of
     False -> case isInTunnel ghost of
       False -> ghost {speed = 0.08, direction = opp (direction ghost), opDirection = opp (opDirection ghost), nextDirection = opp (nextDirection ghost)} --position = gTilePos,
-      True -> ghost {speed = 0.04, direction = opp (direction ghost), opDirection = opp (opDirection ghost), nextDirection = opp (nextDirection ghost)} --position = gTilePos,
+      True -> ghost {speed = 0.04, direction = opp (direction ghost), opDirection = opp (opDirection ghost)} --position = gTilePos,
     True -> ghost --isEaten state: ghost doesn't turn around & slow down if eaten
     where
       gTilePos = ghostTilePosition ghost
@@ -139,16 +140,16 @@ ghostTilePosition gh = gT
 
 -- | Default ghost constructors for each original ghost
 blinky :: Ghost
-blinky = Ghost Blinky (12, 16) 0.125 NotEaten Up Stop Right False False False--speed is 75%, player's is 80% (0.125)
+blinky = Ghost Blinky (12, 16) 0.125 NotEaten Up Stop Right False False False False--speed is 75%, player's is 80% (0.125)
 
 pinky :: Ghost
-pinky = Ghost Pinky (13, 16) 0.125 NotEaten Up Stop Left False False False
+pinky = Ghost Pinky (13, 16) 0.125 NotEaten Up Stop Left False False False False
 
 inky :: Ghost
-inky = Ghost Inky (14, 16) 0.125 NotEaten Up Stop Right False False False
+inky = Ghost Inky (14, 16) 0.125 NotEaten Up Stop Left False False False False
 
 clyde :: Ghost
-clyde = Ghost Clyde (15, 16) 0.125 NotEaten Up Stop Left False False False
+clyde = Ghost Clyde (15, 16) 0.125 NotEaten Up Stop Right False False False False
 
 defaultGhosts :: [Ghost]
 defaultGhosts = [blinky, pinky, inky, clyde]

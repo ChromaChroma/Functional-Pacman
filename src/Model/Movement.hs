@@ -42,7 +42,7 @@ class (Positioned a) => Collidable a where
     where
       checkPositions (ax, ay) (bx, by) = isWithinThreshhold ax bx && isWithinThreshhold ay by
       isWithinThreshhold z z' = abs (z - z') <= threshhold
-      threshhold = 0.1 -- 0.1 is a constant deviation from another collidable that would count as collision
+      threshhold = 0.3 -- 0.3 is a constant deviation from another collidable that would count as collision
 
 class (Positioned a) => Movable a where
   getSpeed :: a -> Speed
