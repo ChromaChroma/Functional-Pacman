@@ -173,7 +173,7 @@ checkMoveToIntersection gs gh
                   Stop -> (gX, gY)
     intersections = [ (a,b) | (a,b) <- (levelIntersections . level $ gs),
                               not (elem (a,b) [(c,d) | c <- [11..16], d <- [15..17]] ),
-                              not (elem (a,b) [(12,7), (15,7), (12,19), (15,19)] && G.direction gh /= Down )]
+                              not (elem (a,b) [(12,7), (15,7), (12,19), (15,19)] && G.direction gh /= Down && ghostMode gs /= Frightened )]
 -- ,not (elem (a,b) [(12,7), (15,7), (12,19), (15,19)] && G.direction gh /= Down )
                               -- above: if the ghost happens to be going to one of the non-intersection tiles (4 of them)
                               -- while moving up left or right, it will not see it as an intersection (moving down, it will)
@@ -187,7 +187,7 @@ onIntersectionTile gs gh = elem gTile intersections
 
     intersections = [ (a,b) | (a,b) <- (levelIntersections . level $ gs),
                               not (elem (a,b) [(c,d) | c <- [11..16], d <- [15..17]] ),
-                              not (elem (a,b) [(12,7), (15,7), (12,19), (15,19)] && elem (G.direction gh) [Left, Right] )]
+                              not (elem (a,b) [(12,7), (15,7), (12,19), (15,19)] && elem (G.direction gh) [Left, Right] && ghostMode gs /= Frightened)]
 -- ,not (elem (a,b) [(12,7), (15,7), (12,19), (15,19)] && elem (G.direction gh) [Left, Right] )
                               -- in case the ghost moves Up out of spawn, it won't "see" the intersection in advance, but once it's on,
                               --  moves to its predefined (from spawn) nextDirection.
