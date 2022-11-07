@@ -2,7 +2,7 @@ module Model.GhostAI where
 
 import Controller.MovementController
 import Data.Fixed (mod')
-import Data.Maybe (Maybe (..), catMaybes, fromJust, fromMaybe, isJust, isNothing)
+import Data.Maybe (Maybe (..), catMaybes, fromJust, fromMaybe, isJust, isNothing, mapMaybe)
 import Model.Game
 import Model.Ghosts as G
 import Model.Level
@@ -33,6 +33,11 @@ makeGhostMoveEv gs ghst
       Inky -> Right
       Clyde -> Right
 
+-- TODO make this work based on intersection besides the ghost door not a hard coded tile position
+-- Should remove the need for wellPossionedTarget field and guards: 
+-- -| gTile /= targetpoint || wellPositionedTarget ghst = makeGhostMove gs ghst --gaat op target tile vlakbij spawn af.
+-- -| otherwise = (makeGhostMove gs ghst) {G.position = gTilePos, G.direction = Down, opDirection = Up, wellPositionedTarget = True}
+--
     targetpoint = case name ghst of
       Blinky -> (13, 19)
       Pinky -> (13, 19)
@@ -74,35 +79,23 @@ checkMoveDirs gs gh =
   if gTile `elem` ([(u, 15) | u <- [13 .. 16]])
     then fromJust (makeDirectionMoveGhost gs gh (opDirection gh))
     else case length possiblemoves of
-      0 -> movedGhost {G.position = gPos, G.direction = opp (G.direction gh), opDirection = G.direction gh} -- turnAround {G.position = gTilePos, nextDirection = G.direction turnAround} --goes back if there's nothing else (dead end)
+      0 -> movedGhost {G.position = gPos, G.direction = opp (G.direction gh), opDirection = G.direction gh} -- turnAround {G.position = gTilePos, nextDirection = G.direction turnAround} --goes back if there's nothing else (dead end) -- turnAround = fromJust (makeDirectionMoveGhost gs gh (opDirection gh))
       _ -> pickFavDir {nextDirection = G.direction pickFavDir}
   where
     gTile = intPosition gPos
     gPos = getPosition gh
-    gTilePos = ghostTilePosition gh
-
-    turnAround = fromJust (makeDirectionMoveGhost gs gh (opDirection gh))
+    possiblemoves = mapMaybe (makeDirectionMoveGhost gs gh) $ filter (\x -> x /= opDirection gh) [Up, Left, Down, Right]
+    -- possiblemoves = catMaybes[ makeDirectionMoveGhost gs gh x | x <- filter (\x -> x /= opDirection gh) [Up, Left, Down, Right]] -- && x /= G.direction gh -- u = filter (\x -> x /= opDirection gh) [Up, Left, Down, Right] -- && x /= G.direction gh
     pickFavDir = head possiblemoves
-
-    possiblemoves =
-      catMaybes
-        [ makeDirectionMoveGhost gs gh x
-          | x <- filter (\x -> x /= opDirection gh) [Up, Left, Down, Right] -- && x /= G.direction gh
-        ]
-    -- u = filter (\x -> x /= opDirection gh) [Up, Left, Down, Right] -- && x /= G.direction gh
-    movedGhost = move gh (opDirection gh) (layoutSize . layout $ lvl)
-    lvl = level gs
+    movedGhost = move gh (opDirection gh) (layoutSize . layout . level $ gs)
 
 makeDirectionMoveGhost :: GameState -> Ghost -> Direction -> Maybe Ghost
 makeDirectionMoveGhost gs ghst dir
-  | canMoveInDir && isValidMovePosition = Just updatedGhost
+  | canMoveInDir && isValidMovePosition = Just $ movedGhost {G.direction = dir, opDirection = opp dir}
   | otherwise = Nothing
   where
     canMoveInDir = canMakeMoveToDirGhost gs ghst dir lvl
     isValidMovePosition = isValidGhostPosition lvl movedGhost
-
-    updatedGhost = movedGhost {G.direction = dir, opDirection = opp dir}
-
     movedGhost = move ghst dir (layoutSize . layout $ lvl)
     lvl = level gs
 
@@ -210,17 +203,13 @@ targetTileGhost gs gh
     Inky -> (14, 19)
     Clyde -> (14, 19)
   | otherwise = case ghostMode gs of
-    Scatter -> case name gh of
-      Blinky -> (27, 26)
-      Pinky -> (0, 26)
-      Inky -> (25, 0)
-      Clyde -> (2, 0)
+    Frightened -> fst $ randomTile (ranGen gs) gs
+    Scatter -> intPosition $ targetPoint gh
     Chasing -> case name gh of
       Blinky -> targetTileBlinky pTile
       Pinky -> targetTilePinky gs pTile
       Inky -> targetTileInky gs gh pTile
       Clyde -> targetTileClyde gh pTile
-    Frightened -> fst $ randomTile (ranGen gs) gs
   where
     pTile = intPosition . getPosition $ player gs --player tile position
 
@@ -287,8 +276,4 @@ targetTileClyde gh pt
 
 --Compute squared tile distance between two tiles
 sqTileDist :: (Int, Int) -> (Int, Int) -> Int
-sqTileDist (p1X, p1Y) (p2X, p2Y) =
-  xDif * xDif + yDif * yDif
-  where
-    xDif = p1X - p2X
-    yDif = p1Y - p2Y
+sqTileDist (p1X, p1Y) (p2X, p2Y) = (p1X - p2X) ^ 2 + p1X - (p1Y - p2Y) ^ 2
