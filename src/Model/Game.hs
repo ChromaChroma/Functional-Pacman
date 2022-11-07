@@ -12,6 +12,8 @@ module Model.Game
     checkFruitSpawning,
     loadNextLevel,
     addNewScore,
+    frightGen,
+    randomTile
   )
 where
 
@@ -189,7 +191,24 @@ spawnFruit gs = gs {level = lvl {items = fruit : items lvl}, ranGen = g}
         rPos = (fromIntegral x', fromIntegral y')
         (x', g') = randomR (0, x - 1) gen
         (y', g'') = randomR (0, y - 1) g'
+--------------------------------------------------------------------------------
+--functions to make the ghosts walk randomly when frightened:
 
+frightGen :: GameState -> GameState
+frightGen gs = gs {ranGen = g}
+  where
+    (_, g) = randomTile (ranGen gs) gs
+
+randomTile :: StdGen -> GameState -> ((Int, Int), StdGen)
+randomTile gen gs = (rTile, g'')
+  where
+    rTile = posToTile rPos
+    rPos = (fromIntegral x', fromIntegral y')
+    (x', g') = randomR (0, x - 1) gen
+    (y', g'') = randomR (0, y - 1) g'
+
+    (x, y) = layoutSize . layout $ lvl
+    lvl = level gs
 -------------------------------------------------------------------------------
 -- Default value functions
 -------------------------------------------------------------------------------

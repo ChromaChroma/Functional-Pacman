@@ -31,13 +31,13 @@ tick ms gs
     addElapsedTime gs = gs {elapsedTime = elapsedTime gs + ms, tickTimer = tickTimer gs + ms}
     checkGhostMode gs
       | frightenedTime gs >= frightenedDuration && (ghostMode gs == Frightened) = gs {ghostMode = Chasing, ghosts = speedGhostsUp (ghosts gs)} -- eerste keer als frightenedtime de duration voorbij is
-      | frightenedTime gs >= frightenedDuration && (ghostMode gs /= Frightened) = gs 
-      | frightenedTime gs < frightenedDuration = gs {frightenedTime = frightenedTime gs + ms}
+      | frightenedTime gs >= frightenedDuration && (ghostMode gs /= Frightened) = gs
+      | frightenedTime gs < frightenedDuration = frightGen gs {frightenedTime = frightenedTime gs + ms} --generate new seed every time
       | otherwise = gs
 
 checkLevelComplete :: GameState -> GameState
-checkLevelComplete gs 
-  | isLevelComplete . level $ gs = loadNextLevel gs 
+checkLevelComplete gs
+  | isLevelComplete . level $ gs = loadNextLevel gs
   | otherwise = gs
 
 updatePlayerMovement :: GameState -> GameState
@@ -78,8 +78,8 @@ quit gs = gs {status = GameOver}
 -- | Submit name for score
 submitScore :: String -> GameState -> IO GameState
 submitScore name gs
-  | status gs /= GameOver = return $ gs 
-  | otherwise = do 
-      let newGs = addNewScore name gs 
+  | status gs /= GameOver = return $ gs
+  | otherwise = do
+      let newGs = addNewScore name gs
       updateScores $ highScores newGs
       return $ newGs

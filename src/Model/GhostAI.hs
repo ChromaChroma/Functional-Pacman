@@ -12,7 +12,7 @@ import Model.Level
 import Model.Movement
 import Numeric (showFFloat)
 import Prelude hiding (Down, Left, Right, Up)
-
+-- import System.Random (Random (randomR), StdGen, newStdGen)
 
 
 import Controller.MovementController
@@ -77,9 +77,9 @@ make1GhostMove gs ghst
             True  -> movedGhostWithNextDir -- {checkedAtTile = gTile} -- here we create a ghost that knows its next direction
             False -> case isJust movedGhost of
                       True  ->  case (entersTunnel ghst gTile) && (isInTunnel ghst == False) of
-                        True -> slowGhostDownTunnel (fromJust movedGhost) {G.position = gTilePos, isInTunnel = True} -- {checkedAtTile = gTile} -- if ghost can only walk further
+                        True -> slowGhostDownTunnel (fromJust movedGhost) {isInTunnel = True} -- G.position = gTilePos,  {checkedAtTile = gTile} -- if ghost can only walk further
                         False -> case (leavesTunnel ghst gTile) && (isInTunnel ghst) of
-                          True -> speedGhostUpTunnel (fromJust movedGhost) {G.position = gTilePos, isInTunnel = False}
+                          True -> speedGhostUpTunnel (fromJust movedGhost) {isInTunnel = False} -- G.position = gTilePos,
                           False -> fromJust movedGhost
                       False ->  movedir --if ghost can only go one way (dead end or bend)
   where
@@ -105,11 +105,13 @@ checkMoveDirs gs gh
   = case elem gTile [(u,15) | u <- [13..16]] of --ghosts turn around if they go down from the spawn
       True -> fromJust (makeDirectionMoveGhost gs gh (opDirection gh))
       False -> case length possiblemoves of
-                0  -> turnAround {nextDirection = G.direction turnAround} --goes back if there's nothing else (dead end)
+                0  -> turnAround {G.position = gTilePos, nextDirection = G.direction turnAround} --goes back if there's nothing else (dead end)
                 _  -> pickFavDir {nextDirection = G.direction pickFavDir}
   where
+
     gPos = getPosition gh
     gTile = posToTile gPos
+    gTilePos = ghostTilePosition gh
 
     turnAround = fromJust (makeDirectionMoveGhost gs gh (opDirection gh))
     pickFavDir = head possiblemoves
@@ -230,7 +232,6 @@ leavesTunnel gh gt
 moveFrightenedGhost :: GameState -> Ghost -> Ghost
 moveFrightenedGhost = undefined
 
-
 --------------------------------------------------------------------------------
 --Scatter/Chase Mode:
 targetTileGhost :: GameState -> Ghost -> (Int, Int)
@@ -251,7 +252,7 @@ targetTileGhost gs gh = case isEaten gh of
                 Pinky -> targetTilePinky gs pTile
                 Inky -> targetTileInky gs gh pTile
                 Clyde -> targetTileClyde gh pTile
-    Frightened -> (0,0)
+    Frightened -> fst $ randomTile (ranGen gs) gs
   where
     pTile = posToTile pPos        --player tile
     pPos = getPosition (player gs) --player position
@@ -339,8 +340,8 @@ sqTileDist (p1X, p1Y) (p2X, p2Y)
 
 
 --TODO: ghosts om de beurt naar buiten laten lopen
+--TODO: punten voor ghosts opeten
 --TODO: alle functies die de snelheid van de ghosts doen veranderen -> ghost in het midden van de tile neerzetten
---TODO: GHOST RANDOM RONDLOPEN BIJ FRIGHTENED
 --TODO: AFWISSELING SCATTER/CHASING MODE
 
 
