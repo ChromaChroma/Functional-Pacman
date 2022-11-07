@@ -19,7 +19,8 @@ module Model.Ghosts
     slowGhostDownTunnel,
     speedGhostUpTunnel,
     posToTile,
-    ghostTilePosition
+    ghostTilePosition,
+    startGhostsAgain
   )
 where
 
@@ -47,8 +48,7 @@ data Ghost = Ghost
     isInTunnel :: Bool,
     goesBack :: Bool,
     wellPositioned :: Bool,
-    wellPositionedTarget :: Bool,
-    choseRandom :: Bool
+    wellPositionedTarget :: Bool
   }
   deriving (Eq)
 
@@ -123,6 +123,17 @@ speedGhostUpTunnel ghost = ghost {speed = 2 * (speed ghost)}
   where
     gTilePos = ghostTilePosition ghost
 
+--------------------------------------------------------------------------------
+--If player is killed:
+startGhostsAgain :: [Ghost] -> [Ghost]
+startGhostsAgain ghs = map start1GhostAgain ghs where
+  start1GhostAgain gh = case direction gh of
+                          Stop -> gh --ghost didn't go out of spawn yet
+                          _    -> case name gh of
+                                    Blinky -> gh {position = (13.0,19.0), direction = Right, opDirection = Left, nextDirection = Right}
+                                    Pinky  -> gh {position = (13.0,19.0), direction = Left, opDirection = Right, nextDirection = Left}
+                                    Inky   -> gh {position = (14.0,19.0), direction = Left, opDirection = Right, nextDirection = Left}
+                                    Clyde  -> gh {position = (14.0,19.0), direction = Right, opDirection = Left, nextDirection = Right}
 
 --------------------------------------------------------------------------------
 --Convert float coordinate to tile (int) coordinate
@@ -141,16 +152,16 @@ ghostTilePosition gh = gT
 
 -- | Default ghost constructors for each original ghost
 blinky :: Ghost
-blinky = Ghost Blinky (12, 16) 0.125 NotEaten Up Stop Right False False False False False--speed is 75%, player's is 80% (0.125)
+blinky = Ghost Blinky (12, 16) 0.125 NotEaten Up Stop Right False False False False--speed is 75%, player's is 80% (0.125)
 
 pinky :: Ghost
-pinky = Ghost Pinky (13, 16) 0.125 NotEaten Up Stop Left False False False False False
+pinky = Ghost Pinky (13, 16) 0.125 NotEaten Up Stop Left False False False False
 
 inky :: Ghost
-inky = Ghost Inky (14, 16) 0.125 NotEaten Up Stop Left False False False False False
+inky = Ghost Inky (14, 16) 0.125 NotEaten Up Stop Left False False False False
 
 clyde :: Ghost
-clyde = Ghost Clyde (15, 16) 0.125 NotEaten Up Stop Right False False False False False
+clyde = Ghost Clyde (15, 16) 0.125 NotEaten Up Stop Right False False False False
 
 defaultGhosts :: [Ghost]
 defaultGhosts = [blinky, pinky, inky, clyde]

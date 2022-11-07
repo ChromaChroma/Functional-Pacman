@@ -145,7 +145,7 @@ checkGhostCollisions gs = handleCollidingGhosts gs . filter (`collidesWithMovabl
       let p = player gs
           pLives = lives p
           verifyAlive gs = if isAlive pLives then gs else gs {status = GameOver}
-       in verifyAlive $ gs {player = (respawnPlayer p $ level gs) {lives = rmLife pLives}}
+       in verifyAlive $ gs {ghosts = startGhostsAgain (ghosts gs), player = (respawnPlayer p $ level gs) {lives = rmLife pLives}}
 
     eatGhost :: Ghost -> GameState -> GameState
     eatGhost g gs =

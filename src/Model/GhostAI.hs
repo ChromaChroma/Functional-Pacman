@@ -341,7 +341,6 @@ sqTileDist (p1X, p1Y) (p2X, p2Y)
 
 --TODO: ghosts om de beurt naar buiten laten lopen
 --TODO: punten voor ghosts opeten
---TODO: alle functies die de snelheid van de ghosts doen veranderen -> ghost in het midden van de tile neerzetten
 --TODO: AFWISSELING SCATTER/CHASING MODE
 
 
