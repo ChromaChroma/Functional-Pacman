@@ -105,7 +105,7 @@ checkMoveDirs gs gh
   = case elem gTile [(u,15) | u <- [13..16]] of --ghosts turn around if they go down from the spawn
       True -> fromJust (makeDirectionMoveGhost gs gh (opDirection gh))
       False -> case length possiblemoves of
-                0  -> turnAround {G.position = gTilePos, nextDirection = G.direction turnAround} --goes back if there's nothing else (dead end)
+                0  -> movedGhost {G.direction = opp (G.direction gh), opDirection = (G.direction gh)} -- turnAround {G.position = gTilePos, nextDirection = G.direction turnAround} --goes back if there's nothing else (dead end)
                 _  -> pickFavDir {nextDirection = G.direction pickFavDir}
   where
 
@@ -118,6 +118,9 @@ checkMoveDirs gs gh
 
     possiblemoves = map fromJust $ filter (isJust) [makeDirectionMoveGhost gs gh x | x <- u]
     u = filter (\x -> x /= opDirection gh) [Up,Left,Down,Right] -- && x /= G.direction gh
+
+    movedGhost = move gh (opDirection gh) (layoutSize . layout $ lvl)
+    lvl = level gs
 
 makeDirectionMoveGhost :: GameState -> Ghost -> Direction -> Maybe Ghost
 makeDirectionMoveGhost gs ghst dir
