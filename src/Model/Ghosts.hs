@@ -8,20 +8,19 @@ module Model.Ghosts
     collidesWithMovable,
     opp,
     turnGhostsAround,
-    startFrightened,
+    frightenGhosts,
     -- slowGhostsDown,
     speedGhostsUp,
     slowGhostDownTunnel,
     speedGhostUpTunnel,
-    posToTile,
     ghostTilePosition,
-    startGhostsAgain,
-    moveGhostsOutSpawn
+    respawnGhosts,
+    moveGhostsOutSpawn,
   )
 where
 
 import Model.Movement
-import Prelude hiding (Left, Right, Down, Up)
+import Prelude hiding (Down, Left, Right, Up)
 
 -------------------------------------------------------------------------------
 -- Data structures
@@ -74,91 +73,81 @@ isNotEaten = not . isEaten
 collidesWithMovable :: (Movable a, Collidable a) => Ghost -> a -> Bool
 collidesWithMovable ghost m = isNotEaten ghost && ghost `collides` m
 
-
 --Ghosts reverse direction both in scatter and chasing mode:
 
 --When changing to and from scatter mode:
 turnGhostsAround :: [Ghost] -> [Ghost]
-turnGhostsAround ghosts = map turn1GhostAround ghosts where
-  turn1GhostAround ghost = case isEaten ghost of
-    False -> ghost {direction = opp (direction ghost), opDirection = opp (opDirection ghost), nextDirection = opp (nextDirection ghost)}
-    True -> ghost --isEaten state: ghost doesn't turn around if eaten
+turnGhostsAround = map turn1GhostAround
+  where
+    turn1GhostAround ghost
+      | isEaten ghost = ghost
+      | otherwise = ghost {direction = opp (direction ghost), opDirection = opp (opDirection ghost), nextDirection = opp (nextDirection ghost)} --isEaten state: ghost doesn't turn around if eaten
 
 --This one is for frightened mode
-startFrightened :: [Ghost] -> [Ghost]
-startFrightened ghosts = map start1Frightened ghosts where
-  start1Frightened ghost = case isEaten ghost of
-    False -> case isInTunnel ghost of
-      False -> ghost {speed = 0.08, direction = opp (direction ghost), opDirection = opp (opDirection ghost), nextDirection = opp (nextDirection ghost)} --position = gTilePos,
-      True -> ghost {speed = 0.04, direction = opp (direction ghost), opDirection = opp (opDirection ghost)} --position = gTilePos,
-    True -> ghost --isEaten state: ghost doesn't turn around & slow down if eaten
-    where
-      gTilePos = ghostTilePosition ghost
+frightenGhosts :: [Ghost] -> [Ghost]
+frightenGhosts = map start1Frightened
+  where
+    start1Frightened ghost
+      | isEaten ghost = ghost
+      | isInTunnel ghost = ghost {speed = 0.04, direction = opp (direction ghost), opDirection = opp (opDirection ghost)} --position = gTilePos,
+      | otherwise = ghost {speed = 0.08, direction = opp (direction ghost), opDirection = opp (opDirection ghost), nextDirection = opp (nextDirection ghost)} --position = gTilePos,
 
 -- slowGhostsDown :: [Ghost] -> [Ghost]
--- slowGhostsDown ghosts = map slow1GhostDown ghosts where
---   slow1GhostDown ghost = ghost {speed = 0.08}
+-- slowGhostsDown = map slow1GhostDown 
+--   where
+--     slow1GhostDown ghost = ghost {speed = 0.08}
 
 speedGhostsUp :: [Ghost] -> [Ghost]
-speedGhostsUp ghosts = map speed1GhostUp ghosts where
-  speed1GhostUp ghost = case isEaten ghost of
-    False -> case isInTunnel ghost of
-      False -> ghost {speed = 0.125} --position = gTilePos,
-      True  -> ghost {speed = 0.125/2} --position = gTilePos,
-    True  -> ghost
-    where
-      gTilePos = ghostTilePosition ghost
+speedGhostsUp = map speed1GhostUp
+  where
+    speed1GhostUp ghost
+      | isEaten ghost = ghost
+      | isInTunnel ghost = ghost {speed = 0.125 / 2}
+      | otherwise = ghost {speed = 0.125}
 
 slowGhostDownTunnel :: Ghost -> Ghost
-slowGhostDownTunnel ghost = case isEaten ghost of
-  True  -> ghost
-  False -> ghost {speed = 1/2 * (speed ghost)}
-  where
-    gTilePos = ghostTilePosition ghost
+slowGhostDownTunnel ghost
+  | isEaten ghost = ghost
+  | otherwise = ghost {speed = 0.5 * speed ghost}
 
 speedGhostUpTunnel :: Ghost -> Ghost
-speedGhostUpTunnel ghost = case isEaten ghost of
-  True  -> ghost
-  False -> ghost {speed = 2 * (speed ghost)}
-  where
-    gTilePos = ghostTilePosition ghost
+speedGhostUpTunnel ghost
+  | isEaten ghost = ghost
+  | otherwise = ghost {speed = 2 * speed ghost}
 
 --------------------------------------------------------------------------------
 --If player is killed:
-startGhostsAgain :: [Ghost] -> [Ghost]
-startGhostsAgain ghs = map start1GhostAgain ghs where
-  start1GhostAgain gh = case direction gh of
-                          Stop -> gh --ghost didn't go out of spawn yet
-                          _    -> case name gh of
-                                    Blinky -> gh {position = (13.0,19.0), direction = Right, opDirection = Left, nextDirection = Right}
-                                    Pinky  -> gh {position = (13.0,19.0), direction = Left, opDirection = Right, nextDirection = Left}
-                                    Inky   -> gh {position = (14.0,19.0), direction = Left, opDirection = Right, nextDirection = Left}
-                                    Clyde  -> gh {position = (14.0,19.0), direction = Right, opDirection = Left, nextDirection = Right}
+respawnGhosts :: [Ghost] -> [Ghost]
+respawnGhosts = map respawnGhosts
+  where
+    respawnGhosts gh = case direction gh of
+      Stop -> gh --ghost didn't go out of spawn yet
+      _ -> case name gh of
+        Blinky -> gh {position = (13.0, 19.0), direction = Right, opDirection = Left, nextDirection = Right}
+        Pinky -> gh {position = (13.0, 19.0), direction = Left, opDirection = Right, nextDirection = Left}
+        Inky -> gh {position = (14.0, 19.0), direction = Left, opDirection = Right, nextDirection = Left}
+        Clyde -> gh {position = (14.0, 19.0), direction = Right, opDirection = Left, nextDirection = Right}
 
 --------------------------------------------------------------------------------
 
 moveGhostsOutSpawn :: Int -> [Ghost] -> [Ghost]
-moveGhostsOutSpawn dots ghs = map move1GhostOutSpawn ghs where
-  move1GhostOutSpawn gh = case direction gh of
-    Stop -> case name gh of
-      Blinky -> if dots <= 241 then moveUp else gh
-      Pinky  -> if dots <= 239 then moveUp else gh
-      Inky   -> if dots < 210 then moveUp else gh
-      Clyde  -> if dots < 150 then moveUp else gh
-    _    -> gh
-    where
-      moveUp = gh {direction = Up, opDirection = Down}
-
-
+moveGhostsOutSpawn dots = map move1GhostOutSpawn
+  where
+    move1GhostOutSpawn gh = case direction gh of
+      Stop -> case name gh of
+        Blinky -> if dots <= 241 then moveUp else gh
+        Pinky -> if dots <= 239 then moveUp else gh
+        Inky -> if dots < 210 then moveUp else gh
+        Clyde -> if dots < 150 then moveUp else gh
+      _ -> gh
+      where
+        moveUp = gh {direction = Up, opDirection = Down}
 
 --------------------------------------------------------------------------------
---Convert float coordinate to tile (int) coordinate
-posToTile :: Position -> (Int, Int)
-posToTile (x, y) = (round x, round y)
+-- Helper Function
+--------------------------------------------------------------------------------
 
 ghostTilePosition :: Ghost -> Position
-ghostTilePosition gh = gT
+ghostTilePosition gh = (fromIntegral gX, fromIntegral gY)
   where
-    gT = (fromIntegral gX, fromIntegral gY)
-    (gX, gY) = posToTile (getPosition gh)
-
+    (gX, gY) = intPosition (getPosition gh)
