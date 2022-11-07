@@ -25,15 +25,33 @@ tick ms gs
       . updateGhosts
       . updatePlayerMovement
       $ gs
-  | status gs == Active = checkGhostMode . addElapsedTime $ gs
+  | status gs == Active = checkScatterMode . checkFrightMode . addElapsedTime $ gs
   | otherwise = gs
   where
     addElapsedTime gs = gs {elapsedTime = elapsedTime gs + ms, tickTimer = tickTimer gs + ms}
-    checkGhostMode gs
-      | frightenedTime gs >= frightenedDuration && (ghostMode gs == Frightened) = gs {ghostMode = Chasing, ghosts = speedGhostsUp (ghosts gs)} -- eerste keer als frightenedtime de duration voorbij is
+
+    checkFrightMode :: GameState -> GameState
+    checkFrightMode gs
+      | frightenedTime gs >= frightenedDuration && (ghostMode gs == Frightened) = gs {ghostMode = prevGM gs, ghosts = speedGhostsUp (ghosts gs)} -- eerste keer als frightenedtime de duration voorbij is
       | frightenedTime gs >= frightenedDuration && (ghostMode gs /= Frightened) = gs
       | frightenedTime gs < frightenedDuration = frightGen gs {frightenedTime = frightenedTime gs + ms} --generate new seed every time
       | otherwise = gs
+
+    checkScatterMode :: GameState -> GameState
+    checkScatterMode gs =
+      case ghostMode gs of
+        Scatter -> case (scatterTime gs >= scatterDuration) of
+                    True  -> gs {ghostMode = Chasing, ghosts = turnGhostsAround (ghosts gs), scatterTime = 0}
+                    False -> gs {scatterTime = scatterTime gs + ms}
+        Chasing -> case (scatterTime gs >= chaseDuration) of
+                    True  -> gs {ghostMode = Scatter, ghosts = turnGhostsAround (ghosts gs), scatterTime = 0}
+                    False -> gs {scatterTime = scatterTime gs + ms}
+        Frightened -> gs
+      where
+        scatterDuration = 7000
+        chaseDuration = 20000
+
+--------------------------------------------------------------------------------
 
 checkLevelComplete :: GameState -> GameState
 checkLevelComplete gs
