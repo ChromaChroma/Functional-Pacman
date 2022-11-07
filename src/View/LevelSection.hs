@@ -121,7 +121,8 @@ rotPicture r = rotate ((fromIntegral $ fromEnum r) * 90)
 renderTile :: TileTextures -> TextureTile -> Maybe Picture
 renderTile tTextures tTile = case tTile of
   None -> Nothing
-  SurroundedWall -> Just $ surroundedWall tTextures
+  -- SurroundedWall -> Just $ surroundedWall tTextures
+  SurroundedWall -> Just blank
   Straight rot -> Just (rotPicture rot $ straight tTextures)
   StraightSingle rot -> Just (rotPicture rot $ straightSingle tTextures)
   Corner rot -> Just (rotPicture rot $ corner tTextures)
