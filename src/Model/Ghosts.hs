@@ -43,7 +43,9 @@ data Ghost = Ghost
     nextDirection :: Direction,
     isInTunnel :: Bool,
     goesBack :: Bool,
-    wellPositionedTarget :: Bool
+    wellPositionedTarget :: Bool,
+    spawnPoint :: Position,
+    targetPoint :: Position
   }
   deriving (Eq)
 
