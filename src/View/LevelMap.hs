@@ -139,7 +139,8 @@ mkPatternSet :: WallNeighbors -> Int -> Mirrored -> [Pattern]
 mkPatternSet wn amntRotations m
   | amntRotations > 4 = error "amntRotations cannot be larger than 4"
   | amntRotations < 0 = error "amntRotations cannot be smaller than 0"
-  | otherwise = let func n (nextPattern, acc) = (rotR nextPattern, Pattern nextPattern (toEnum n) m : acc)
+  | otherwise =
+    let func n (nextPattern, acc) = (rotR nextPattern, Pattern nextPattern (toEnum n) m : acc)
      in snd $ foldr func (wn, []) [0 .. amntRotations]
 
 --------------------
@@ -216,10 +217,15 @@ surroundedWallFloors =
   ▊◯◯
   ▊▊▊
   ▊▊▊
+
+  Straight ending path Cases: Rotations (4)
+  ▊◯▊
+  ▊▊▊
+  ▊▊▊
 -}
 
 isStraightTextureTile :: WallNeighbors -> Maybe Pattern
-isStraightTextureTile wn = match wn (fullSideFloors ++ cornerAndSideFloors)
+isStraightTextureTile wn = match wn (fullSideFloors ++ cornerAndSideFloors ++ straightEndingPathFloors)
 
 fullSideFloors =
   rotatedSet $
@@ -233,6 +239,14 @@ cornerAndSideFloors =
   completeSet $
     Layout
       [ [Unreachable, Reachable, Reachable],
+        [Unreachable, Unreachable, Unreachable],
+        [Unreachable, Unreachable, Unreachable]
+      ]
+
+straightEndingPathFloors =
+  rotatedSet $
+    Layout
+      [ [Unreachable, Reachable, Unreachable],
         [Unreachable, Unreachable, Unreachable],
         [Unreachable, Unreachable, Unreachable]
       ]
@@ -300,9 +314,9 @@ fullBothSidesFloors =
 opositeCornerAndSideFloors =
   completeHalfSet $
     Layout
-      [ [Reachable, Unreachable, Unreachable],
-        [Reachable, Unreachable, Reachable],
-        [Unreachable, Unreachable, Reachable]
+      [ [Unreachable, Reachable, Reachable],
+        [Unreachable, Unreachable, Unreachable],
+        [Reachable, Reachable, Unreachable]
       ]
 
 sameSideCornerAndSideFloors =
