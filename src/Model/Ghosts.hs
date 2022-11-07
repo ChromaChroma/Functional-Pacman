@@ -114,12 +114,16 @@ speedGhostsUp ghosts = map speed1GhostUp ghosts where
       gTilePos = ghostTilePosition ghost
 
 slowGhostDownTunnel :: Ghost -> Ghost
-slowGhostDownTunnel ghost = ghost {speed = 1/2 * (speed ghost)}
+slowGhostDownTunnel ghost = case isEaten ghost of
+  True  -> ghost
+  False -> ghost {speed = 1/2 * (speed ghost)}
   where
     gTilePos = ghostTilePosition ghost
 
 speedGhostUpTunnel :: Ghost -> Ghost
-speedGhostUpTunnel ghost = ghost {speed = 2 * (speed ghost)}
+speedGhostUpTunnel ghost = case isEaten ghost of
+  True  -> ghost
+  False -> ghost {speed = 2 * (speed ghost)}
   where
     gTilePos = ghostTilePosition ghost
 

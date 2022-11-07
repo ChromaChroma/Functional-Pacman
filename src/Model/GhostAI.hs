@@ -17,12 +17,15 @@ import Prelude hiding (Down, Left, Right, Up)
 
 import Controller.MovementController
 
------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
 
 makeGhostsMove :: GameState -> GameState
 makeGhostsMove gs = gs {ghosts = map (make1GhostMoveEv gs) (ghosts gs)}
 
---Ghost isEaten:
+
+-------------------------------------------------------------------------------
+--Check ghost isEaten:
+
 make1GhostMoveEv :: GameState -> Ghost -> Ghost
 make1GhostMoveEv gs ghst
   = case (isEaten ghst) of
@@ -53,14 +56,9 @@ make1GhostMoveEv gs ghst
       Inky   -> Right
       Clyde  -> Right
 
-
     gTilePos = ghostTilePosition ghst
     gTile@(gtX, gtY) = posToTile gPos
     gPos  = getPosition ghst
-
-    -- case ghostMode gs of
-    --     Frightened -> moveFrightenedGhost --NOG SCHRIJVEN!!!!!!!!
-    --     _          ->
 
 
 
@@ -105,7 +103,7 @@ checkMoveDirs gs gh
   = case elem gTile [(u,15) | u <- [13..16]] of --ghosts turn around if they go down from the spawn
       True -> fromJust (makeDirectionMoveGhost gs gh (opDirection gh))
       False -> case length possiblemoves of
-                0  -> movedGhost {G.direction = opp (G.direction gh), opDirection = (G.direction gh)} -- turnAround {G.position = gTilePos, nextDirection = G.direction turnAround} --goes back if there's nothing else (dead end)
+                0  -> movedGhost {G.position = gPos, G.direction = opp (G.direction gh), opDirection = (G.direction gh)} -- turnAround {G.position = gTilePos, nextDirection = G.direction turnAround} --goes back if there's nothing else (dead end)
                 _  -> pickFavDir {nextDirection = G.direction pickFavDir}
   where
 
@@ -228,13 +226,6 @@ leavesTunnel gh gt
   | (gt == (4,16) && G.direction gh == Right) || (gt == (23,16) && G.direction gh == Left) = True
   | otherwise = False
 
-
---------------------------------------------------------------------------------
---Frightened Mode:
-
-moveFrightenedGhost :: GameState -> Ghost -> Ghost
-moveFrightenedGhost = undefined
-
 --------------------------------------------------------------------------------
 --Scatter/Chase Mode:
 targetTileGhost :: GameState -> Ghost -> (Int, Int)
@@ -260,9 +251,6 @@ targetTileGhost gs gh = case isEaten gh of
     pTile = posToTile pPos        --player tile
     pPos = getPosition (player gs) --player position
 
-
---For next functions: out-of-bounds (for example, negative) target tiles
--- allowed (pac man moving to outside etc.)!
 
 --targetTileBlinky takes player tile and returns target tile:
 targetTileBlinky :: (Int, Int) -> (Int, Int)
@@ -337,9 +325,6 @@ sqTileDist (p1X, p1Y) (p2X, p2Y)
     yDif = p1Y - p2Y
 
 
-
---TODO: ghosts om de beurt naar buiten laten lopen
---TODO: AFWISSELING SCATTER/CHASING MODE
 
 
 
