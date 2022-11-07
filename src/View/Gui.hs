@@ -72,15 +72,14 @@ drawingFunc ts = return $ pictures (renders : [renderOverlay gs (textBuffer ts)]
     gs = gameState ts
     t = textures ts
     renders =
-      pictures
-        [ fromBottomLeft $
-            pictures
-              [ renderLevelSection (isDebug ts) t gs ,
-                renderInfoSection t gs,
-                renderDebug (isDebug ts) gs ,
-                drawButton (head $ buttons ts)
-              ]
-        ]
+      fromBottomLeft $
+        pictures
+          [ renderLevelSection (isDebug ts) t gs,
+            renderInfoSection t gs,
+            renderDebug (isDebug ts) gs,
+            drawButton (head $ buttons ts)
+          ]
+
     (x, y) = windowSize
     x' = - fromIntegral (x `div` 2) + tileSize / 2
     y' = - fromIntegral (y `div` 2) + tileSize / 2
@@ -105,33 +104,36 @@ scoreInputHandler :: Event -> TotalState -> IO TotalState
 scoreInputHandler (EventKey (Char keyCharacter) Down _ _) ts = return $ ts {textBuffer = textBuffer ts ++ [keyCharacter]}
 scoreInputHandler (EventKey (SpecialKey KeyDelete) Down _ _) ts = return $ ts {textBuffer = safeInit (textBuffer ts)}
 scoreInputHandler (EventKey (SpecialKey KeyEnter) Down _ _) ts =
-  if (length $ textBuffer ts) > 0
+  if not (null (textBuffer ts))
     then do
-      newGs <- submitScore (textBuffer ts) (gameState ts)
+      newGs <- handle (SubmitScore (textBuffer ts)) (gameState ts)
       return $ ts {textBuffer = "", gameState = reset newGs}
-    else return $ ts
-scoreInputHandler _ ts = return $ ts
+    else return ts
+scoreInputHandler _ ts = return ts
 
--- | Movement with arrow keys
+-- | Game input handling
 gameInputHandler :: Event -> TotalState -> IO TotalState
-gameInputHandler (EventKey (SpecialKey KeyUp) Down _ _) ts = return $ ts {gameState = movePlayer M.Up (gameState ts)}
-gameInputHandler (EventKey (SpecialKey KeyDown) Down _ _) ts = return $ ts {gameState = movePlayer M.Down (gameState ts)}
-gameInputHandler (EventKey (SpecialKey KeyRight) Down _ _) ts = return $ ts {gameState = movePlayer M.Right (gameState ts)}
-gameInputHandler (EventKey (SpecialKey KeyLeft) Down _ _) ts = return $ ts {gameState = movePlayer M.Left (gameState ts)}
-gameInputHandler (EventKey (Char 'w') Down _ _) ts = return $ ts {gameState = movePlayer M.Up (gameState ts)}
-gameInputHandler (EventKey (Char 's') Down _ _) ts = return $ ts {gameState = movePlayer M.Down (gameState ts)}
-gameInputHandler (EventKey (Char 'd') Down _ _) ts = return $ ts {gameState = movePlayer M.Right (gameState ts)}
-gameInputHandler (EventKey (Char 'a') Down _ _) ts = return $ ts {gameState = movePlayer M.Left (gameState ts)}
-gameInputHandler (EventKey (Char 'p') Down _ _) ts = return $ ts {gameState = pause (gameState ts)}
-gameInputHandler (EventKey (Char 'r') Down _ _) ts = return $ ts {gameState = resume (gameState ts)}
-gameInputHandler (EventKey (Char 'q') Down _ _) ts = return $ ts {gameState = quit (gameState ts)}
+gameInputHandler (EventKey (SpecialKey KeyUp) Down _ _) ts = handle (Move M.Up) (gameState ts) >>= setGameStateIO ts
+gameInputHandler (EventKey (SpecialKey KeyDown) Down _ _) ts = handle (Move M.Down) (gameState ts) >>= setGameStateIO ts
+gameInputHandler (EventKey (SpecialKey KeyRight) Down _ _) ts = handle (Move M.Down) (gameState ts) >>= setGameStateIO ts
+gameInputHandler (EventKey (SpecialKey KeyLeft) Down _ _) ts = handle (Move M.Left) (gameState ts) >>= setGameStateIO ts
+gameInputHandler (EventKey (Char 'w') Down _ _) ts = handle (Move M.Up) (gameState ts) >>= setGameStateIO ts
+gameInputHandler (EventKey (Char 's') Down _ _) ts = handle (Move M.Down) (gameState ts) >>= setGameStateIO ts
+gameInputHandler (EventKey (Char 'd') Down _ _) ts = handle (Move M.Down) (gameState ts) >>= setGameStateIO ts
+gameInputHandler (EventKey (Char 'a') Down _ _) ts = handle (Move M.Left) (gameState ts) >>= setGameStateIO ts
+gameInputHandler (EventKey (Char 'p') Down _ _) ts = handle Pause (gameState ts) >>= setGameStateIO ts
+gameInputHandler (EventKey (Char 'r') Down _ _) ts = handle Resume (gameState ts) >>= setGameStateIO ts
+gameInputHandler (EventKey (Char 'q') Down _ _) ts = handle Quit (gameState ts) >>= setGameStateIO ts
 gameInputHandler (EventKey (MouseButton LeftButton) Down _ (xPos, yPos)) ts = checkButtonClick (offsetScreenSize (xPos, yPos)) ts
-gameInputHandler _ ts = return $ ts
+gameInputHandler _ ts = return ts
+
+setGameStateIO :: TotalState -> GameState -> IO TotalState
+setGameStateIO ts gs = return ts {gameState = gs}
 
 offsetScreenSize :: (Float, Float) -> (Float, Float)
 offsetScreenSize (x, y) =
   let (w, h) = windowSize
-      (w', h') = (fromIntegral $ (w `div` 2), fromIntegral $ (h `div` 2))
+      (w', h') = (fromIntegral (w `div` 2), fromIntegral (h `div` 2))
    in (w' + x, h' + y)
 
 -- | Update function ran each iteration
@@ -155,15 +157,15 @@ mkDebugButton =
         { position = (w' / 2 - bw / 2, h' - bh - 20),
           size = (bw, bh),
           label = "Toggle Debug ",
-          action = \ts -> return $ ts {isDebug = (not $ isDebug ts)}
+          action = \ts -> return $ ts {isDebug = not $ isDebug ts}
         }
 
 checkButtonClick :: (Float, Float) -> TotalState -> IO TotalState
 checkButtonClick pos ts = foldActions ts (buttons ts)
   where
     foldActions :: TotalState -> [Button TotalState] -> IO TotalState
-    foldActions ts [] = return $ ts
+    foldActions ts [] = return ts
     foldActions ts (btn : btns) =
       if not $ isClicked btn pos
-        then return $ ts
+        then return ts
         else click btn ts >>= flip foldActions btns

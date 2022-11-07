@@ -75,35 +75,34 @@ tick ms gs
 
 --------------------------------------------------------------------------------
 
--- |
--- | Game Input functions
--- |
+data Action
+  = Move Direction
+  | Pause
+  | Resume
+  | Quit
+  | SubmitScore String
+  deriving (Eq, Show)
 
--- | Change player's direction / stop
-movePlayer :: Direction -> GameState -> GameState
-movePlayer dir gs = gs {player = (player gs) {bufDirection = dir}}
+handle :: Action -> GameState -> IO GameState
+handle action gs = case action of
+  Move dir -> return $ gs {player = (player gs) {bufDirection = dir}}
+  Pause -> return $ pause gs
+  Resume -> return $ resume gs
+  Quit -> return $ gs {status = GameOver}
+  SubmitScore name -> submitScore name gs 
+  where
+    pause gs
+      | status gs == Active = gs {status = Paused}
+      | otherwise = gs
 
---  Pause the game
-pause :: GameState -> GameState
-pause gs
-  | status gs == Active = gs {status = Paused}
-  | otherwise = gs
+    resume gs
+      | status gs == Paused = gs {status = Active}
+      | otherwise = gs
 
--- | Resume the game
-resume :: GameState -> GameState
-resume gs
-  | status gs == Paused = gs {status = Active}
-  | otherwise = gs
-
--- | End the game (forfeiting the current game)
-quit :: GameState -> GameState
-quit gs = gs {status = GameOver}
-
--- | Submit name for score
-submitScore :: String -> GameState -> IO GameState
-submitScore name gs
-  | status gs /= GameOver = return $ gs
-  | otherwise = do
-    let newGs = addScore name gs
-    updateScores $ highScores newGs
-    return $ newGs
+    submitScore :: String -> GameState -> IO GameState
+    submitScore name gs
+      | status gs /= GameOver = return gs
+      | otherwise = do
+        let newGs = addScore name gs
+        updateScores $ highScores newGs
+        return newGs
