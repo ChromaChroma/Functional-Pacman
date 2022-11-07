@@ -17,26 +17,67 @@ import Prelude hiding (Down, Left, Right, Up)
 
 import Controller.MovementController
 
-
-
-
-
-
 -----------------------------------------------------------------------------
 
 makeGhostsMove :: GameState -> GameState
-makeGhostsMove gs = gs {ghosts = map (make1GhostMove gs) (ghosts gs)}
+makeGhostsMove gs = gs {ghosts = map (make1GhostMoveEv gs) (ghosts gs)}
+
+make1GhostMoveEv :: GameState -> Ghost -> Ghost
+make1GhostMoveEv gs ghst
+  = case (isEaten ghst) of
+  True -> case (goesBack ghst == False) of
+    True -> (make1GhostMove gs ghst) {G.position = gTilePos, G.speed = (1/6), goesBack = True} --start to bring ghost back to spawn
+    False -> case (gTile == spawnpoint) of
+      True -> (make1GhostMove gs ghst) {G.position = gTilePos, eatenState = NotEaten, G.speed = 0.125, G.direction = Up, opDirection = Down, nextDirection = Right, goesBack = False, wellPositionedTarget = False}
+      False -> case (gTile == targetpoint) && (wellPositionedTarget ghst == False) of
+        True -> (make1GhostMove gs ghst) {G.position = gTilePos, G.direction = Down, opDirection = Up, wellPositionedTarget = True}
+        False -> make1GhostMove gs ghst --gaat op target tile vlakbij spawn af.
+  False -> make1GhostMove gs ghst
+  where
+    targetpoint = case name ghst of
+      Blinky -> (13,19)
+      Pinky  -> (13,19)
+      Inky   -> (14,19)
+      Clyde  -> (14,19)
+
+    spawnpoint = case name ghst of
+      Blinky -> (13,16)
+      Pinky  -> (13,16)
+      Inky   -> (14,16)
+      Clyde  -> (14,16)
+
+    nextDir = case name ghst of
+      Blinky -> Left
+      Pinky  -> Left
+      Inky   -> Right
+      Clyde  -> Right
+
+
+    gTilePos = (fromIntegral gtX, fromIntegral gtY)
+    gTile@(gtX, gtY) = posToTile gPos
+    gPos  = getPosition ghst
+
+    -- case ghostMode gs of
+    --     Frightened -> moveFrightenedGhost --NOG SCHRIJVEN!!!!!!!!
+    --     _          ->
+
+
 
 
 make1GhostMove :: GameState -> Ghost -> Ghost
-make1GhostMove gs ghst = case onIntersectionTile gs ghst of --hiervoor: check case ghostMode (frightened : fMovedGhost ofzo; otherwise: check on intersection tile + rest)
-  True -> case isJust bufMovedGhost of
+make1GhostMove gs ghst
+  = case onIntersectionTile gs ghst of --hiervoor: check case ghostMode (frightened : fMovedGhost ofzo; otherwise: check on intersection tile + rest)
+        True -> case isJust bufMovedGhost of
             True -> fromJust bufMovedGhost
             False -> fromJust movedGhost
-  False -> case (isJust nextintersect) of -- voor snelheid: (checkedAtTile ghst /= gTile) &&  -- if we didn't check the next tile already, only then we check intersection
-            True  -> movedGhostWithNextDir {checkedAtTile = gTile} -- hier de nextDirection van de ghost instellen
+        False -> case (isJust nextintersect) of -- voor snelheid: (checkedAtTile ghst /= gTile) &&  -- if we didn't check the next tile already, only then we check intersection
+            True  -> movedGhostWithNextDir -- {checkedAtTile = gTile} -- here we create a ghost that knows its next direction
             False -> case isJust movedGhost of
-                      True  ->  (fromJust movedGhost) {checkedAtTile = gTile} -- if ghost can only walk further
+                      True  ->  case (entersTunnel ghst gTile) && (isInTunnel ghst == False) of
+                        True -> slowGhostDownTunnel (fromJust movedGhost) {G.position = gTilePos, isInTunnel = True} -- {checkedAtTile = gTile} -- if ghost can only walk further
+                        False -> case (leavesTunnel ghst gTile) && (isInTunnel ghst) of
+                          True -> speedGhostUpTunnel (fromJust movedGhost) {G.position = gTilePos, isInTunnel = False}
+                          False -> fromJust movedGhost
                       False ->  movedir --if ghost can only go one way (dead end or bend)
   where
     movedir = checkMoveDirs gs ghst --if ghost meets a wall (which is no intersection)
@@ -49,7 +90,8 @@ make1GhostMove gs ghst = case onIntersectionTile gs ghst of --hiervoor: check ca
     --nextdir returns next direction of ghost at the following intersection:
     nextdir = chooseAtIntersection gs ghst (fromJust nextintersect)
 
-    gTile = posToTile gPos
+    gTilePos = (fromIntegral gtX, fromIntegral gtY)
+    gTile@(gtX, gtY) = posToTile gPos
     gPos  = getPosition ghst
 
 --------------------------------------------------------------------------------
@@ -76,7 +118,7 @@ makeDirectionMoveGhost gs ghst dir
   | otherwise = Nothing
   where
     canMoveInDir = canMakeMoveToDirGhost gs ghst dir lvl
-    isValidMovePosition = isValidGhostPosition (ghostMode gs) lvl movedGhost
+    isValidMovePosition = isValidGhostPosition lvl movedGhost
 
     updatedGhost = movedGhost {G.direction = dir, opDirection = opp dir}
 
@@ -93,12 +135,12 @@ canMakeMoveToDirGhost gs gh dir lvl
     Stop -> True
   | otherwise = False
   where
-    isValid = isValidGhostPosition (ghostMode gs) lvl (moveFull gh dir)
+    isValid = isValidGhostPosition lvl (moveFull gh dir)
     (x, y) = getPosition gh
 
 -- | Checks if the ghost is in a valid position on the level
-isValidGhostPosition :: GhostMode -> Level -> Ghost -> Bool
-isValidGhostPosition gm lvl gh = isValidMovablePosition (`elem` validTiles) lvl gh
+isValidGhostPosition :: Level -> Ghost -> Bool
+isValidGhostPosition lvl gh = isValidMovablePosition (`elem` validTiles) lvl gh
   where
     validTiles = case G.direction gh of
       Up -> [Floor, GhostDoor Open, GhostDoor Closed]
@@ -153,7 +195,7 @@ chooseAtIntersection gs gh (iX, iY) = bestDir
     posDirections = [d | d <- allDirections, d /= opDir, isFloor d]
     distances = [sqTileDist (tileAfter d) target | d <- allDirections, d /= opDir, isFloor d]
 
-    isFloor dir = tileAtW (level gs) (tileAfter dir) == Floor
+    isFloor dir = tileAtW (level gs) (tileAfter dir) `elem` [Floor, GhostDoor Open]
 
     tileAfter dir = case dir of --tiles to go to from intersection
                       Up    -> (iX, iY + 1)
@@ -164,22 +206,55 @@ chooseAtIntersection gs gh (iX, iY) = bestDir
     allDirections = [Up, Down, Left, Right]
     opDir = opDirection gh --opposite direction of ghost
     target = targetTileGhost gs gh --target tile of ghost
-
 --------------------------------------------------------------------------------
 
+entersTunnel :: Ghost -> (Int, Int) -> Bool
+entersTunnel gh gt
+  | (gt == (5,16) && G.direction gh == Left) || (gt == (22,16) && G.direction gh == Right) = True
+  | otherwise = False
+
+leavesTunnel :: Ghost -> (Int, Int) -> Bool
+leavesTunnel gh gt
+  | (gt == (4,16) && G.direction gh == Right) || (gt == (23,16) && G.direction gh == Left) = True
+  | otherwise = False
+
+--------------------------------------------------------------------------------
+--Ghost isEaten:
+
+bringGhostBack :: GameState -> Ghost -> Ghost
+bringGhostBack gs gh = undefined
+
+
+
+
+--------------------------------------------------------------------------------
+--Frightened Mode:
+
+moveFrightenedGhost :: GameState -> Ghost -> Ghost
+moveFrightenedGhost = undefined
+
+
+--------------------------------------------------------------------------------
+--Scatter/Chase Mode:
 targetTileGhost :: GameState -> Ghost -> (Int, Int)
-targetTileGhost gs gh = case ghostMode gs of
-  Scatter -> case name gh of
-              Blinky -> (25,30)
-              Pinky  -> (2,30)
-              Inky   -> (25,0)
-              Clyde  -> (2,0)
-  Chasing -> case name gh of
-              Blinky -> targetTileBlinky pTile
-              Pinky -> targetTilePinky gs pTile
-              Inky -> targetTileInky gs gh pTile
-              Clyde -> targetTileClyde gh pTile
-  Frightened -> (0,0)
+targetTileGhost gs gh = case isEaten gh of
+  True -> case name gh of
+            Blinky -> (12,19)
+            Pinky  -> (13,19)
+            Inky   -> (14,19)
+            Clyde  -> (15,19)
+  False -> case ghostMode gs of
+    Scatter -> case name gh of
+                Blinky -> (25,30)
+                Pinky  -> (2,30)
+                Inky   -> (25,0)
+                Clyde  -> (2,0)
+    Chasing -> case name gh of
+                Blinky -> targetTileBlinky pTile
+                Pinky -> targetTilePinky gs pTile
+                Inky -> targetTileInky gs gh pTile
+                Clyde -> targetTileClyde gh pTile
+    Frightened -> (0,0)
   where
     pTile = posToTile pPos        --player tile
     pPos = getPosition (player gs) --player position
@@ -273,7 +348,6 @@ sqTileDist (p1X, p1Y) (p2X, p2Y)
 
 
 --TODO: GHOSTS IF EATEN TERUG NAAR SPAWN
---TODO: GHOSTTUNNEL LANGZAMER
 --TODO: GHOST RANDOM RONDLOPEN BIJ FRIGHTENED
 --TODO: AFWISSELING SCATTER/CHASING MODE
 

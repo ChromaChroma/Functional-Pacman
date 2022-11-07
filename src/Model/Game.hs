@@ -126,7 +126,7 @@ checkItemCollisions gs = foldr (\item -> removeItem item . addItemScore item . h
     handleItemType item gs = case item of
       I.PowerPellet _ _ -> case ghostMode gs of
           Frightened -> gs {frightenedTime = 0, ghosts = turnGhostsAround (ghosts gs)} --ghosts don't need to be slowed down again
-          _          -> gs {ghostMode = Frightened, frightenedTime = 0, ghosts = slowGhostsDown $ turnGhostsAround (ghosts gs)}
+          _          -> gs {ghostMode = Frightened, frightenedTime = 0, ghosts = startFrightened (ghosts gs)}
       _ -> gs
 
 checkGhostCollisions :: GameState -> GameState
