@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Model.Score
-  ( HighScores,
+  ( HighScores(..),
     Score (..),
     Points,
     firstPlace,
@@ -60,7 +60,7 @@ mkScore name score
   | otherwise = Just Score {name = name, score = score}
 
 add :: Score -> HighScores -> HighScores
-add score (HighScores scores) = (score : scores)
+add score (HighScores scores) = HighScores (score : scores)
 
 firstPlace :: HighScores -> Maybe Score
 firstPlace (HighScores []) = Nothing
