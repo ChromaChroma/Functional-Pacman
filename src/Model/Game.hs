@@ -109,7 +109,7 @@ nextLevel lvl = defaultLevel {levelNumber = levelNumber lvl + 1}
 
 addNewScore :: String -> GameState -> GameState
 addNewScore name gs = case mkScore name $ points gs of
-  Just s -> gs {highScores = addScore s $ highScores gs}
+  Just s -> gs {highScores = add s $ highScores gs}
   Nothing -> error "Invalid score"
 
 -- | Check if game is over and update it if necessary

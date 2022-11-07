@@ -34,4 +34,4 @@ loadHighScores = do
   json <- decodeFileStrict highScoresFile
   return $ case json of
     Just hs -> hs
-    Nothing -> mkHighScores []
+    Nothing -> []

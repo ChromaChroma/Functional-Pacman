@@ -4,7 +4,7 @@ import Graphics.Gloss (Picture (Blank), blank, color, pictures, polygon, rectang
 import Model.Game (GameState (elapsedTime, highScores, level, player, points), Time)
 import Model.Level (Level (layout), layoutSize, levelNumber)
 import Model.Player (Lives (Lives, unlives), Player (lives))
-import Model.Score (Points, Score (score), getFirstPlace)
+import Model.Score (Points, Score (score), firstPlace)
 import View.Animation (Textures (pacmanLife))
 import View.Config (tileSize)
 import View.Helpers (smallText, smallTextOnly, translateToAboveLevelSection)
@@ -39,6 +39,6 @@ renderScore :: Points -> Picture
 renderScore = smallText "Score: "
 
 renderHighScore :: GameState -> Picture
-renderHighScore gs = case getFirstPlace $ highScores gs of
+renderHighScore gs = case firstPlace $ highScores gs of
   Just x -> smallText "High Score: " (score x)
   Nothing -> blank
