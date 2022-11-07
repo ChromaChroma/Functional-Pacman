@@ -244,7 +244,7 @@ targetTileGhost gs gh = case isEaten gh of
   False -> case ghostMode gs of
     Scatter -> case name gh of
                 Blinky -> (27,26)
-                Pinky  -> (2,30)
+                Pinky  -> (0,26)
                 Inky   -> (25,0)
                 Clyde  -> (2,0)
     Chasing -> case name gh of

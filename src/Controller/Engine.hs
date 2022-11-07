@@ -22,6 +22,7 @@ tick ms gs
       . checkLevelComplete
       . checkFruitSpawning
       . checkCollisions
+      . checkGhostSpawn
       . updateGhosts
       . updatePlayerMovement
       $ gs

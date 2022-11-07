@@ -7,6 +7,7 @@ module Model.Game
     Time,
     tickDurationIn,
     checkCollisions,
+    checkGhostSpawn,
     checkGameOver,
     frightenedDuration,
     checkFruitSpawning,
@@ -157,6 +158,17 @@ checkGhostCollisions gs = handleCollidingGhosts gs . filter (`collidesWithMovabl
     eatGhost g gs =
       let updatedGhosts = map (\x -> if x == g then x {eatenState = Eaten} else x) (ghosts gs)
        in gs {points = points gs + calcGhostPoints updatedGhosts, ghosts = updatedGhosts}
+
+--------------------------------------------------------------------------------
+--check if a new ghost should spawn
+checkGhostSpawn :: GameState -> GameState
+checkGhostSpawn gs = gs {ghosts = moveGhostsOutSpawn amountOfDots (ghosts gs)}
+ where
+   amountOfDots = length [x | x@Dot {} <- itms]
+   itms = items . level $ gs
+
+
+--------------------------------------------------------------------------------
 
 respawnPlayer :: Player -> Level -> Player
 respawnPlayer p lvl = p {position = playerSpawn lvl, direction = Stop, bufDirection = Stop}
