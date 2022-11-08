@@ -149,6 +149,7 @@ moveGhostsOutSpawn dots = map move1GhostOutSpawn
 -- Helper Function
 --------------------------------------------------------------------------------
 
+
 ghostTilePosition :: Ghost -> Position
 ghostTilePosition gh = (fromIntegral gX, fromIntegral gY)
   where

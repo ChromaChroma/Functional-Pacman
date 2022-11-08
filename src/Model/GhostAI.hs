@@ -1,8 +1,16 @@
 module Model.GhostAI where
 
+<<<<<<< HEAD
 import Controller.MovementController
 import Data.Fixed (mod')
 import Data.Maybe (Maybe (..), catMaybes, fromJust, fromMaybe, isJust, isNothing, mapMaybe)
+=======
+-- import System.Random (Random (randomR), StdGen, newStdGen)
+
+import Controller.MovementController
+import Data.Fixed (mod')
+import Data.Maybe (Maybe (..), catMaybes, fromJust, fromMaybe, isJust, isNothing)
+>>>>>>> fix/ghostai
 import Model.Game
 import Model.Ghosts as G
 import Model.Level
@@ -33,11 +41,14 @@ makeGhostMoveEv gs ghst
       Inky -> Right
       Clyde -> Right
 
+<<<<<<< HEAD
 -- TODO make this work based on intersection besides the ghost door not a hard coded tile position
 -- Should remove the need for wellPossionedTarget field and guards:
 -- -| gTile /= targetpoint || wellPositionedTarget ghst = makeGhostMove gs ghst --gaat op target tile vlakbij spawn af.
 -- -| otherwise = (makeGhostMove gs ghst) {G.position = gTilePos, G.direction = Down, opDirection = Up, wellPositionedTarget = True}
 --
+=======
+>>>>>>> fix/ghostai
     targetpoint = case name ghst of
       Blinky -> (13, 19)
       Pinky -> (13, 19)
@@ -60,13 +71,11 @@ makeGhostMove gs ghst
   where
     movedir = checkMoveDirs gs ghst --if ghost meets a wall (which is no intersection)
     nextintersect = checkMoveToIntersection gs ghst
+    movedGhostWithNextDir = (fromJust movedGhost) {nextDirection = chooseAtIntersection gs ghst (fromJust nextintersect)}
 
     movedGhost = makeDirectionMoveGhost gs ghst (G.direction ghst)
-    movedGhostWithNextDir = (fromJust movedGhost) {nextDirection = nextdir}
     --movedGhostOpp = makeDirectionMoveGhost gs ghst (opDirection ghst) --om te checken of hij de intersections "ziet"
     bufMovedGhost = makeDirectionMoveGhost gs ghst (nextDirection ghst)
-    --nextdir returns next direction of ghost at the following intersection:
-    nextdir = chooseAtIntersection gs ghst (fromJust nextintersect)
 
     gTilePos = ghostTilePosition ghst
     gTile@(gtX, gtY) = intPosition $ getPosition ghst
@@ -116,11 +125,19 @@ canMakeMoveToDirGhost gs gh dir lvl
 isValidGhostPosition :: Level -> Ghost -> Bool
 isValidGhostPosition lvl gh = isValidMovablePosition (`elem` validTiles) lvl gh
   where
+<<<<<<< HEAD
     validTiles = case G.direction gh of -- can this not be simplified to just if eaten?
       Up -> [Floor, GhostDoor Open, GhostDoor Closed]
       _ ->
         if isEaten gh
           then [Floor, GhostDoor Open, GhostDoor Closed]
+=======
+    validTiles = case G.direction gh of -- can this not be simplified to just if eaten? Or maybe even to Just the list of three tile types
+      Up -> [Floor, GhostDoor]
+      _ ->
+        if isEaten gh
+          then [Floor, GhostDoor]
+>>>>>>> fix/ghostai
           else [Floor]
 
 --------------------------------------------------------------------------------
@@ -130,7 +147,11 @@ checkMoveToIntersection gs gh
   | nextpoint `elem` intersections = Just nextpoint
   | otherwise = Nothing
   where
+<<<<<<< HEAD
     (gX, gY) = intPosition $ getPosition gh --ghost tile
+=======
+    (gX, gY) = intPosition $ getPosition gh --ghost tile position
+>>>>>>> fix/ghostai
     nextpoint = case G.direction gh of
       Up -> (gX, gY + 1)
       Down -> (gX, gY - 1)
@@ -139,6 +160,7 @@ checkMoveToIntersection gs gh
       Stop -> (gX, gY)
     intersections =
       [ (a, b)
+<<<<<<< HEAD
         | (a, b) <- levelIntersections . level $ gs,
           (a, b) `notElem` ([(c, d) | c <- [11 .. 16], d <- [15 .. 17]]),
           not (elem (a, b) [(12, 7), (15, 7), (12, 19), (15, 19)] && G.direction gh /= Down && ghostMode gs /= Frightened)
@@ -163,18 +185,40 @@ onIntersectionTile gs gh = gTile `elem` intersections
 -- ,not (elem (a,b) [(12,7), (15,7), (12,19), (15,19)] && elem (G.direction gh) [Left, Right] )
 -- in case the ghost moves Up out of spawn, it won't "see" the intersection in advance, but once it's on,
 --  moves to its predefined (from spawn) nextDirection.
+=======
+        | (a, b) <- (levelIntersections . level $ gs),
+          (a, b) `notElem` [(c, d) | c <- [11 .. 16], d <- [15 .. 17]],
+          (a, b) `notElem` [(12, 7), (15, 7), (12, 19), (15, 19)]
+            || G.direction gh == Down
+            || ghostMode gs == Frightened
+      ]
 
-chooseAtIntersection :: GameState -> Ghost -> (Int, Int) -> Direction
-chooseAtIntersection gs gh (iX, iY) = bestDir
+onIntersectionTile :: GameState -> Ghost -> Bool
+onIntersectionTile gs gh
+  -- If ghost is frightened or just moving horizontally over the specific intersection points :: (12, 7), (15, 7), (12, 19), (15, 19)
+  -- Then ignore filter over these points, otherwise filter out these points, because in the original game these are locations the ghost cannot move up at
+  | ghostMode gs == Frightened || G.direction gh `notElem` [Left, Right] = elem gTile intersectionss
+  | otherwise = elem gTile $ filter (`notElem` [(12, 7), (15, 7), (12, 19), (15, 19)]) intersectionss
   where
-    bestDir = snd (minimum distsDirs)
+    gTile = intPosition $ getPosition gh
+    intersectionss = filter (`notElem` [(c, d) | c <- [11 .. 16], d <- [15 .. 17]]) . levelIntersections . level $ gs
+>>>>>>> fix/ghostai
 
-    distsDirs = zip distances posDirections
-
+-- Replace with Dijkstra's algorithm instead of directly calculating distance between points (through walls)
+chooseAtIntersection :: GameState -> Ghost -> (Int, Int) -> Direction
+chooseAtIntersection gs gh (iX, iY) = snd . minimum $ zip distances posDirections
+  where 
     posDirections = [d | d <- allDirections, d /= opDir, isFloor d]
-    distances = [sqTileDist (tileAfter d) target | d <- allDirections, d /= opDir, isFloor d]
-
-    isFloor dir = tileAtW (level gs) (tileAfter dir) `elem` [Floor, GhostDoor Open]
+    distances =
+      [ sqTileDist (tileAfter d) target
+        | d <- allDirections,
+          d /= opDir,
+          isFloor d
+      ]
+    target = targetTileGhost gs gh --target tile of ghost
+    opDir = opDirection gh --opposite direction of ghost
+    allDirections = [Up, Down, Left, Right]
+    isFloor dir = tileAtW (level gs) (tileAfter dir) `elem` [Floor, GhostDoor]
 
     tileAfter dir = case dir of --tiles to go to from intersection
       Up -> (iX, iY + 1)
@@ -182,10 +226,14 @@ chooseAtIntersection gs gh (iX, iY) = bestDir
       Left -> (iX - 1, iY)
       Right -> (iX + 1, iY)
 
+<<<<<<< HEAD
     allDirections = [Up, Down, Left, Right]
     opDir = opDirection gh --opposite direction of ghost
     target = targetTileGhost gs gh --target tile of ghost
     --------------------------------------------------------------------------------
+=======
+--------------------------------------------------------------------------------
+>>>>>>> fix/ghostai
 
 entersTunnel :: Ghost -> (Int, Int) -> Bool
 entersTunnel gh gt = (gt == (5, 16) && G.direction gh == Left) || (gt == (22, 16) && G.direction gh == Right)
@@ -203,6 +251,19 @@ targetTileGhost gs gh
     Inky -> (14, 19)
     Clyde -> (14, 19)
   | otherwise = case ghostMode gs of
+<<<<<<< HEAD
+=======
+    Scatter -> case name gh of
+      Blinky -> (27, 26)
+      Pinky -> (0, 26)
+      Inky -> (25, 0)
+      Clyde -> (2, 0)
+    Chasing -> case name gh of
+      Blinky -> targetTileBlinky pTile
+      Pinky -> targetTilePinky gs pTile
+      Inky -> targetTileInky gs gh pTile
+      Clyde -> targetTileClyde gh pTile
+>>>>>>> fix/ghostai
     Frightened -> fst $ randomTile (ranGen gs) gs
     Scatter -> intPosition $ targetPoint gh
     Chasing -> case name gh of
@@ -211,7 +272,12 @@ targetTileGhost gs gh
       Inky -> targetTileInky gs gh pTile
       Clyde -> targetTileClyde gh pTile
   where
+<<<<<<< HEAD
     pTile = intPosition . getPosition $ player gs --player tile position
+=======
+    pTile = intPosition pPos --player tile
+    pPos = getPosition (player gs) --player position
+>>>>>>> fix/ghostai
 
 --targetTileBlinky takes player tile and returns target tile:
 targetTileBlinky :: (Int, Int) -> (Int, Int)
@@ -250,7 +316,11 @@ targetTileInky gs gh pt@(pX, pY)
     --tile "vector" from blinky to intermediate tile:
     (vX, vY) = (iX - bX, iY - bY)
 
+<<<<<<< HEAD
     (bX, bY) = intPosition . getPosition . head $ filter (\g -> name g == Inky) (ghosts gs)
+=======
+    (bX, bY) = intPosition . getPosition . head $ filter ((Blinky ==) . name) (ghosts gs) --blinky tile position
+>>>>>>> fix/ghostai
 
     --blinky tile
     bPos = getPosition (head (ghosts gs)) --blinky position ("head" because blinky is the first of defaultGhosts)
@@ -271,9 +341,21 @@ targetTileClyde gh pt
   | dist < 64 = (2, 0) --scatter tile if clyde is closer than 8 tiles to pacman
   | otherwise = pt --player tile if clyde is further away than 8 tiles
   where
+<<<<<<< HEAD
     dist = sqTileDist pt cTile --distance from clyde to pac-man
     cTile = intPosition $ getPosition gh --clyde tile position
 
 --Compute squared tile distance between two tiles
 sqTileDist :: (Int, Int) -> (Int, Int) -> Int
 sqTileDist (p1X, p1Y) (p2X, p2Y) = (p1X - p2X) ^ 2 + p1X - (p1Y - p2Y) ^ 2
+=======
+    dist = sqTileDist pt . intPosition $ getPosition gh --distance from clyde to pac-man
+
+--Compute squared tile distance between two tiles
+sqTileDist :: (Int, Int) -> (Int, Int) -> Int
+sqTileDist (p1X, p1Y) (p2X, p2Y) =
+  xDif * xDif + yDif * yDif
+  where
+    xDif = p1X - p2X
+    yDif = p1Y - p2Y
+>>>>>>> fix/ghostai

@@ -107,7 +107,7 @@ convertLevel lvl@Level {layout = Layout xss} = Layout (imap (\y -> imap (\x -> c
         (w, h) = layoutSize . layout $ lvl
 
         getReachability :: Tile -> Reachability
-        getReachability (GhostDoor _) = Door
+        getReachability GhostDoor = Door
         getReachability _ = Unreachable
 
         u = isUnreachable (x, y + 1)
@@ -125,7 +125,7 @@ convertLevel lvl@Level {layout = Layout xss} = Layout (imap (\y -> imap (\x -> c
           | y < 0 = Reachable
           | x >= w = Reachable
           | y >= h = Reachable
-          | tileAtW lvl (x, y) `elem` [Wall, GhostDoor Open, GhostDoor Closed] = Unreachable
+          | tileAtW lvl (x, y) `elem` [Wall, GhostDoor] = Unreachable
           | otherwise = Reachable
 
 -------------------------------------------------------------------------------

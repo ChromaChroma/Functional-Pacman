@@ -3,7 +3,6 @@ module Model.Level
     mkLevelNumber,
     Tile (..),
     tileAtW,
-    DoorState (..),
     Layout (..),
     layoutSize,
     Level (..),
@@ -36,11 +35,9 @@ type LevelNumber = Int
 -- | Different types of tiles a level can have
 -- | Wall is a tile player nor ghost can move through
 -- | Floor is a tile player and ghost can move through
--- | Door is a tile ghost can move through, but player can't, given that the doors are open
-data Tile = Wall | Floor | GhostDoor DoorState deriving (Eq)
+-- | Door is a tile ghost can move through, but player can't
+data Tile = Wall | Floor | GhostDoor  deriving (Eq)
 
--- | State of the ghost door
-data DoorState = Open | Closed deriving (Eq, Show)
 
 -- | Layout as a Tile matrix made from 2D lists
 -- | The layout defines the floors and walls of the level
