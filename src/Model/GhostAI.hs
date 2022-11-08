@@ -117,10 +117,10 @@ isValidGhostPosition :: Level -> Ghost -> Bool
 isValidGhostPosition lvl gh = isValidMovablePosition (`elem` validTiles) lvl gh
   where
     validTiles = case G.direction gh of -- can this not be simplified to just if eaten? Or maybe even to Just the list of three tile types
-      Up -> [Floor, GhostDoor Open, GhostDoor Closed]
+      Up -> [Floor, GhostDoor]
       _ ->
         if isEaten gh
-          then [Floor, GhostDoor Open, GhostDoor Closed]
+          then [Floor, GhostDoor]
           else [Floor]
 
 --------------------------------------------------------------------------------
@@ -156,17 +156,21 @@ onIntersectionTile gs gh
     gTile = intPosition $ getPosition gh
     intersectionss = filter (`notElem` [(c, d) | c <- [11 .. 16], d <- [15 .. 17]]) . levelIntersections . level $ gs
 
+-- Replace with Dijkstra's algorithm instead of directly calculating distance between points (through walls)
 chooseAtIntersection :: GameState -> Ghost -> (Int, Int) -> Direction
-chooseAtIntersection gs gh (iX, iY) = bestDir
-  where
-    bestDir = snd (minimum distsDirs)
-
-    distsDirs = zip distances posDirections
-
+chooseAtIntersection gs gh (iX, iY) = snd . minimum $ zip distances posDirections
+  where 
     posDirections = [d | d <- allDirections, d /= opDir, isFloor d]
-    distances = [sqTileDist (tileAfter d) target | d <- allDirections, d /= opDir, isFloor d]
-
-    isFloor dir = tileAtW (level gs) (tileAfter dir) `elem` [Floor, GhostDoor Open]
+    distances =
+      [ sqTileDist (tileAfter d) target
+        | d <- allDirections,
+          d /= opDir,
+          isFloor d
+      ]
+    target = targetTileGhost gs gh --target tile of ghost
+    opDir = opDirection gh --opposite direction of ghost
+    allDirections = [Up, Down, Left, Right]
+    isFloor dir = tileAtW (level gs) (tileAfter dir) `elem` [Floor, GhostDoor]
 
     tileAfter dir = case dir of --tiles to go to from intersection
       Up -> (iX, iY + 1)
@@ -174,10 +178,7 @@ chooseAtIntersection gs gh (iX, iY) = bestDir
       Left -> (iX - 1, iY)
       Right -> (iX + 1, iY)
 
-    allDirections = [Up, Down, Left, Right]
-    opDir = opDirection gh --opposite direction of ghost
-    target = targetTileGhost gs gh --target tile of ghost
-    --------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 entersTunnel :: Ghost -> (Int, Int) -> Bool
 entersTunnel gh gt = (gt == (5, 16) && G.direction gh == Left) || (gt == (22, 16) && G.direction gh == Right)

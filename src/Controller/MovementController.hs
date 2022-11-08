@@ -4,8 +4,7 @@ import Data.Maybe (Maybe (..), fromJust, isJust)
 import Model.Game (GameState (level, player), GhostMode (Frightened))
 import Model.Ghosts (Ghost, isEaten)
 import Model.Level
-  ( DoorState (Closed, Open),
-    Level (layout),
+  ( Level (layout),
     Tile (Floor, GhostDoor),
     layoutSize,
     tileAtW,
