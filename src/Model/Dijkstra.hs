@@ -1,4 +1,11 @@
-module Model.Dijkstra where
+module Model.Dijkstra (
+  Distance(..),
+  findShortestDistance,
+  isReachable,
+  shortestPath,
+  levelToGraph, 
+  addNodes
+) where
 
 import Data.HashMap.Strict (HashMap)
 import qualified Data.HashMap.Strict as HM
@@ -50,8 +57,8 @@ addDist _ _ = Infinity
 -- Main algorithm
 -------------------------------------------------------------------------------
 
-findShortestDistance :: Graph -> Node -> Node -> Distance Int
-findShortestDistance graph src dest = processQueue initialState !?? dest
+findShortestDistance :: Node -> Node -> Graph -> Distance Int
+findShortestDistance src dest graph = processQueue initialState !?? dest
   where
     initialVisited = HS.empty
     initialDistances = HM.singleton src (Dist 0)
@@ -89,29 +96,32 @@ isReachable lvl n n' = shortestPath lvl n n' /= Infinity
 -- | Find the shortest path between 2 points in a Level
 shortestPath :: Level -> Node -> Node -> Distance Int
 shortestPath lvl n n'
-  | isOnValidTile n && isOnValidTile n' = findShortestDistance (levelToGraph lvl n n') n n'
+  | isOnValidTile n && isOnValidTile n' = findShortestDistance n n' . addNodes lvl [n, n'] $ levelToGraph lvl
   | otherwise = Infinity
   where
-    isOnValidTile n = tileAtW lvl n == Floor
+    isOnValidTile n = tileAtW lvl n /= Wall
 
 -- | Convert a Level to a Graph
-levelToGraph :: Level -> Node -> Node -> Graph
-levelToGraph lvl n n'  = foldr addPointEdges HM.empty nodes
-  where
-    nodes = n : n'  : levelFloorSplits lvl
-    addPointEdges node edges = HM.insert node (getEdges lvl node) edges
+levelToGraph :: Level -> Graph
+levelToGraph lvl = addNodes lvl (levelFloorSplits lvl) HM.empty
 
-    getEdges :: Level -> Node -> [Edge]
-    getEdges lvl node = map (\n -> (n, dist node n)) (nextNeigbors)
+addNodes :: Level -> [Node] -> Graph -> Graph
+addNodes lvl nodes graph = foldr addNode graph nodes
+  where 
+    addNode :: Node -> Graph -> Graph  
+    addNode node = HM.insert node (getEdges lvl node) 
       where
-        nextNeigbors = mapMaybe (\translation -> translateNode (translation `add`) node) [(0, 1), (0, -1), (1, 0), (-1, 0)]
-        add (x, y) (x', y') = (x + x', y + y')
-
-        translateNode :: (Node -> Node) -> Node -> Maybe Node
-        translateNode f node
-          | node == node' = Nothing
-          | tileAtW lvl node' /= Floor = Nothing
-          | node' `elem` nodes = Just node'
-          | otherwise = translateNode f node'
+        getEdges :: Level -> Node -> [Edge]
+        getEdges lvl node = map (\n -> (n, dist node n)) (nextNeigbors)
           where
-            node' = f node
+            nextNeigbors = mapMaybe (\translation -> translateNode (translation `add`) node) [(0, 1), (0, -1), (1, 0), (-1, 0)]
+            add (x, y) (x', y') = (x + x', y + y')
+
+            translateNode :: (Node -> Node) -> Node -> Maybe Node
+            translateNode f node
+              | node == node' = Nothing
+              | tileAtW lvl node' == Wall = Nothing
+              | node' `elem` nodes = Just node'
+              | otherwise = translateNode f node'
+              where
+                node' = f node
