@@ -64,7 +64,7 @@ makeGhostMove gs ghst
     movedir = checkMoveDirs gs ghst --if ghost meets a wall (which is no intersection)
     nextintersect = checkMoveToIntersection gs ghst
     movedGhostWithNextDir = (fromJust movedGhost) {nextDirection = chooseAtIntersection gs ghst (fromJust nextintersect)}
-    
+
     movedGhost = makeDirectionMoveGhost gs ghst (G.direction ghst)
     --movedGhostOpp = makeDirectionMoveGhost gs ghst (opDirection ghst) --om te checken of hij de intersections "ziet"
     bufMovedGhost = makeDirectionMoveGhost gs ghst (nextDirection ghst)
@@ -239,8 +239,7 @@ targetTileInky gs gh pt@(pX, pY)
   where
     dist = sqTileDist pt iTile
 
-    iTile = intPosition iPos --inky tile
-    iPos = getPosition gh --inky position
+    iTile = intPosition $ getPosition gh --inky tile position
 
     --target tile: intermediate tile plus the tile "vector"
     --             from blinky to this tile:
@@ -249,8 +248,8 @@ targetTileInky gs gh pt@(pX, pY)
     --tile "vector" from blinky to intermediate tile:
     (vX, vY) = (iX - bX, iY - bY)
 
-    (bX, bY) = intPosition bPos --blinky tile
-    bPos = getPosition (head (ghosts gs)) --blinky position ("head" because blinky is the first of defaultGhosts)
+    (bX, bY) = intPosition . getPosition . head $ filter ((Blinky ==) . name) (ghosts gs) --blinky tile position
+    
     (iX, iY) = case P.direction (player gs) of --"intermediate" tile: the tile 2 tiles ahead of pac man
       Up -> (pX, pY + 2)
       Down -> (pX, pY - 2)
