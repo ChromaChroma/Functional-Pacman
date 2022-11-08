@@ -16,8 +16,9 @@ import Prelude hiding (Down, Left, Right, Up)
 makeGhostsMove :: GameState -> GameState
 makeGhostsMove gs = gs {ghosts = map (makeGhostMoveEv gs) (ghosts gs)}
 
--------------------------------------------------------------------------------
---Check ghost isEaten:
+--------------------------------------------------------------------------------
+-- Ghost Movements 
+--------------------------------------------------------------------------------
 
 makeGhostMoveEv :: GameState -> Ghost -> Ghost
 makeGhostMoveEv gs ghst
@@ -69,8 +70,6 @@ makeGhostMove gs ghst
     gTilePos = ghostTilePosition ghst
     gTile@(gtX, gtY) = intPosition $ getPosition ghst
 
---------------------------------------------------------------------------------
-
 --checkMoveDirs is called if ghost meets a wall
 checkMoveDirs :: GameState -> Ghost -> Ghost
 checkMoveDirs gs gh =
@@ -121,6 +120,8 @@ isValidGhostPosition lvl gh = isValidMovablePosition (`elem` validTiles) lvl gh
           then [Floor, GhostDoor]
           else [Floor]
 
+--------------------------------------------------------------------------------
+-- Intersection functions
 --------------------------------------------------------------------------------
 
 checkMoveToIntersection :: GameState -> Ghost -> Maybe (Int, Int)
@@ -184,6 +185,10 @@ chooseAtIntersection gs gh (iX, iY) = snd . minimum $ zip distances posDirection
       Left -> (iX - 1, iY)
       Right -> (iX + 1, iY)
 
+--------------------------------------------------------------------------------
+-- Tunnel Functions
+--------------------------------------------------------------------------------
+
 entersTunnel :: Ghost -> (Int, Int) -> Bool
 entersTunnel gh gt = (gt == (5, 16) && G.direction gh == Left) || (gt == (22, 16) && G.direction gh == Right)
 
@@ -191,6 +196,9 @@ leavesTunnel :: Ghost -> (Int, Int) -> Bool
 leavesTunnel gh gt = (gt == (4, 16) && G.direction gh == Right) || (gt == (23, 16) && G.direction gh == Left)
 
 --------------------------------------------------------------------------------
+-- Ghost target tile calculations
+--------------------------------------------------------------------------------
+
 --Scatter/Chase Mode:
 targetTileGhost :: GameState -> Ghost -> (Int, Int)
 targetTileGhost gs gh
@@ -269,6 +277,10 @@ targetTileClyde gh pt
   | otherwise = pt --player tile if clyde is further away than 8 tiles
   where
     dist = sqTileDist pt . intPosition $ getPosition gh --distance from clyde to pac-man
+
+--------------------------------------------------------------------------------
+-- Helper Functions
+--------------------------------------------------------------------------------
 
 --Compute squared tile distance between two tiles
 sqTileDist :: (Int, Int) -> (Int, Int) -> Int
