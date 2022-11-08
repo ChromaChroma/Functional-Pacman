@@ -16,28 +16,24 @@ import Prelude hiding (Down, Left, Right, Up)
 -------------------------------------------------------------------------------
 
 makeGhostsMove :: GameState -> GameState
-makeGhostsMove gs = gs {ghosts = map (make1GhostMoveEv gs) (ghosts gs)}
+makeGhostsMove gs = gs {ghosts = map (makeGhostMoveEv gs) (ghosts gs)}
 
 -------------------------------------------------------------------------------
 --Check ghost isEaten:
 
-make1GhostMoveEv :: GameState -> Ghost -> Ghost
-make1GhostMoveEv gs ghst =
-  case (isEaten ghst) of
-    True -> case (goesBack ghst == False) of
-      True -> (make1GhostMove gs ghst) {G.position = gTilePos, G.speed = (1 / 2), goesBack = True} --start to bring ghost back to spawn
-      False -> case (gTile == spawnpoint) of
-        True -> (make1GhostMove gs ghst) {G.position = gTilePos, eatenState = NotEaten, G.speed = 0.125, G.direction = Up, opDirection = Down, nextDirection = nextDir, goesBack = False, wellPositionedTarget = False}
-        False -> case (gTile == targetpoint) && (wellPositionedTarget ghst == False) of
-          True -> (make1GhostMove gs ghst) {G.position = gTilePos, G.direction = Down, opDirection = Up, wellPositionedTarget = True}
-          False -> make1GhostMove gs ghst --gaat op target tile vlakbij spawn af.
-    False -> make1GhostMove gs ghst
+makeGhostMoveEv :: GameState -> Ghost -> Ghost
+makeGhostMoveEv gs ghst
+  | not $ isEaten ghst = makeGhostMove gs ghst
+  | not $ goesBack ghst = (makeGhostMove gs ghst) {G.position = gTilePos, G.speed = 1 / 2, goesBack = True} --start to bring ghost back to spawn
+  | gTile == spawnpoint = (makeGhostMove gs ghst) {G.position = gTilePos, eatenState = NotEaten, G.speed = 0.125, G.direction = Up, opDirection = Down, nextDirection = nextDir, goesBack = False, wellPositionedTarget = False}
+  | gTile /= targetpoint && wellPositionedTarget ghst = makeGhostMove gs ghst --gaat op target tile vlakbij spawn af.
+  | otherwise = (makeGhostMove gs ghst) {G.position = gTilePos, G.direction = Down, opDirection = Up, wellPositionedTarget = True}
   where
-    targetpoint = case name ghst of
-      Blinky -> (13, 19)
-      Pinky -> (13, 19)
-      Inky -> (14, 19)
-      Clyde -> (14, 19)
+    nextDir = case name ghst of
+      Blinky -> Left
+      Pinky -> Left
+      Inky -> Right
+      Clyde -> Right
 
     spawnpoint = case name ghst of
       Blinky -> (13, 16)
@@ -45,18 +41,17 @@ make1GhostMoveEv gs ghst =
       Inky -> (14, 16)
       Clyde -> (14, 16)
 
-    nextDir = case name ghst of
-      Blinky -> Left
-      Pinky -> Left
-      Inky -> Right
-      Clyde -> Right
+    targetpoint = case name ghst of
+      Blinky -> (13, 19)
+      Pinky -> (13, 19)
+      Inky -> (14, 19)
+      Clyde -> (14, 19)
 
     gTilePos = ghostTilePosition ghst
-    gTile@(gtX, gtY) = intPosition gPos
-    gPos = getPosition ghst
+    gTile = intPosition $ getPosition ghst
 
-make1GhostMove :: GameState -> Ghost -> Ghost
-make1GhostMove gs ghst =
+makeGhostMove :: GameState -> Ghost -> Ghost
+makeGhostMove gs ghst =
   case onIntersectionTile gs ghst of --hiervoor: check case ghostMode (frightened : fMovedGhost ofzo; otherwise: check on intersection tile + rest)
     True -> case isJust bufMovedGhost of
       True -> fromJust bufMovedGhost
