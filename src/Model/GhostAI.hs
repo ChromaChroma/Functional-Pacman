@@ -214,13 +214,13 @@ leavesTunnel gh gt = (gt == (4, 16) && G.direction gh == Right) || (gt == (23, 1
 --------------------------------------------------------------------------------
 --Scatter/Chase Mode:
 targetTileGhost :: GameState -> Ghost -> (Int, Int)
-targetTileGhost gs gh = case isEaten gh of
-  True -> case name gh of
+targetTileGhost gs gh
+  | isEaten gh = case name gh of
     Blinky -> (13, 19)
     Pinky -> (13, 19)
     Inky -> (14, 19)
     Clyde -> (14, 19)
-  False -> case ghostMode gs of
+  | otherwise = case ghostMode gs of
     Scatter -> case name gh of
       Blinky -> (27, 26)
       Pinky -> (0, 26)
@@ -293,9 +293,7 @@ targetTileClyde gh pt
   | dist < 64 = (2, 0) --scatter tile if clyde is closer than 8 tiles to pacman
   | otherwise = pt --player tile if clyde is further away than 8 tiles
   where
-    dist = sqTileDist pt cTile --distance from clyde to pac-man
-    cTile = intPosition cPos --clyde tile
-    cPos = getPosition gh --clyde position
+    dist = sqTileDist pt . intPosition $ getPosition gh --distance from clyde to pac-man
 
 --Compute squared tile distance between two tiles
 sqTileDist :: (Int, Int) -> (Int, Int) -> Int
