@@ -63,13 +63,11 @@ makeGhostMove gs ghst
   where
     movedir = checkMoveDirs gs ghst --if ghost meets a wall (which is no intersection)
     nextintersect = checkMoveToIntersection gs ghst
-
+    movedGhostWithNextDir = (fromJust movedGhost) {nextDirection = chooseAtIntersection gs ghst (fromJust nextintersect)}
+    
     movedGhost = makeDirectionMoveGhost gs ghst (G.direction ghst)
-    movedGhostWithNextDir = (fromJust movedGhost) {nextDirection = nextdir}
     --movedGhostOpp = makeDirectionMoveGhost gs ghst (opDirection ghst) --om te checken of hij de intersections "ziet"
     bufMovedGhost = makeDirectionMoveGhost gs ghst (nextDirection ghst)
-    --nextdir returns next direction of ghost at the following intersection:
-    nextdir = chooseAtIntersection gs ghst (fromJust nextintersect)
 
     gTilePos = ghostTilePosition ghst
     gTile@(gtX, gtY) = intPosition $ getPosition ghst
@@ -130,7 +128,7 @@ isValidGhostPosition lvl gh = isValidMovablePosition (`elem` validTiles) lvl gh
 
 checkMoveToIntersection :: GameState -> Ghost -> Maybe (Int, Int)
 checkMoveToIntersection gs gh
-  | elem nextpoint intersections = Just nextpoint
+  | nextpoint `elem` intersections = Just nextpoint
   | otherwise = Nothing
   where
     (gX, gY) = intPosition $ getPosition gh --ghost tile position
@@ -150,19 +148,14 @@ checkMoveToIntersection gs gh
       ]
 
 onIntersectionTile :: GameState -> Ghost -> Bool
-onIntersectionTile gs gh = elem gTile intersections
+onIntersectionTile gs gh
+  -- If ghost is frightened or just moving horizontally over the specific intersection points :: (12, 7), (15, 7), (12, 19), (15, 19)
+  -- Then ignore filter over these points, otherwise filter out these points, because in the original game these are locations the ghost cannot move up at
+  | ghostMode gs == Frightened || G.direction gh `notElem` [Left, Right] = elem gTile intersectionss
+  | otherwise = elem gTile $ filter (`notElem` [(12, 7), (15, 7), (12, 19), (15, 19)]) intersectionss
   where
-    gTile = intPosition gPos
-    gPos = getPosition gh
-
-    intersections =
-      [ (a, b)
-        | (a, b) <- (levelIntersections . level $ gs),
-          (a, b) `notElem` [(c, d) | c <- [11 .. 16], d <- [15 .. 17]],
-          (a, b) `notElem` [(12, 7), (15, 7), (12, 19), (15, 19)]
-            ||  G.direction gh `notElem` [Left, Right]
-            || ghostMode gs == Frightened
-      ]
+    gTile = intPosition $ getPosition gh
+    intersectionss = filter (`notElem` [(c, d) | c <- [11 .. 16], d <- [15 .. 17]]) . levelIntersections . level $ gs
 
 chooseAtIntersection :: GameState -> Ghost -> (Int, Int) -> Direction
 chooseAtIntersection gs gh (iX, iY) = bestDir
