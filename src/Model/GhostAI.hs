@@ -26,7 +26,7 @@ makeGhostMoveEv gs ghst
   | not $ isEaten ghst = makeGhostMove gs ghst
   | not $ goesBack ghst = (makeGhostMove gs ghst) {G.position = gTilePos, G.speed = 1 / 2, goesBack = True} --start to bring ghost back to spawn
   | gTile == spawnpoint = (makeGhostMove gs ghst) {G.position = gTilePos, eatenState = NotEaten, G.speed = 0.125, G.direction = Up, opDirection = Down, nextDirection = nextDir, goesBack = False, wellPositionedTarget = False}
-  | gTile /= targetpoint && wellPositionedTarget ghst = makeGhostMove gs ghst --gaat op target tile vlakbij spawn af.
+  | gTile /= targetpoint || wellPositionedTarget ghst = makeGhostMove gs ghst --gaat op target tile vlakbij spawn af.
   | otherwise = (makeGhostMove gs ghst) {G.position = gTilePos, G.direction = Down, opDirection = Up, wellPositionedTarget = True}
   where
     nextDir = case name ghst of
@@ -249,7 +249,7 @@ targetTileInky gs gh pt@(pX, pY)
     (vX, vY) = (iX - bX, iY - bY)
 
     (bX, bY) = intPosition . getPosition . head $ filter ((Blinky ==) . name) (ghosts gs) --blinky tile position
-    
+
     (iX, iY) = case P.direction (player gs) of --"intermediate" tile: the tile 2 tiles ahead of pac man
       Up -> (pX, pY + 2)
       Down -> (pX, pY - 2)
