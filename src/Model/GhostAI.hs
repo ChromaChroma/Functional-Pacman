@@ -148,16 +148,14 @@ checkMoveToIntersection gs gh
 -- while moving up left or right, it will not see it as an intersection (moving down, it will)
 
 onIntersectionTile :: GameState -> Ghost -> Bool
-onIntersectionTile gs gh = gTile `elem` intersections
+onIntersectionTile gs gh
+  -- If ghost is frightened or moving vertically over the specific intersection points :: (12, 7), (15, 7), (12, 19), (15, 19)
+  -- Then we include these points in our intersections, otherwise filter out these points, because in the original game these are locations the ghost cannot move up at
+  | ghostMode gs == Frightened || G.direction gh `notElem` [Left, Right] = elem gTile intersectionss
+  | otherwise = elem gTile $ filter (`notElem` [(12, 7), (15, 7), (12, 19), (15, 19)]) intersectionss
   where
     gTile = intPosition $ getPosition gh
-
-    intersections =
-      [ (a, b)
-        | (a, b) <- levelIntersections . level $ gs,
-          (a, b) `notElem` ([(c, d) | c <- [11 .. 16], d <- [15 .. 17]]),
-          not (elem (a, b) [(12, 7), (15, 7), (12, 19), (15, 19)] && elem (G.direction gh) [Left, Right] && ghostMode gs /= Frightened)
-      ]
+    intersectionss = filter (`notElem` [(c, d) | c <- [11 .. 16], d <- [15 .. 17]]) . levelIntersections . level $ gs
 
 -- ,not (elem (a,b) [(12,7), (15,7), (12,19), (15,19)] && elem (G.direction gh) [Left, Right] )
 -- in case the ghost moves Up out of spawn, it won't "see" the intersection in advance, but once it's on,
