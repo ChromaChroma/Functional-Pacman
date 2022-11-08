@@ -93,13 +93,11 @@ checkMoveDirs gs gh
 
 makeDirectionMoveGhost :: GameState -> Ghost -> Direction -> Maybe Ghost
 makeDirectionMoveGhost gs ghst dir
-  | canMoveInDir && isValidMovePosition = Just updatedGhost
+  | canMoveInDir && isValidMovePosition = Just movedGhost {G.direction = dir, opDirection = opp dir}
   | otherwise = Nothing
   where
     canMoveInDir = canMakeMoveToDirGhost gs ghst dir lvl
     isValidMovePosition = isValidGhostPosition lvl movedGhost
-
-    updatedGhost = movedGhost {G.direction = dir, opDirection = opp dir}
 
     movedGhost = move ghst dir (layoutSize . layout $ lvl)
     lvl = level gs
@@ -121,11 +119,12 @@ canMakeMoveToDirGhost gs gh dir lvl
 isValidGhostPosition :: Level -> Ghost -> Bool
 isValidGhostPosition lvl gh = isValidMovablePosition (`elem` validTiles) lvl gh
   where
-    validTiles = case G.direction gh of
+    validTiles = case G.direction gh of -- can this not be simplified to just if eaten? Or maybe even to Just the list of three tile types
       Up -> [Floor, GhostDoor Open, GhostDoor Closed]
-      _ -> case isEaten gh of
-        True -> [Floor, GhostDoor Open, GhostDoor Closed]
-        False -> [Floor]
+      _ ->
+        if isEaten gh
+          then [Floor, GhostDoor Open, GhostDoor Closed]
+          else [Floor]
 
 --------------------------------------------------------------------------------
 
@@ -142,12 +141,13 @@ checkMoveToIntersection gs gh
       Right -> (gX + 1, gY)
       Stop -> (gX, gY)
     intersections =
-      [ (a, b) | (a, b) <- (levelIntersections . level $ gs), not (elem (a, b) [(c, d) | c <- [11 .. 16], d <- [15 .. 17]]), not (elem (a, b) [(12, 7), (15, 7), (12, 19), (15, 19)] && G.direction gh /= Down && ghostMode gs /= Frightened)
+      [ (a, b)
+        | (a, b) <- (levelIntersections . level $ gs),
+          (a, b) `notElem` [(c, d) | c <- [11 .. 16], d <- [15 .. 17]],
+          (a, b) `notElem` [(12, 7), (15, 7), (12, 19), (15, 19)]
+            || G.direction gh == Down
+            || ghostMode gs == Frightened
       ]
-
--- ,not (elem (a,b) [(12,7), (15,7), (12,19), (15,19)] && G.direction gh /= Down )
--- above: if the ghost happens to be going to one of the non-intersection tiles (4 of them)
--- while moving up left or right, it will not see it as an intersection (moving down, it will)
 
 onIntersectionTile :: GameState -> Ghost -> Bool
 onIntersectionTile gs gh = elem gTile intersections
@@ -156,12 +156,13 @@ onIntersectionTile gs gh = elem gTile intersections
     gPos = getPosition gh
 
     intersections =
-      [ (a, b) | (a, b) <- (levelIntersections . level $ gs), not (elem (a, b) [(c, d) | c <- [11 .. 16], d <- [15 .. 17]]), not (elem (a, b) [(12, 7), (15, 7), (12, 19), (15, 19)] && elem (G.direction gh) [Left, Right] && ghostMode gs /= Frightened)
+      [ (a, b)
+        | (a, b) <- (levelIntersections . level $ gs),
+          (a, b) `notElem` [(c, d) | c <- [11 .. 16], d <- [15 .. 17]],
+          (a, b) `notElem` [(12, 7), (15, 7), (12, 19), (15, 19)]
+            ||  G.direction gh `notElem` [Left, Right]
+            || ghostMode gs == Frightened
       ]
-
--- ,not (elem (a,b) [(12,7), (15,7), (12,19), (15,19)] && elem (G.direction gh) [Left, Right] )
--- in case the ghost moves Up out of spawn, it won't "see" the intersection in advance, but once it's on,
---  moves to its predefined (from spawn) nextDirection.
 
 chooseAtIntersection :: GameState -> Ghost -> (Int, Int) -> Direction
 chooseAtIntersection gs gh (iX, iY) = bestDir
