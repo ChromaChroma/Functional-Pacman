@@ -35,11 +35,6 @@ makeGhostMoveEv gs ghst
       Inky -> Right
       Clyde -> Right
 
-    -- TODO make this work based on intersection besides the ghost door not a hard coded tile position
-    -- Should remove the need for wellPossionedTarget field and guards:
-    -- -| gTile /= targetpoint || wellPositionedTarget ghst = makeGhostMove gs ghst --gaat op target tile vlakbij spawn af.
-    -- -| otherwise = (makeGhostMove gs ghst) {G.position = gTilePos, G.direction = Down, opDirection = Up, wellPositionedTarget = True}
-    --
     targetpoint = case name ghst of
       Blinky -> (13, 19)
       Pinky -> (13, 19)
@@ -196,15 +191,20 @@ targetTileGhost gs gh
     Inky -> (14, 19)
     Clyde -> (14, 19)
   | otherwise = case ghostMode gs of
-    Frightened -> fst $ randomTile (ranGen gs) gs
-    Scatter -> intPosition $ targetPoint gh
+    Scatter -> case name gh of
+      Blinky -> (27, 26)
+      Pinky -> (0, 26)
+      Inky -> (25, 0)
+      Clyde -> (2, 0)
     Chasing -> case name gh of
       Blinky -> targetTileBlinky pTile
       Pinky -> targetTilePinky gs pTile
       Inky -> targetTileInky gs gh pTile
       Clyde -> targetTileClyde gh pTile
+    Frightened -> fst $ randomTile (ranGen gs) gs
   where
-    pTile = intPosition $ getPosition (player gs) -- player tile position
+    pTile = intPosition pPos --player tile
+    pPos = getPosition (player gs) --player position
 
 --targetTileBlinky takes player tile and returns target tile:
 targetTileBlinky :: (Int, Int) -> (Int, Int)
@@ -244,6 +244,7 @@ targetTileInky gs gh pt@(pX, pY)
     (vX, vY) = (iX - bX, iY - bY)
 
     (bX, bY) = intPosition . getPosition . head $ filter ((Blinky ==) . name) (ghosts gs) --blinky tile position
+
     (iX, iY) = case P.direction (player gs) of --"intermediate" tile: the tile 2 tiles ahead of pac man
       Up -> (pX, pY + 2)
       Down -> (pX, pY - 2)
