@@ -34,7 +34,7 @@ makeGhostMoveEv gs ghst
       Clyde -> Right
 
 -- TODO make this work based on intersection besides the ghost door not a hard coded tile position
--- Should remove the need for wellPossionedTarget field and guards: 
+-- Should remove the need for wellPossionedTarget field and guards:
 -- -| gTile /= targetpoint || wellPositionedTarget ghst = makeGhostMove gs ghst --gaat op target tile vlakbij spawn af.
 -- -| otherwise = (makeGhostMove gs ghst) {G.position = gTilePos, G.direction = Down, opDirection = Up, wellPositionedTarget = True}
 --
@@ -79,7 +79,7 @@ checkMoveDirs gs gh =
   if gTile `elem` ([(u, 15) | u <- [13 .. 16]])
     then fromJust (makeDirectionMoveGhost gs gh (opDirection gh))
     else case length possiblemoves of
-      0 -> movedGhost {G.position = gPos, G.direction = opp (G.direction gh), opDirection = G.direction gh} -- turnAround {G.position = gTilePos, nextDirection = G.direction turnAround} --goes back if there's nothing else (dead end) -- turnAround = fromJust (makeDirectionMoveGhost gs gh (opDirection gh))
+      0 -> movedGhost {G.position = gPos, G.direction = opp (G.direction gh), opDirection = G.direction gh, nextDirection = opp (G.direction gh)} -- turnAround {G.position = gTilePos, nextDirection = G.direction turnAround} --goes back if there's nothing else (dead end) -- turnAround = fromJust (makeDirectionMoveGhost gs gh (opDirection gh))
       _ -> pickFavDir {nextDirection = G.direction pickFavDir}
   where
     gTile = intPosition gPos
