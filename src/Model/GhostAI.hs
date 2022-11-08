@@ -4,7 +4,7 @@ module Model.GhostAI where
 
 import Controller.MovementController
 import Data.Fixed (mod')
-import Data.Maybe (Maybe (..), fromJust, isJust)
+import Data.Maybe (Maybe (..), catMaybes, fromJust, fromMaybe, isJust, isNothing)
 import Model.Game
 import Model.Ghosts as G
 import Model.Level
@@ -51,22 +51,15 @@ makeGhostMoveEv gs ghst
     gTile = intPosition $ getPosition ghst
 
 makeGhostMove :: GameState -> Ghost -> Ghost
-makeGhostMove gs ghst =
-  case onIntersectionTile gs ghst of --hiervoor: check case ghostMode (frightened : fMovedGhost ofzo; otherwise: check on intersection tile + rest)
-    True -> case isJust bufMovedGhost of
-      True -> fromJust bufMovedGhost
-      False -> case isJust movedGhost of
-        True -> fromJust movedGhost
-        False -> movedir --"fallback" richting: als de ghost op de intersect niet naar bufDirection kan lopen
-    False -> case (isJust nextintersect) of -- voor snelheid: (checkedAtTile ghst /= gTile) &&  -- if we didn't check the next tile already, only then we check intersection
-      True -> movedGhostWithNextDir -- {checkedAtTile = gTile} -- here we create a ghost that knows its next direction
-      False -> case isJust movedGhost of
-        True -> case (entersTunnel ghst gTile) && (isInTunnel ghst == False) of
-          True -> slowGhostDownTunnel (fromJust movedGhost) {isInTunnel = True} -- G.position = gTilePos,  {checkedAtTile = gTile} -- if ghost can only walk further
-          False -> case (leavesTunnel ghst gTile) && (isInTunnel ghst) of
-            True -> speedGhostUpTunnel (fromJust movedGhost) {isInTunnel = False} -- G.position = gTilePos,
-            False -> fromJust movedGhost
-        False -> movedir --if ghost can only go one way (dead end or bend)
+makeGhostMove gs ghst
+  | onIntersectionTile gs ghst --hiervoor: check case ghostMode (frightened : fMovedGhost ofzo; otherwise: check on intersection tile + rest)
+    =
+    fromMaybe (fromMaybe movedir movedGhost) bufMovedGhost -- Fallback on moveDir if ghost cannot mopve to bufDirection
+  | isJust nextintersect = movedGhostWithNextDir -- voor snelheid: (checkedAtTile ghst /= gTile) &&  -- if we didn't check the next tile already, only then we check intersection
+  | isNothing movedGhost = movedir
+  | entersTunnel ghst gTile && not (isInTunnel ghst) = slowGhostDownTunnel (fromJust movedGhost) {isInTunnel = True} -- G.position = gTilePos,  {checkedAtTile = gTile} -- if ghost can only walk further
+  | leavesTunnel ghst gTile && isInTunnel ghst = speedGhostUpTunnel (fromJust movedGhost) {isInTunnel = False} -- G.position = gTilePos,
+  | otherwise = fromJust movedGhost
   where
     movedir = checkMoveDirs gs ghst --if ghost meets a wall (which is no intersection)
     nextintersect = checkMoveToIntersection gs ghst
@@ -79,31 +72,24 @@ makeGhostMove gs ghst =
     nextdir = chooseAtIntersection gs ghst (fromJust nextintersect)
 
     gTilePos = ghostTilePosition ghst
-    gTile@(gtX, gtY) = intPosition gPos
-    gPos = getPosition ghst
+    gTile@(gtX, gtY) = intPosition $ getPosition ghst
 
 --------------------------------------------------------------------------------
 
 --checkMoveDirs is called if ghost meets a wall
 checkMoveDirs :: GameState -> Ghost -> Ghost
-checkMoveDirs gs gh =
-  case elem gTile [(u, 15) | u <- [13 .. 16]] of --ghosts turn around if they go down from the spawn
-    True -> fromJust (makeDirectionMoveGhost gs gh (opDirection gh))
-    False -> case length possiblemoves of
-      0 -> movedGhost {G.position = gPos, G.direction = opp (G.direction gh), opDirection = (G.direction gh)} -- turnAround {G.position = gTilePos, nextDirection = G.direction turnAround} --goes back if there's nothing else (dead end)
-      _ -> pickFavDir {nextDirection = G.direction pickFavDir}
+checkMoveDirs gs gh
+  | elem gTile [(u, 15) | u <- [13 .. 16]] = fromJust (makeDirectionMoveGhost gs gh (opDirection gh))
+  | null possiblemoves = movedGhost {G.position = gPos, G.direction = opp (G.direction gh), opDirection = G.direction gh} -- turnAround {G.position = gTilePos, nextDirection = G.direction turnAround} --goes back if there's nothing else (dead end)
+  | otherwise = pickFavDir {nextDirection = G.direction pickFavDir}
   where
     gPos = getPosition gh
     gTile = intPosition gPos
-    gTilePos = ghostTilePosition gh
 
-    turnAround = fromJust (makeDirectionMoveGhost gs gh (opDirection gh))
     pickFavDir = head possiblemoves
+    possiblemoves = catMaybes $ [makeDirectionMoveGhost gs gh x | x <- filter (/= opDirection gh) [Up, Left, Down, Right]]
 
-    possiblemoves = map fromJust $ filter (isJust) [makeDirectionMoveGhost gs gh x | x <- u]
-    u = filter (\x -> x /= opDirection gh) [Up, Left, Down, Right] -- && x /= G.direction gh
-    movedGhost = move gh (opDirection gh) (layoutSize . layout $ lvl)
-    lvl = level gs
+    movedGhost = move gh (opDirection gh) (layoutSize . layout . level $ gs) -- turnAround = fromJust (makeDirectionMoveGhost gs gh (opDirection gh))
 
 makeDirectionMoveGhost :: GameState -> Ghost -> Direction -> Maybe Ghost
 makeDirectionMoveGhost gs ghst dir
