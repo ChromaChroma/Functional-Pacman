@@ -151,7 +151,8 @@ filterFloorOnDirections level i =
   ]
   where
     (width, height) = layoutSize $ layout level
-    isIntersection coords = (length . filter (`elem` [Floor, GhostDoor]) $ neighbors level coords) == i
+    -- isIntersection coords = (length . filter (`elem` [Floor, GhostDoor]) $ neighbors level coords) == i
+    isIntersection coords = (length . filter (== Floor) $ neighbors level coords) == i
 
 -- | Calculate the neighboring tiles of a given tile position
 neighbors :: Level -> (Int, Int) -> [Tile]
