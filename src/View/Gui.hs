@@ -115,7 +115,7 @@ scoreInputHandler _ ts = return ts
 gameInputHandler :: Event -> TotalState -> IO TotalState
 gameInputHandler (EventKey (SpecialKey KeyUp) Down _ _) ts = handle (Move M.Up) (gameState ts) >>= setGameStateIO ts
 gameInputHandler (EventKey (SpecialKey KeyDown) Down _ _) ts = handle (Move M.Down) (gameState ts) >>= setGameStateIO ts
-gameInputHandler (EventKey (SpecialKey KeyRight) Down _ _) ts = handle (Move M.Down) (gameState ts) >>= setGameStateIO ts
+gameInputHandler (EventKey (SpecialKey KeyRight) Down _ _) ts = handle (Move M.Right) (gameState ts) >>= setGameStateIO ts
 gameInputHandler (EventKey (SpecialKey KeyLeft) Down _ _) ts = handle (Move M.Left) (gameState ts) >>= setGameStateIO ts
 gameInputHandler (EventKey (Char 'w') Down _ _) ts = handle (Move M.Up) (gameState ts) >>= setGameStateIO ts
 gameInputHandler (EventKey (Char 's') Down _ _) ts = handle (Move M.Down) (gameState ts) >>= setGameStateIO ts
