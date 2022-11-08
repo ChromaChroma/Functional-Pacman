@@ -57,7 +57,7 @@ make1GhostMoveEv gs ghst
       Clyde  -> Right
 
     gTilePos = ghostTilePosition ghst
-    gTile@(gtX, gtY) = posToTile gPos
+    gTile@(gtX, gtY) = intPosition gPos
     gPos  = getPosition ghst
 
 
@@ -92,7 +92,7 @@ make1GhostMove gs ghst
     nextdir = chooseAtIntersection gs ghst (fromJust nextintersect)
 
     gTilePos = ghostTilePosition ghst
-    gTile@(gtX, gtY) = posToTile gPos
+    gTile@(gtX, gtY) = intPosition gPos
     gPos  = getPosition ghst
 
 --------------------------------------------------------------------------------
@@ -108,7 +108,7 @@ checkMoveDirs gs gh
   where
 
     gPos = getPosition gh
-    gTile = posToTile gPos
+    gTile = intPosition gPos
     gTilePos = ghostTilePosition gh
 
     turnAround = fromJust (makeDirectionMoveGhost gs gh (opDirection gh))
@@ -164,7 +164,7 @@ checkMoveToIntersection gs gh
   | otherwise                    = Nothing
   where
     gPos     = getPosition gh --ghost position
-    (gX,gY)   = posToTile gPos --ghost tile
+    (gX,gY)   = intPosition gPos --ghost tile
     nextpoint = case G.direction gh of
                   Up    -> (gX, gY + 1)
                   Down  -> (gX, gY - 1)
@@ -182,7 +182,7 @@ checkMoveToIntersection gs gh
 onIntersectionTile :: GameState -> Ghost -> Bool
 onIntersectionTile gs gh = elem gTile intersections
   where
-    gTile = posToTile gPos
+    gTile = intPosition gPos
     gPos = getPosition gh
 
     intersections = [ (a,b) | (a,b) <- (levelIntersections . level $ gs),
@@ -248,7 +248,7 @@ targetTileGhost gs gh = case isEaten gh of
                 Clyde -> targetTileClyde gh pTile
     Frightened -> fst $ randomTile (ranGen gs) gs
   where
-    pTile = posToTile pPos        --player tile
+    pTile = intPosition pPos        --player tile
     pPos = getPosition (player gs) --player position
 
 
@@ -281,7 +281,7 @@ targetTileInky gs gh pt@(pX, pY)
 
     dist = sqTileDist pt iTile
 
-    iTile = posToTile iPos --inky tile
+    iTile = intPosition iPos --inky tile
     iPos = getPosition gh --inky position
 
     --target tile: intermediate tile plus the tile "vector"
@@ -291,7 +291,7 @@ targetTileInky gs gh pt@(pX, pY)
     --tile "vector" from blinky to intermediate tile:
     (vX, vY) = (iX - bX, iY - bY)
 
-    (bX, bY) = posToTile bPos --blinky tile
+    (bX, bY) = intPosition bPos --blinky tile
     bPos = getPosition (head (ghosts gs)) --blinky position ("head" because blinky is the first of defaultGhosts)
 
     (iX, iY) = case P.direction (player gs) of --"intermediate" tile: the tile 2 tiles ahead of pac man
@@ -313,7 +313,7 @@ targetTileClyde gh pt
   where
     dist = sqTileDist pt cTile --distance from clyde to pac-man
 
-    cTile = posToTile cPos --clyde tile
+    cTile = intPosition cPos --clyde tile
     cPos = getPosition gh --clyde position
 
 --Compute squared tile distance between two tiles
@@ -324,17 +324,3 @@ sqTileDist (p1X, p1Y) (p2X, p2Y)
     xDif = p1X - p2X
     yDif = p1Y - p2Y
 
-
-
-
-
-
-
-
-
-
-
-
-
-
---END

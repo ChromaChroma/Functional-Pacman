@@ -13,7 +13,6 @@ module Model.Ghosts
     speedGhostsUp,
     slowGhostDownTunnel,
     speedGhostUpTunnel,
-    posToTile,
     ghostTilePosition,
     startGhostsAgain,
     moveGhostsOutSpawn
@@ -149,16 +148,10 @@ moveGhostsOutSpawn dots ghs = map move1GhostOutSpawn ghs where
     where
       moveUp = gh {direction = Up, opDirection = Down}
 
-
-
 --------------------------------------------------------------------------------
---Convert float coordinate to tile (int) coordinate
-posToTile :: Position -> (Int, Int)
-posToTile (x, y) = (round x, round y)
 
 ghostTilePosition :: Ghost -> Position
 ghostTilePosition gh = gT
   where
     gT = (fromIntegral gX, fromIntegral gY)
-    (gX, gY) = posToTile (getPosition gh)
-
+    (gX, gY) = intPosition (getPosition gh)
