@@ -30,19 +30,18 @@ defaultPlayer = Player (1, 1) (1 / 7) (Lives 3) Stop Stop
 
 defaultGhosts :: [Ghost]
 defaultGhosts = [blinky, pinky, inky, clyde]
-
+--speed is 75%, player's is 80% (0.125)
 blinky :: Ghost
-blinky = Ghost Blinky (12, 16) 0.125 NotEaten Stop Stop Right False False False --speed is 75%, player's is 80% (0.125)
+blinky = Ghost Blinky (12, 16) 0.125 NotEaten Stop Stop Right False False False (13, 16) (27, 26) --(13, 19)
 
 pinky :: Ghost
-pinky = Ghost Pinky (13, 16) 0.125 NotEaten Stop Stop Left False False False
+pinky = Ghost Pinky (13, 16) 0.125 NotEaten Stop Stop Left False False False (13, 16) (0, 26) --(13, 19)
 
 inky :: Ghost
-inky = Ghost Inky (14, 16) 0.125 NotEaten Stop Stop Left False False False
+inky = Ghost Inky (14, 16) 0.125 NotEaten Stop Stop Left False False False (14, 16) (25, 0) --(14, 19)
 
 clyde :: Ghost
-clyde = Ghost Clyde (15, 16) 0.125 NotEaten Stop Stop Right False False False
-
+clyde = Ghost Clyde (15, 16) 0.125 NotEaten Stop Stop Right False False False (14, 16) (2, 0) --(14, 19)
 -------------------------------------------------------------------------------
 -- Fruits
 -------------------------------------------------------------------------------
