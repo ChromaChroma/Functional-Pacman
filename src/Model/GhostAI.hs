@@ -17,7 +17,7 @@ makeGhostsMove :: GameState -> GameState
 makeGhostsMove gs = gs {ghosts = map (makeGhostMoveEv gs) (ghosts gs)}
 
 --------------------------------------------------------------------------------
--- Ghost Movements 
+-- Ghost Movements
 --------------------------------------------------------------------------------
 
 makeGhostMoveEv :: GameState -> Ghost -> Ghost
@@ -26,7 +26,7 @@ makeGhostMoveEv gs ghst
   | not $ goesBack ghst = (makeGhostMove gs ghst) {G.position = gTilePos, G.speed = 1 / 2, goesBack = True} --start to bring ghost back to spawn
   | gTile == spawnPoint ghst = (makeGhostMove gs ghst) {G.position = gTilePos, eatenState = NotEaten, G.speed = 0.125, G.direction = Up, opDirection = Down, nextDirection = nextDir, goesBack = False, wellPositionedTarget = False}
   | gTile /= targetpoint || wellPositionedTarget ghst = makeGhostMove gs ghst --gaat op target tile vlakbij spawn af.
-  | otherwise = (makeGhostMove gs ghst) {G.position = gTilePos, G.direction = Down, opDirection = Up, wellPositionedTarget = True}
+  | otherwise = (makeGhostMove gs ghst) {G.position = gTilePos, G.speed = 0.3, G.direction = Down, opDirection = Up, wellPositionedTarget = True}
   where
     nextDir = case name ghst of
       Blinky -> Left
@@ -164,7 +164,7 @@ onIntersectionTile gs gh
 -- Replace with Dijkstra's algorithm instead of directly calculating distance between points (through walls)
 chooseAtIntersection :: GameState -> Ghost -> (Int, Int) -> Direction
 chooseAtIntersection gs gh (iX, iY) = snd . minimum $ zip distances posDirections
-  where 
+  where
     posDirections = [d | d <- allDirections, d /= opDir, isFloor d]
     distances =
       [ sqTileDist (tileAfter d) target
@@ -287,4 +287,3 @@ sqTileDist (p1X, p1Y) (p2X, p2Y) =
   where
     xDif = p1X - p2X
     yDif = p1Y - p2Y
-
