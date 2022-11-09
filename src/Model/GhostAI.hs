@@ -24,9 +24,9 @@ makeGhostMoveEv :: GameState -> Ghost -> Ghost
 makeGhostMoveEv gs ghst
   | not $ isEaten ghst = makeGhostMove gs ghst
   | not $ goesBack ghst = (makeGhostMove gs ghst) {G.position = gTilePos, G.speed = 1 / 2, goesBack = True} --start to bring ghost back to spawn
-  | gTile == spawnPoint ghst = (makeGhostMove gs ghst) {G.position = gTilePos, eatenState = NotEaten, G.speed = 0.125, G.direction = Up, opDirection = Down, nextDirection = nextDir, goesBack = False, wellPositionedTarget = False}
-  | gTile /= targetpoint || wellPositionedTarget ghst = makeGhostMove gs ghst --gaat op target tile vlakbij spawn af.
-  | otherwise = (makeGhostMove gs ghst) {G.position = gTilePos, G.direction = Down, opDirection = Up, wellPositionedTarget = True}
+  | gTilePos == spawnPoint ghst = (makeGhostMove gs ghst) {G.position = gTilePos, eatenState = NotEaten, G.speed = 0.125, G.direction = Up, opDirection = Down, nextDirection = nextDir, goesBack = False, wellPositionedTarget = False}
+  | gTilePos /= targetpoint || wellPositionedTarget ghst = makeGhostMove gs ghst --gaat op target tile vlakbij spawn af.
+  | otherwise = (makeGhostMove gs ghst) {G.position = gTilePos, G.speed = 0.3, G.direction = Down, opDirection = Up, wellPositionedTarget = True}
   where
     nextDir = case name ghst of
       Blinky -> Left
@@ -46,7 +46,7 @@ makeGhostMoveEv gs ghst
       Clyde -> (14, 19)
 
     gTilePos = ghostTilePosition ghst
-    gTile = getPosition ghst
+    gTile = intPosition $ getPosition ghst
 
 makeGhostMove :: GameState -> Ghost -> Ghost
 makeGhostMove gs ghst
