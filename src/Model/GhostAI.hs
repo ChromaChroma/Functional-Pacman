@@ -24,7 +24,7 @@ makeGhostMoveEv :: GameState -> Ghost -> Ghost
 makeGhostMoveEv gs ghst
   | not $ isEaten ghst = makeGhostMove gs ghst
   | not $ goesBack ghst = (makeGhostMove gs ghst) {G.position = gTilePos, G.speed = 1 / 2, goesBack = True} --start to bring ghost back to spawn
-  | gTilePos == spawnPoint ghst = (makeGhostMove gs ghst) {G.position = gTilePos, eatenState = NotEaten, G.speed = 0.125, G.direction = Up, opDirection = Down, nextDirection = nextDir, goesBack = False, wellPositionedTarget = False}
+  | gTilePos `elem` spawnpoints = (makeGhostMove gs ghst) {G.position = gTilePos, eatenState = NotEaten, G.speed = 0.125, G.direction = Up, opDirection = Down, nextDirection = nextDir, goesBack = False, wellPositionedTarget = False}
   | gTilePos /= targetpoint || wellPositionedTarget ghst = makeGhostMove gs ghst --gaat op target tile vlakbij spawn af.
   | otherwise = (makeGhostMove gs ghst) {G.position = gTilePos, G.speed = 0.3, G.direction = Down, opDirection = Up, wellPositionedTarget = True}
   where
@@ -44,6 +44,8 @@ makeGhostMoveEv gs ghst
       Pinky -> (13, 19)
       Inky -> (14, 19)
       Clyde -> (14, 19)
+
+    spawnpoints = [(x,16) | x <- [12..15]]
 
     gTilePos = ghostTilePosition ghst
     gTile = intPosition $ getPosition ghst
