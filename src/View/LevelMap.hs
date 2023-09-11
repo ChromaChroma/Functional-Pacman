@@ -627,7 +627,7 @@ shortEndingSingles =
       ]
 
 partialEndingSingles =
-  rotatedSet $
+  rotatedMirroredSet $
     Layout
       [ [Reachable, Unreachable, Unreachable],
         [Reachable, Unreachable, Reachable],
